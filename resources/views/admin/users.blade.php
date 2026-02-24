@@ -134,13 +134,14 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Assigned Category (for Section Staff)</label>
+                        <label class="form-label">Assigned Category (Optional)</label>
                         <select name="assigned_category_id" class="form-select">
                             <option value="">None</option>
                             @foreach($categories as $category)
                                 <option value="{{ $category->id }}">{{ $category->name }}</option>
                             @endforeach
                         </select>
+                        <div class="form-text text-muted small">Leave as "None" if the user should have access to all categories</div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -190,15 +191,16 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Assigned Category</label>
+                        <label class="form-label">Assigned Category (Optional)</label>
                         <select name="assigned_category_id" class="form-select">
                             <option value="">None</option>
                             @foreach($categories as $category)
                                 <option value="{{ $category->id }}" {{ $user->assigned_category_id == $category->id ? 'selected' : '' }}>
                                     {{ $category->name }}
                                 </option>
-                            @endforeach
+                            @endforeach>
                         </select>
+                        <div class="form-text text-muted small">Leave as "None" if the user should have access to all categories</div>
                     </div>
                     <div class="mb-3">
                         <div class="form-check">
@@ -217,3 +219,7 @@
 </div>
 @endforeach
 @endsection
+
+<script>
+    // No dynamic hiding/showing - the assigned category field is always visible but optional
+</script>

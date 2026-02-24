@@ -121,6 +121,26 @@
                             </div>
                         </div>
 
+                        <!-- Officer of the Day Selection -->
+                        <div class="mb-4">
+                            <label for="officer_of_day" class="form-label fw-bold">
+                                <i class="bi bi-person-badge text-success"></i> Officer of the Day
+                            </label>
+                            <select class="form-select @error('officer_of_day') is-invalid @enderror" 
+                                    id="officer_of_day" name="officer_of_day" required>
+                                <option value="">-- Select Officer of the Day --</option>
+                                <option value="{{ $lotaOfficer->id ?? '' }}">Mr. Stanly M. Lota</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <div id="newOfficerInput" class="mt-2" style="display: none;">
+                                <label class="form-label">Enter New Officer Name</label>
+                                <input type="text" name="new_officer_name" id="newOfficerName" class="form-control" placeholder="Enter officer name">
+                            </div>
+                            @error('officer_of_day')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         <!-- Submit Buttons -->
                         <div class="d-flex gap-3">
                             <button type="submit" class="btn btn-success btn-lg flex-fill">
@@ -144,6 +164,18 @@
     document.getElementById('fees').addEventListener('blur', function() {
         if (this.value) {
             this.value = parseFloat(this.value).toFixed(2);
+        }
+    });
+
+    // Toggle new officer input based on selection
+    document.getElementById('officer_of_day')?.addEventListener('change', function() {
+        const newOfficerInput = document.getElementById('newOfficerInput');
+        if (this.value === 'other') {
+            newOfficerInput.style.display = 'block';
+            document.getElementById('newOfficerName').required = true;
+        } else {
+            newOfficerInput.style.display = 'none';
+            document.getElementById('newOfficerName').required = false;
         }
     });
 </script>

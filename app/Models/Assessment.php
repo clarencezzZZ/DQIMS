@@ -25,6 +25,7 @@ class Assessment extends Model
         'fees',
         'remarks',
         'processed_by',
+        'officer_of_day',
         'assessment_date'
     ];
 
@@ -56,6 +57,14 @@ class Assessment extends Model
     public function processedBy()
     {
         return $this->belongsTo(User::class, 'processed_by');
+    }
+
+    /**
+     * Get the officer of the day for this assessment
+     */
+    public function officerOfDay()
+    {
+        return $this->belongsTo(User::class, 'officer_of_day');
     }
 
     /**

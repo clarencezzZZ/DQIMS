@@ -1,4 +1,4 @@
-<?php
+ <?php
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FrontDeskController;
@@ -48,6 +48,16 @@ Route::middleware(['auth'])->group(function () {
     // Section Staff Routes
     Route::middleware(['role:section_staff,admin'])->prefix('section')->name('section.')->group(function () {
         Route::get('/', [SectionController::class, 'index'])->name('index');
+        Route::get('/test', function() {
+            $user = auth()->user();
+            return response()->json([
+                'user_id' => $user->id,
+                'username' => $user->username,
+                'role' => $user->role,
+                'category_id' => $user->assigned_category_id,
+                'category' => $user->assignedCategory ? $user->assignedCategory->name : null
+            ]);
+        })->name('test');
         Route::get('/waiting-list', [SectionController::class, 'waitingList'])->name('waiting-list');
         Route::get('/currently-serving', [SectionController::class, 'currentlyServing'])->name('currently-serving');
         Route::post('/call-next', [SectionController::class, 'callNext'])->name('call-next');
@@ -57,30 +67,35 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/statistics', [SectionController::class, 'statistics'])->name('statistics');
     });
 
-    // Admin Routes
+    // Admin Routes - Split for granular access control
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('index');
         
-        // Inquiry Management
+        // Inquiry Management - Allow adminfront
         Route::get('/inquiries', [AdminController::class, 'inquiries'])->name('inquiries');
         Route::post('/inquiries/update-status', [AdminController::class, 'updateInquiryStatus'])->name('inquiries.update-status');
         
-        // Assessment Management
+        // Assessment Management - Allow adminfront
         Route::get('/assessments', [AdminController::class, 'assessments'])->name('assessments');
         Route::get('/assessments/{assessment}', [AdminController::class, 'showAssessment'])->name('assessments.show');
         Route::get('/inquiries/{inquiry}/assessment/create', [AdminController::class, 'createAssessment'])->name('assessments.create');
         Route::post('/inquiries/{inquiry}/assessment', [AdminController::class, 'storeAssessment'])->name('assessments.store');
         Route::post('/assessments/store-direct', [AdminController::class, 'storeDirectAssessment'])->name('assessments.store-direct');
+        Route::delete('/assessments/{assessment}', [AdminController::class, 'destroyAssessment'])->name('assessments.destroy');
         
-        // User Management
-        Route::get('/users', [AdminController::class, 'users'])->name('users');
-        Route::post('/users', [AdminController::class, 'storeUser'])->name('users.store');
-        Route::put('/users/{user}', [AdminController::class, 'updateUser'])->name('users.update');
+        // User Management - Admin only (restrict from adminfront)
+        Route::middleware(['role:admin'])->group(function () {
+            Route::get('/users', [AdminController::class, 'users'])->name('users');
+            Route::post('/users', [AdminController::class, 'storeUser'])->name('users.store');
+            Route::put('/users/{user}', [AdminController::class, 'updateUser'])->name('users.update');
+        });
         
-        // Category Management
-        Route::get('/categories', [AdminController::class, 'categories'])->name('categories');
-        Route::post('/categories', [AdminController::class, 'storeCategory'])->name('categories.store');
-        Route::put('/categories/{category}', [AdminController::class, 'updateCategory'])->name('categories.update');
+        // Category Management - Admin only (restrict from adminfront)
+        Route::middleware(['role:admin'])->group(function () {
+            Route::get('/categories', [AdminController::class, 'categories'])->name('categories');
+            Route::post('/categories', [AdminController::class, 'storeCategory'])->name('categories.store');
+            Route::put('/categories/{category}', [AdminController::class, 'updateCategory'])->name('categories.update');
+        });
     });
 
     // Reports Routes (Admin only)
@@ -106,6 +121,14 @@ Route::middleware(['auth'])->group(function () {
         
         return redirect('/');
     })->name('dashboard');
+});
+
+// API routes for section dashboard
+Route::middleware(['auth'])->prefix('api')->group(function () {
+    Route::get('/categories', function() {
+        $categories = \App\Models\Category::all();
+        return response()->json($categories);
+    })->name('api.categories');
 });
 
 // Auth routes

@@ -15,10 +15,23 @@ class SectionController extends Controller
     public function index()
     {
         $user = Auth::user();
+        
+        // Debug logging
+        \Log::info('SectionController@index accessed by user: ' . $user->id . ' with role: ' . $user->role);
+        
         $category = $user->assignedCategory;
+        
+        \Log::info('Category assigned: ' . ($category ? $category->id : 'none'));
 
-        if (!$category) {
-            return redirect()->route('home')->with('error', 'No category assigned to you.');
+        // Allow admin and section staff users to access section dashboard even without category assignment
+        if (!$category && !$user->isAdmin() && !$user->isSectionStaff()) {
+            return redirect()->route('dashboard')->with('error', 'No category assigned to you.');
+        }
+
+        // For admin and section staff users without category, show all categories or a selection interface
+        if ((!$category && $user->isAdmin()) || (!$category && $user->isSectionStaff())) {
+            // For now, let's pass null category and handle it in the view
+            return view('section.index', ['category' => null]);
         }
 
         return view('section.index', compact('category'));
@@ -32,15 +45,21 @@ class SectionController extends Controller
         $user = Auth::user();
         $categoryId = $user->assigned_category_id;
 
-        if (!$categoryId) {
+        // Allow section staff to access all categories if not assigned to a specific one
+        if (!$categoryId && $user->isSectionStaff()) {
+            $waiting = Inquiry::today()
+                ->waiting()
+                ->orderBy('created_at')
+                ->get();
+        } elseif (!$categoryId && !$user->isAdmin() && !$user->isSectionStaff()) {
             return response()->json(['error' => 'No category assigned'], 403);
+        } else {
+            $waiting = Inquiry::today()
+                ->byCategory($categoryId)
+                ->waiting()
+                ->orderBy('created_at')
+                ->get();
         }
-
-        $waiting = Inquiry::today()
-            ->byCategory($categoryId)
-            ->waiting()
-            ->orderBy('created_at')
-            ->get();
 
         return response()->json($waiting);
     }
@@ -53,15 +72,21 @@ class SectionController extends Controller
         $user = Auth::user();
         $categoryId = $user->assigned_category_id;
 
-        if (!$categoryId) {
+        // Allow section staff to access all categories if not assigned to a specific one
+        if (!$categoryId && $user->isSectionStaff()) {
+            $serving = Inquiry::today()
+                ->where('status', 'serving')
+                ->with('servedBy', 'category')
+                ->first();
+        } elseif (!$categoryId && !$user->isAdmin() && !$user->isSectionStaff()) {
             return response()->json(['error' => 'No category assigned'], 403);
+        } else {
+            $serving = Inquiry::today()
+                ->byCategory($categoryId)
+                ->where('status', 'serving')
+                ->with('servedBy')
+                ->first();
         }
-
-        $serving = Inquiry::today()
-            ->byCategory($categoryId)
-            ->where('status', 'serving')
-            ->with('servedBy')
-            ->first();
 
         return response()->json($serving);
     }
@@ -74,28 +99,56 @@ class SectionController extends Controller
         $user = Auth::user();
         $categoryId = $user->assigned_category_id;
 
-        if (!$categoryId) {
+        // Allow section staff to access all categories if not assigned to a specific one
+        if (!$categoryId && $user->isSectionStaff()) {
+            // For section staff with no assigned category, we need to specify which category to serve
+            // Since they can access all categories, we'll need to get the category from the request
+            $targetCategoryId = request()->input('category_id');
+            
+            if (!$targetCategoryId) {
+                return response()->json(['error' => 'Category ID required for section staff'], 400);
+            }
+            
+            // Check if already serving someone in the target category
+            $currentlyServing = Inquiry::today()
+                ->byCategory($targetCategoryId)
+                ->where('status', 'serving')
+                ->first();
+
+            if ($currentlyServing) {
+                return response()->json([
+                    'error' => 'Already serving ' . $currentlyServing->queue_number
+                ], 422);
+            }
+
+            // Get next waiting inquiry in the target category
+            $nextInquiry = Inquiry::today()
+                ->byCategory($targetCategoryId)
+                ->waiting()
+                ->orderBy('created_at')
+                ->first();
+        } elseif (!$categoryId && !$user->isAdmin() && !$user->isSectionStaff()) {
             return response()->json(['error' => 'No category assigned'], 403);
+        } else {
+            // Check if already serving someone
+            $currentlyServing = Inquiry::today()
+                ->byCategory($categoryId)
+                ->where('status', 'serving')
+                ->first();
+
+            if ($currentlyServing) {
+                return response()->json([
+                    'error' => 'Already serving ' . $currentlyServing->queue_number
+                ], 422);
+            }
+
+            // Get next waiting inquiry
+            $nextInquiry = Inquiry::today()
+                ->byCategory($categoryId)
+                ->waiting()
+                ->orderBy('created_at')
+                ->first();
         }
-
-        // Check if already serving someone
-        $currentlyServing = Inquiry::today()
-            ->byCategory($categoryId)
-            ->where('status', 'serving')
-            ->first();
-
-        if ($currentlyServing) {
-            return response()->json([
-                'error' => 'Already serving ' . $currentlyServing->queue_number
-            ], 422);
-        }
-
-        // Get next waiting inquiry
-        $nextInquiry = Inquiry::today()
-            ->byCategory($categoryId)
-            ->waiting()
-            ->orderBy('created_at')
-            ->first();
 
         if (!$nextInquiry) {
             return response()->json(['error' => 'No waiting inquiries'], 404);
@@ -119,11 +172,38 @@ class SectionController extends Controller
     {
         $user = Auth::user();
         $categoryId = $user->assigned_category_id;
-
-        $inquiry = Inquiry::today()
-            ->byCategory($categoryId)
-            ->where('status', 'serving')
-            ->first();
+        
+        // Allow section staff to access all categories if not assigned to a specific one
+        if (!$categoryId && $user->isSectionStaff()) {
+            // For section staff with no assigned category, we need to specify which category to serve
+            $targetCategoryId = request()->input('category_id');
+            $inquiryId = request()->input('inquiry_id');
+            
+            if (!$targetCategoryId) {
+                return response()->json(['error' => 'Category ID required for section staff'], 400);
+            }
+            
+            if ($inquiryId) {
+                // Complete specific inquiry by ID
+                $inquiry = Inquiry::today()
+                    ->where('id', $inquiryId)
+                    ->where('status', 'serving')
+                    ->first();
+            } else {
+                // Complete inquiry in target category
+                $inquiry = Inquiry::today()
+                    ->byCategory($targetCategoryId)
+                    ->where('status', 'serving')
+                    ->first();
+            }
+        } elseif (!$categoryId && !$user->isAdmin() && !$user->isSectionStaff()) {
+            return response()->json(['error' => 'No category assigned'], 403);
+        } else {
+            $inquiry = Inquiry::today()
+                ->byCategory($categoryId)
+                ->where('status', 'serving')
+                ->first();
+        }
 
         if (!$inquiry) {
             return response()->json(['error' => 'No inquiry being served'], 404);
@@ -150,11 +230,38 @@ class SectionController extends Controller
     {
         $user = Auth::user();
         $categoryId = $user->assigned_category_id;
-
-        $inquiry = Inquiry::today()
-            ->byCategory($categoryId)
-            ->where('status', 'serving')
-            ->first();
+        
+        // Allow section staff to access all categories if not assigned to a specific one
+        if (!$categoryId && $user->isSectionStaff()) {
+            // For section staff with no assigned category, we need to specify which category to serve
+            $targetCategoryId = request()->input('category_id');
+            $inquiryId = request()->input('inquiry_id');
+            
+            if (!$targetCategoryId) {
+                return response()->json(['error' => 'Category ID required for section staff'], 400);
+            }
+            
+            if ($inquiryId) {
+                // Skip specific inquiry by ID
+                $inquiry = Inquiry::today()
+                    ->where('id', $inquiryId)
+                    ->where('status', 'serving')
+                    ->first();
+            } else {
+                // Skip inquiry in target category
+                $inquiry = Inquiry::today()
+                    ->byCategory($targetCategoryId)
+                    ->where('status', 'serving')
+                    ->first();
+            }
+        } elseif (!$categoryId && !$user->isAdmin() && !$user->isSectionStaff()) {
+            return response()->json(['error' => 'No category assigned'], 403);
+        } else {
+            $inquiry = Inquiry::today()
+                ->byCategory($categoryId)
+                ->where('status', 'serving')
+                ->first();
+        }
 
         if (!$inquiry) {
             return response()->json(['error' => 'No inquiry being served'], 404);
@@ -178,11 +285,38 @@ class SectionController extends Controller
     {
         $user = Auth::user();
         $categoryId = $user->assigned_category_id;
-
-        $inquiry = Inquiry::today()
-            ->byCategory($categoryId)
-            ->where('status', 'serving')
-            ->first();
+        
+        // Allow section staff to access all categories if not assigned to a specific one
+        if (!$categoryId && $user->isSectionStaff()) {
+            // For section staff with no assigned category, we need to specify which category to serve
+            $targetCategoryId = request()->input('category_id');
+            $inquiryId = request()->input('inquiry_id');
+            
+            if (!$targetCategoryId) {
+                return response()->json(['error' => 'Category ID required for section staff'], 400);
+            }
+            
+            if ($inquiryId) {
+                // Forward specific inquiry by ID
+                $inquiry = Inquiry::today()
+                    ->where('id', $inquiryId)
+                    ->where('status', 'serving')
+                    ->first();
+            } else {
+                // Forward inquiry in target category
+                $inquiry = Inquiry::today()
+                    ->byCategory($targetCategoryId)
+                    ->where('status', 'serving')
+                    ->first();
+            }
+        } elseif (!$categoryId && !$user->isAdmin() && !$user->isSectionStaff()) {
+            return response()->json(['error' => 'No category assigned'], 403);
+        } else {
+            $inquiry = Inquiry::today()
+                ->byCategory($categoryId)
+                ->where('status', 'serving')
+                ->first();
+        }
 
         if (!$inquiry) {
             return response()->json(['error' => 'No inquiry being served'], 404);
@@ -207,11 +341,23 @@ class SectionController extends Controller
         $user = Auth::user();
         $categoryId = $user->assigned_category_id;
 
-        if (!$categoryId) {
+        // Allow section staff to access all categories if not assigned to a specific one
+        if (!$categoryId && $user->isSectionStaff()) {
+            // For section staff with no assigned category, get statistics for all categories
+            $targetCategoryId = request()->input('category_id');
+            
+            if ($targetCategoryId) {
+                // Get statistics for a specific category
+                $today = Inquiry::today()->byCategory($targetCategoryId);
+            } else {
+                // Get statistics for all categories
+                $today = Inquiry::today();
+            }
+        } elseif (!$categoryId && !$user->isAdmin() && !$user->isSectionStaff()) {
             return response()->json(['error' => 'No category assigned'], 403);
+        } else {
+            $today = Inquiry::today()->byCategory($categoryId);
         }
-
-        $today = Inquiry::today()->byCategory($categoryId);
 
         return response()->json([
             'waiting' => (clone $today)->waiting()->count(),

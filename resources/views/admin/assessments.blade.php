@@ -113,9 +113,23 @@
                             </div>
                         </div>
 
+                        <!-- Officer of the Day Selection -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Officer of the Day</label>
+                            <select name="officer_of_day" id="officerSelect" class="form-select" required>
+                                <option value="">-- Select Officer of the Day --</option>
+                                <option value="{{ $lotaOfficer->id ?? '' }}">Mr. Stanly M. Lota</option>
+                                <option value="other">Other</option>
+                            </select>
+                            <div id="newOfficerInput" class="mt-2" style="display: none;">
+                                <label class="form-label">Enter New Officer Name</label>
+                                <input type="text" name="new_officer_name" id="newOfficerName" class="form-control" placeholder="Enter officer name">
+                            </div>
+                        </div>
+
                         <!-- Remarks -->
                         <div class="mb-3">
-                            <label class="form-label">Remarks/Notes</label>
+                            <label class="form-label fw-bold">Remarks/Notes</label>
                             <textarea name="remarks" class="form-control" rows="2" placeholder="Enter additional notes..."></textarea>
                         </div>
                     </div>
@@ -177,6 +191,7 @@
                             <th>Reference</th>
                             <th>Total</th>
                             <th>Processed By</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -192,12 +207,26 @@
                                             {{ $assessment->category->code }}
                                         </span>
                                     @else
-                                        <span class="badge bg-secondary">N/A</span>
+                                        @if($assessment->request_type)
+                                            <span class="badge bg-info">{{ $assessment->request_type }}</span>
+                                        @else
+                                            <span class="badge bg-secondary">N/A</span>
+                                        @endif
                                     @endif
                                 </td>
                                 <td>{{ $assessment->reference ?? 'N/A' }}</td>
                                 <td><strong>₱{{ number_format($assessment->fees, 2) }}</strong></td>
                                 <td>{{ $assessment->processedBy->name ?? 'N/A' }}</td>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ route('admin.assessments.show', $assessment) }}" class="btn btn-sm btn-outline-primary" title="View">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-warning" onclick="confirmDelete({{ $assessment->id }})" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
                             </tr>
                         @empty
                             <tr>
@@ -216,6 +245,51 @@
                 {{ $assessments->links() }}
             </div>
         @endif
+    </div>
+</div>
+
+<!-- Event Logs Section -->
+<div class="card shadow-sm mt-4">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0"><i class="bi bi-clock-history"></i> Event Logs</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-bordered mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th width="15%">Date & Time</th>
+                        <th width="15%">User</th>
+                        <th width="10%">Action</th>
+                        <th width="15%">Assessment Number</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($eventLogs as $log)
+                        <tr>
+                            <td>{{ $log->created_at->format('M d, Y H:i:s') }}</td>
+                            <td>{{ $log->user->name ?? 'Unknown User' }}</td>
+                            <td>
+                                @if($log->action === 'deleted')
+                                    <span class="badge bg-danger">{{ ucfirst($log->action) }}</span>
+                                @elseif($log->action === 'updated')
+                                    <span class="badge bg-warning text-dark">{{ ucfirst($log->action) }}</span>
+                                @else
+                                    <span class="badge bg-info">{{ ucfirst($log->action) }}</span>
+                                @endif
+                            </td>
+                            <td>{{ $log->assessment_number }}</td>
+                            <td>{{ $log->description }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-3">No event logs found</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 @endsection
@@ -292,6 +366,45 @@
         
         document.getElementById('totalAmount').textContent = total.toFixed(2);
         document.getElementById('feesInput').value = total.toFixed(2);
+    }
+
+    // Toggle new officer input based on selection
+    document.getElementById('officerSelect')?.addEventListener('change', function() {
+        const newOfficerInput = document.getElementById('newOfficerInput');
+        if (this.value === 'other') {
+            newOfficerInput.style.display = 'block';
+            document.getElementById('newOfficerName').required = true;
+        } else {
+            newOfficerInput.style.display = 'none';
+            document.getElementById('newOfficerName').required = false;
+        }
+    });
+
+    function confirmDelete(id) {
+        if (confirm('Are you sure you want to delete this assessment? This action cannot be undone.')) {
+            // Create a form and submit it to delete the assessment
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/assessments/` + id;
+            
+            // Add CSRF token
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            const tokenField = document.createElement('input');
+            tokenField.type = 'hidden';
+            tokenField.name = '_token';
+            tokenField.value = csrfToken;
+            form.appendChild(tokenField);
+            
+            // Add method spoofing for DELETE
+            const methodField = document.createElement('input');
+            methodField.type = 'hidden';
+            methodField.name = '_method';
+            methodField.value = 'DELETE';
+            form.appendChild(methodField);
+            
+            document.body.appendChild(form);
+            form.submit();
+        }
     }
 
     // Make functions globally accessible

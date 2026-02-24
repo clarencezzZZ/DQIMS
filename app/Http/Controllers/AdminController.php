@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Assessment;
 use App\Models\Category;
+use App\Models\EventLog;
 use App\Models\Inquiry;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -185,7 +186,7 @@ class AdminController extends Controller
      */
     public function assessments(Request $request)
     {
-        $query = Assessment::with(['inquiry', 'category', 'processedBy']);
+        $query = Assessment::with(['inquiry', 'category', 'processedBy', 'officerOfDay']);
 
         if ($request->filled('date_from')) {
             $query->whereDate('assessment_date', '>=', $request->date_from);
@@ -201,8 +202,16 @@ class AdminController extends Controller
 
         $assessments = $query->latest()->paginate(20);
         $categories = Category::where('is_active', true)->get();
+        $officers = User::where('role', '!=', User::ROLE_FRONT_DESK)->active()->get();
+        $lotaOfficer = User::where('name', 'Mr. Stanly M. Lota')->first();
+        
+        // Get recent event logs
+        $eventLogs = EventLog::with('user')
+            ->latest()
+            ->limit(20)
+            ->get();
 
-        return view('admin.assessments', compact('assessments', 'categories'));
+        return view('admin.assessments', compact('assessments', 'categories', 'officers', 'lotaOfficer', 'eventLogs'));
     }
 
     /**
@@ -393,7 +402,7 @@ class AdminController extends Controller
             'names_detail' => json_encode($namesDetail),
             'fees' => $request->fees,
             'remarks' => $request->remarks,
-            'processed_by' => Auth::id(),
+            'processed_by' => Auth::user()->id,
             'assessment_date' => $request->assessment_date,
         ]);
 
@@ -420,5 +429,32 @@ class AdminController extends Controller
         }
 
         return $prefix . '-' . $year . '-' . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Remove the specified assessment from storage.
+     */
+    public function destroyAssessment(Assessment $assessment)
+    {
+        try {
+            // Log the deletion event
+            EventLog::create([
+                'user_id' => Auth::user()->id,
+                'action' => 'deleted',
+                'assessment_number' => $assessment->assessment_number,
+                'description' => 'Assessment record deleted by ' . Auth::user()->name,
+                'old_values' => json_encode($assessment->toArray()),
+                'new_values' => null,
+            ]);
+
+            // Delete the assessment
+            $assessment->delete();
+
+            return redirect()->route('admin.assessments')
+                ->with('success', 'Assessment deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.assessments')
+                ->with('error', 'Failed to delete assessment: ' . $e->getMessage());
+        }
     }
 }

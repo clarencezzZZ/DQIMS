@@ -71,22 +71,7 @@ class FrontDeskController extends Controller
      */
     private function generateQueueNumber($category)
     {
-        $today = now()->format('Y-m-d');
-        $prefix = $category->code;
-        
-        $lastInquiry = Inquiry::where('category_id', $category->id)
-            ->whereDate('created_at', $today)
-            ->orderBy('id', 'desc')
-            ->first();
-
-        if ($lastInquiry) {
-            $lastNumber = intval(substr($lastInquiry->queue_number, -3));
-            $newNumber = $lastNumber + 1;
-        } else {
-            $newNumber = 1;
-        }
-
-        return $prefix . '-' . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+        return $category->generateQueueNumber();
     }
 
     /**

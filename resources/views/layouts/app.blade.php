@@ -82,17 +82,40 @@
         .sidebar {
             min-height: calc(100vh - 56px);
             background-color: #fff;
-            border-right: 1px solid #dee2e6;
+            border-right: 1px solid #e9ecef;
+            box-shadow: 1px 0 5px rgba(0,0,0,0.05);
         }
         .sidebar .nav-link {
-            color: #333;
-            padding: 12px 20px;
+            color: #495057;
+            padding: 14px 24px;
             border-radius: 0;
+            border-left: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.95rem;
+            letter-spacing: 0.2px;
         }
-        .sidebar .nav-link:hover,
+        .sidebar .nav-link:hover {
+            background-color: #f8f9fa;
+            color: var(--denr-green);
+            border-left-color: #adb5bd;
+        }
         .sidebar .nav-link.active {
-            background-color: var(--denr-green);
-            color: #fff;
+            background-color: #e8f5e8;
+            color: var(--denr-green);
+            border-left: 3px solid var(--denr-green);
+            font-weight: 600;
+        }
+        .sidebar .nav-link i {
+            width: 20px;
+            text-align: center;
+            margin-right: 12px;
+            font-size: 1.1em;
+        }
+        .sidebar-divider {
+            height: 1px;
+            background-color: #e9ecef;
+            margin: 8px 24px;
         }
         .sidebar .nav-link i {
             margin-right: 10px;
@@ -151,6 +174,7 @@
                     @endif
                     
                     @if(auth()->user()->isAdmin())
+                    <div class="sidebar-divider"></div>
                     <a href="{{ route('admin.index') }}" class="nav-link {{ request()->routeIs('admin.index') ? 'active' : '' }}">
                         <i class="bi bi-speedometer2"></i> Admin Dashboard
                     </a>
@@ -160,12 +184,15 @@
                     <a href="{{ route('admin.assessments') }}" class="nav-link {{ request()->routeIs('admin.assessments*') ? 'active' : '' }}">
                         <i class="bi bi-file-earmark-text"></i> Assessments
                     </a>
+                    @if(auth()->user()->username === 'admin')
                     <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
                         <i class="bi bi-graph-up"></i> Reports
                     </a>
+                    <div class="sidebar-divider"></div>
                     <a href="{{ route('admin.users') }}" class="nav-link {{ request()->routeIs('admin.users') ? 'active' : '' }}">
                         <i class="bi bi-people-fill"></i> Users
                     </a>
+                    @endif
                     <a href="{{ route('admin.categories') }}" class="nav-link {{ request()->routeIs('admin.categories') ? 'active' : '' }}">
                         <i class="bi bi-tags"></i> Categories
                     </a>

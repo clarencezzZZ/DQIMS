@@ -10,7 +10,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h2 class="mb-1"><i class="bi bi-speedometer2 text-primary"></i> Admin Dashboard (3rd Floor)</h2>
-                    <p class="text-muted mb-0">Full system access - Assessment, Reports, User Management</p>
+                    <p class="text-muted mb-0">Manage inquiries, assessments, reports, and categories - User management for main admin only</p>
                 </div>
                 <div class="d-flex gap-2">
                     <a href="{{ route('admin.inquiries') }}" class="btn btn-success">
@@ -154,6 +154,18 @@
             </a>
         </div>
         <div class="col-md-3">
+            <a href="{{ route('admin.categories') }}" class="text-decoration-none">
+                <div class="card shadow-sm h-100 hover-card">
+                    <div class="card-body text-center">
+                        <i class="bi bi-tags text-primary" style="font-size: 3rem;"></i>
+                        <h5 class="mt-3 mb-1">Categories</h5>
+                        <p class="text-muted mb-0">Manage service categories</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        @if(auth()->user()->username === 'admin')
+        <div class="col-md-3">
             <a href="{{ route('admin.users') }}" class="text-decoration-none">
                 <div class="card shadow-sm h-100 hover-card">
                     <div class="card-body text-center">
@@ -164,6 +176,7 @@
                 </div>
             </a>
         </div>
+        @endif
     </div>
 
     <!-- Category Status -->

@@ -91,6 +91,26 @@
         @endforeach
     </div>
 
+    <!-- Bar Chart Section -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Daily Statistics Overview</h5>
+        </div>
+        <div class="card-body">
+            <canvas id="dailyChart" height="300"></canvas>
+        </div>
+    </div>
+
+    <!-- Section-wise Statistics -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="bi bi-diagram-3"></i> Section Statistics</h5>
+        </div>
+        <div class="card-body">
+            <canvas id="sectionChart" height="300"></canvas>
+        </div>
+    </div>
+
     <!-- Export Options -->
     <div class="card shadow-sm">
         <div class="card-header bg-success text-white">
@@ -123,4 +143,152 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Get data for charts
+    document.addEventListener('DOMContentLoaded', function() {
+        // Daily Statistics Chart
+        const dailyCtx = document.getElementById('dailyChart').getContext('2d');
+        
+        // Sample data - in a real scenario, you'd fetch this from your backend
+        const dailyData = {
+            labels: ['Total Inquiries', 'Completed', 'Total Assessments', 'Total Revenue'],
+            datasets: [{
+                label: 'Today\'s Statistics',
+                data: [
+                    {{ \App\Models\Inquiry::today()->count() }},
+                    {{ \App\Models\Inquiry::today()->where('status', 'completed')->count() }},
+                    {{ \App\Models\Assessment::whereDate('created_at', today())->count() }},
+                    {{ \App\Models\Assessment::whereDate('created_at', today())->sum('fees') }}
+                ],
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.6)',  // Blue for Total Inquiries
+                    'rgba(75, 192, 192, 0.6)',  // Teal for Completed
+                    'rgba(153, 102, 255, 0.6)', // Purple for Assessments
+                    'rgba(255, 159, 64, 0.6)'    // Orange for Revenue
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1
+            }]
+        };
+
+        const dailyChart = new Chart(dailyCtx, {
+            type: 'bar',
+            data: dailyData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y >= 1000) {
+                                    label += '₱' + (context.parsed.y / 1000).toFixed(1) + 'k';
+                                } else {
+                                    label += context.parsed.y;
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                if (value >= 1000) {
+                                    return '₱' + (value / 1000).toFixed(1) + 'k';
+                                }
+                                return value;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Section Statistics Chart
+        const sectionCtx = document.getElementById('sectionChart').getContext('2d');
+        
+        // Get section data
+        const sections = ['ACS', 'OOSS', 'SCS', 'LES'];
+        const sectionColors = ['#e74c3c', '#3498db', '#2ecc71', '#9b59b6'];
+        
+        // Get counts for each section
+        const sectionCounts = [];
+        sections.forEach(section => {
+            // Count inquiries for each section
+            const count = getSectionCount(section);
+            sectionCounts.push(count);
+        });
+        
+        // Function to get section count (would be fetched from backend in real implementation)
+        function getSectionCount(section) {
+            // This is a simplified version - in production, you'd fetch this data from your backend
+            // For now, we'll use a sample calculation
+            switch(section) {
+                case 'ACS': return {{ \App\Models\Inquiry::today()->whereHas('category', function($q) { $q->where('section', 'ACS'); })->count() }};
+                case 'OOSS': return {{ \App\Models\Inquiry::today()->whereHas('category', function($q) { $q->where('section', 'OOSS'); })->count() }};
+                case 'SCS': return {{ \App\Models\Inquiry::today()->whereHas('category', function($q) { $q->where('section', 'SCS'); })->count() }};
+                case 'LES': return {{ \App\Models\Inquiry::today()->whereHas('category', function($q) { $q->where('section', 'LES'); })->count() }};
+                default: return 0;
+            }
+        }
+
+        const sectionData = {
+            labels: sections,
+            datasets: [{
+                label: 'Inquiries per Section',
+                data: sectionCounts,
+                backgroundColor: sectionColors.map(color => color.replace(')', ', 0.6)').replace('rgb', 'rgba')),
+                borderColor: sectionColors,
+                borderWidth: 1
+            }]
+        };
+
+        const sectionChart = new Chart(sectionCtx, {
+            type: 'bar',
+            data: sectionData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y + ' inquiries';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+</script>
 @endsection
