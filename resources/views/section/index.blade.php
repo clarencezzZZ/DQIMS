@@ -416,6 +416,11 @@
     }
 
     function callNext() {
+        // Disable the button temporarily to prevent multiple clicks
+        const callNextBtn = document.getElementById('call-next-btn');
+        callNextBtn.disabled = true;
+        callNextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calling...';
+        
         if (!categoryId && !isAdmin && isSectionStaff) {
             // For section staff without assigned category, show category selection modal
             loadCategories().then(() => {
@@ -424,6 +429,11 @@
                     const selectedCategory = document.getElementById('category-select').value;
                     if (!selectedCategory) {
                         alert('Please select a category first');
+                        // Re-enable button
+                        setTimeout(() => {
+                            callNextBtn.disabled = false;
+                            callNextBtn.innerHTML = '<i class="fas fa-bell"></i> Call Next';
+                        }, 500);
                         return;
                     }
                     
@@ -441,7 +451,16 @@
                         })
                         .catch(error => {
                             console.error('Error calling next:', error);
-                            alert('Error calling next inquiry');
+                            if (error.response && error.response.data && error.response.data.message) {
+                                alert(error.response.data.message);
+                            } else {
+                                alert('Error calling next inquiry');
+                            }
+                        })
+                        .finally(() => {
+                            // Re-enable button
+                            callNextBtn.disabled = false;
+                            callNextBtn.innerHTML = '<i class="fas fa-bell"></i> Call Next';
                         });
                     
                     $('#categorySelectionModal').modal('hide');
@@ -462,7 +481,16 @@
                 })
                 .catch(error => {
                     console.error('Error calling next:', error);
-                    alert('Error calling next inquiry');
+                    if (error.response && error.response.data && error.response.data.message) {
+                        alert(error.response.data.message);
+                    } else {
+                        alert('Error calling next inquiry');
+                    }
+                })
+                .finally(() => {
+                    // Re-enable button
+                    callNextBtn.disabled = false;
+                    callNextBtn.innerHTML = '<i class="fas fa-bell"></i> Call Next';
                 });
         }
     }
@@ -474,13 +502,25 @@
     }
 
     function saveRemarks() {
+        // Disable the save button to prevent multiple clicks
+        const saveBtn = document.getElementById('save-remarks');
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        
         const action = document.getElementById('remarksModal').dataset.action;
         const remarks = document.getElementById('remarks-text').value;
         
         // If user is section staff without assigned category, prompt for category
         if (!categoryId && !isAdmin && isSectionStaff) {
             const selectedCategory = prompt('Enter category ID for this action:');
-            if (!selectedCategory) return;
+            if (!selectedCategory) {
+                // Re-enable button
+                setTimeout(() => {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = 'Save';
+                }, 500);
+                return;
+            }
             
             axios.post(`/section/${action}`, { 
                 remarks: remarks,
@@ -500,7 +540,16 @@
             })
             .catch(error => {
                 console.error('Error saving remarks:', error);
-                alert('Error saving remarks');
+                if (error.response && error.response.data && error.response.data.message) {
+                    alert(error.response.data.message);
+                } else {
+                    alert('Error saving remarks');
+                }
+            })
+            .finally(() => {
+                // Re-enable button
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = 'Save';
             });
         } else {
             axios.post(`/section/${action}`, { remarks: remarks })
@@ -518,7 +567,16 @@
                 })
                 .catch(error => {
                     console.error('Error saving remarks:', error);
-                    alert('Error saving remarks');
+                    if (error.response && error.response.data && error.response.data.message) {
+                        alert(error.response.data.message);
+                    } else {
+                        alert('Error saving remarks');
+                    }
+                })
+                .finally(() => {
+                    // Re-enable button
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = 'Save';
                 });
         }
     }
@@ -568,64 +626,6 @@
         }
     }
     
-    // Update the saveRemarks function to handle section staff without assigned categories
-    function saveRemarks() {
-        const action = document.getElementById('remarksModal').dataset.action;
-        const remarks = document.getElementById('remarks-text').value;
-        
-        // If user is section staff without assigned category, use category selection
-        if (!categoryId && !isAdmin && isSectionStaff) {
-            loadCategories().then(() => {
-                $('#categorySelectionModal').modal('show');
-                document.getElementById('confirm-category-selection').onclick = function() {
-                    const selectedCategory = document.getElementById('category-select').value;
-                    if (!selectedCategory) {
-                        alert('Please select a category first');
-                        return;
-                    }
-                    
-                    axios.post(`/section/${action}`, { 
-                        remarks: remarks,
-                        category_id: selectedCategory
-                    })
-                    .then(response => {
-                        const data = response.data;
-                        if (data.success) {
-                            alert(data.message);
-                            $('#remarksModal').modal('hide');
-                            $('#categorySelectionModal').modal('hide');
-                            loadCurrentlyServing();
-                            loadWaitingList();
-                            loadStatistics();
-                        } else {
-                            alert(data.error);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error saving remarks:', error);
-                        alert('Error saving remarks');
-                    });
-                };
-            });
-        } else {
-            axios.post(`/section/${action}`, { remarks: remarks })
-                .then(response => {
-                    const data = response.data;
-                    if (data.success) {
-                        alert(data.message);
-                        $('#remarksModal').modal('hide');
-                        loadCurrentlyServing();
-                        loadWaitingList();
-                        loadStatistics();
-                    } else {
-                        alert(data.error);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error saving remarks:', error);
-                    alert('Error saving remarks');
-                });
-        }
-    }
+
 </script>
 @endpush

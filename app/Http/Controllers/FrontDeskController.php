@@ -39,7 +39,7 @@ class FrontDeskController extends Controller
             'contact_number' => 'nullable|string|max:20',
             'category_id' => 'required|exists:categories,id',
             'purpose' => 'nullable|string',
-            'priority' => 'nullable|in:normal,priority,urgent',
+            'priority' => 'nullable|in:normal,priority',
         ]);
 
         if ($validator->fails()) {
@@ -47,7 +47,37 @@ class FrontDeskController extends Controller
         }
 
         $category = Category::findOrFail($request->category_id);
-        $queueNumber = $this->generateQueueNumber($category);
+        
+        // Generate queue number with retry logic
+        $maxRetries = 5;
+        $queueNumber = null;
+        
+        for ($i = 0; $i < $maxRetries; $i++) {
+            $queueNumber = $this->generateQueueNumber($category);
+            
+            // Check if queue number already exists
+            if (!Inquiry::where('queue_number', $queueNumber)->exists()) {
+                break;
+            }
+            
+            // If we've tried max retries, throw an exception
+            if ($i === $maxRetries - 1) {
+                // Try one final time with timestamp-based approach
+                $timestamp = now()->format('His');
+                $lastNumber = $category->getTodayCounter()->last_number + 1;
+                $queueNumber = sprintf('%s-%03d-%s', $category->code, $lastNumber, $timestamp);
+                
+                // Final check
+                if (Inquiry::where('queue_number', $queueNumber)->exists()) {
+                    return back()->withErrors(['queue_number' => 'Unable to generate unique queue number after multiple attempts. Please contact system administrator.'])
+                               ->withInput();
+                }
+                break;
+            }
+            
+            // Wait a small amount before retrying
+            usleep(100000); // 0.1 second
+        }
 
         $inquiry = Inquiry::create([
             'queue_number' => $queueNumber,

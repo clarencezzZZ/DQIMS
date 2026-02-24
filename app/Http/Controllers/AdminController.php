@@ -60,6 +60,9 @@ class AdminController extends Controller
 
         if ($request->filled('status')) {
             $query->where('status', $request->status);
+        } else {
+            // For "All" filter, exclude completed inquiries
+            $query->where('status', '!=', 'completed');
         }
 
         if ($request->filled('search')) {
@@ -71,10 +74,55 @@ class AdminController extends Controller
             });
         }
 
-        $inquiries = $query->oldest()->paginate(20);
+        $inquiries = $query->oldest()->get(); // Get all results for grouping
+        
+        // Get categories first for section grouping
         $categories = Category::where('is_active', true)->get();
+        
+        // Group inquiries by section (not category)
+        $inquiriesBySection = $inquiries->groupBy(function($inquiry) {
+            return $inquiry->category ? $inquiry->category->section : 'Uncategorized';
+        });
+        
+        // Get section information for display
+        $sections = $categories->groupBy('section')->map(function($sectionCategories, $sectionName) {
+            return [
+                'name' => $sectionName,
+                'categories' => $sectionCategories,
+                'color' => $sectionCategories->first()->color ?? '#6c757d',
+                'count' => $sectionCategories->count()
+            ];
+        })->sortBy('name');
+        
+        // Paginate manually for the current view
+        $currentPage = $request->get('page', 1);
+        $perPage = 20;
+        $paginatedInquiries = new \Illuminate\Pagination\LengthAwarePaginator(
+            $inquiries->forPage($currentPage, $perPage),
+            $inquiries->count(),
+            $perPage,
+            $currentPage,
+            ['path' => $request->url(), 'pageName' => 'page']
+        );
+        
+        // Update any 'urgent' priority records to 'priority' to comply with new enum values
+        // We need to update all urgent records in the database, not just the paginated ones
+        if ($request->filled('date')) {
+            Inquiry::whereDate('date', $request->date)->where('priority', 'urgent')->update(['priority' => 'priority']);
+        } else {
+            Inquiry::today()->where('priority', 'urgent')->update(['priority' => 'priority']);
+        }
+        
+        // Get next inquiry for each category to show in the view
+        $nextInquiries = [];
+        foreach ($categories as $category) {
+            $nextInquiry = $this->getNextInquiryByPriorityForAdmin($category->id);
+            if ($nextInquiry) {
+                $nextInquiries[$category->id] = $nextInquiry->id;
+            }
+        }
 
-        return view('admin.inquiries', compact('inquiries', 'categories'));
+        return view('admin.inquiries', compact('inquiries', 'inquiriesBySection', 'sections', 'paginatedInquiries', 'categories', 'nextInquiries'));
     }
 
     /**
@@ -98,6 +146,19 @@ class AdminController extends Controller
             $inquiry = Inquiry::findOrFail($request->inquiry_id);
             $oldStatus = $inquiry->status;
             $newStatus = $request->status;
+
+            // If trying to serve a waiting inquiry, check if it's the correct next one
+            if ($newStatus == 'serving' && $oldStatus == 'waiting') {
+                // Get the next inquiry that should be served according to priority rules
+                $nextInquiry = $this->getNextInquiryByPriorityForAdmin($inquiry->category_id);
+                
+                if ($nextInquiry && $nextInquiry->id != $inquiry->id) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Cannot serve this inquiry out of order. Next in queue is ' . $nextInquiry->queue_number . ' (' . ucfirst($nextInquiry->priority) . ')'
+                    ], 422);
+                }
+            }
 
             // Update inquiry status
             $inquiry->status = $newStatus;
@@ -456,5 +517,77 @@ class AdminController extends Controller
             return redirect()->route('admin.assessments')
                 ->with('error', 'Failed to delete assessment: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Get next inquiry using priority queuing algorithm for admin interface
+     */
+    public function getNextInquiryByPriorityForAdmin($categoryId)
+    {
+        // Get all waiting inquiries in the category, ordered by creation time
+        $waitingInquiries = Inquiry::today()
+            ->byCategory($categoryId)
+            ->waiting()
+            ->orderBy('created_at')
+            ->get();
+
+        if ($waitingInquiries->isEmpty()) {
+            return null;
+        }
+
+        // Get the currently serving inquiry (if any) and last completed inquiry
+        $currentlyServing = Inquiry::today()
+            ->byCategory($categoryId)
+            ->where('status', 'serving')
+            ->first();
+            
+        $lastServedInquiry = Inquiry::today()
+            ->byCategory($categoryId)
+            ->where('status', 'completed')
+            ->orderBy('completed_at', 'desc')
+            ->first();
+
+        // If someone is currently being served, use their priority type
+        // Otherwise, if there's a last served record, use that
+        // If starting fresh, we'll serve normal first
+        if ($currentlyServing) {
+            $lastServedType = $currentlyServing->priority;
+        } else {
+            $lastServedType = $lastServedInquiry ? $lastServedInquiry->priority : null;
+        }
+
+        // Separate priority and normal inquiries
+        $priorityInquiries = $waitingInquiries->filter(function ($inquiry) {
+            return $inquiry->priority === 'priority';
+        });
+
+        $normalInquiries = $waitingInquiries->filter(function ($inquiry) {
+            return $inquiry->priority === 'normal';
+        });
+
+        // If there are no priority inquiries, return the oldest normal inquiry
+        if ($priorityInquiries->isEmpty()) {
+            return $normalInquiries->first();
+        }
+
+        // If there are no normal inquiries, return the oldest priority inquiry
+        if ($normalInquiries->isEmpty()) {
+            return $priorityInquiries->first();
+        }
+
+        // If starting fresh (no one currently serving and no last served), 
+        // serve the oldest normal inquiry first to establish fairness
+        if ($lastServedType === null) {
+            return $normalInquiries->first();
+        }
+        
+        // If last served was priority and there are normal inquiries available,
+        // return the oldest normal inquiry to avoid serving two priority in a row
+        if ($lastServedType === 'priority') {
+            return $normalInquiries->first();
+        }
+
+        // Otherwise (last served was normal), return the oldest priority inquiry (priority first rule)
+        return $priorityInquiries->first();
     }
 }

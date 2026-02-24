@@ -22,7 +22,7 @@ return new class extends Migration
             
             // Add new columns
             $table->string('purpose')->nullable()->after('request_type');
-            $table->enum('priority', ['normal', 'priority', 'urgent'])->default('normal')->after('description');
+            $table->enum('priority', ['normal', 'priority'])->default('normal')->after('description');
         });
     }
 

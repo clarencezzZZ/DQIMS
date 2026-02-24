@@ -104,7 +104,7 @@
                             <label class="form-label fw-bold">
                                 <i class="bi bi-flag text-success"></i> Priority Level
                             </label>
-                            <div class="row g-3">
+                            <div class="row g-3 justify-content-center">
                                 <div class="col-md-4">
                                     <div class="form-check card priority-card" id="card_normal" data-priority="normal" onclick="selectPriority('normal')">
                                         <input class="form-check-input" type="radio" name="priority" 
@@ -137,22 +137,7 @@
                                         </label>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <div class="form-check card priority-card" id="card_urgent" data-priority="urgent" onclick="selectPriority('urgent')">
-                                        <input class="form-check-input" type="radio" name="priority" 
-                                               id="priority_urgent" value="urgent">
-                                        <label class="form-check-label w-100 p-4 text-center" for="priority_urgent" onclick="event.stopPropagation()">
-                                            <div class="check-indicator">
-                                                <i class="bi bi-check-lg"></i>
-                                            </div>
-                                            <div class="icon-wrapper mb-3">
-                                                <i class="bi bi-exclamation-triangle" style="font-size: 2.5rem; color: #dc3545;"></i>
-                                            </div>
-                                            <h5 class="mb-2">Urgent</h5>
-                                            <small class="text-muted">Emergency cases</small>
-                                        </label>
-                                    </div>
-                                </div>
+
                             </div>
                         </div>
 
@@ -230,11 +215,6 @@
         border-color: #ffc107;
     }
     
-    .priority-card.selected[data-priority="urgent"] {
-        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-        border-color: #dc3545;
-    }
-    
     .priority-card.selected[data-priority="normal"] {
         background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
         border-color: #28a745;
@@ -278,10 +258,6 @@
     
     .priority-card.selected[data-priority="priority"] .check-indicator {
         color: #ff9800;
-    }
-    
-    .priority-card.selected[data-priority="urgent"] .check-indicator {
-        color: #dc3545;
     }
     
     .form-check-input {

@@ -121,12 +121,8 @@ class SectionController extends Controller
                 ], 422);
             }
 
-            // Get next waiting inquiry in the target category
-            $nextInquiry = Inquiry::today()
-                ->byCategory($targetCategoryId)
-                ->waiting()
-                ->orderBy('created_at')
-                ->first();
+            // Get next waiting inquiry using priority queuing algorithm
+            $nextInquiry = $this->getNextInquiryByPriority($targetCategoryId);
         } elseif (!$categoryId && !$user->isAdmin() && !$user->isSectionStaff()) {
             return response()->json(['error' => 'No category assigned'], 403);
         } else {
@@ -142,12 +138,8 @@ class SectionController extends Controller
                 ], 422);
             }
 
-            // Get next waiting inquiry
-            $nextInquiry = Inquiry::today()
-                ->byCategory($categoryId)
-                ->waiting()
-                ->orderBy('created_at')
-                ->first();
+            // Get next waiting inquiry using priority queuing algorithm
+            $nextInquiry = $this->getNextInquiryByPriority($categoryId);
         }
 
         if (!$nextInquiry) {
@@ -163,6 +155,87 @@ class SectionController extends Controller
             'success' => true,
             'inquiry' => $nextInquiry->load('category')
         ]);
+    }
+
+    /**
+     * Get next inquiry using priority queuing algorithm
+     * Algorithm: The system must always finish the currently serving person first.
+     * After finishing, the next number should follow this logic:
+     * - If there is any PRIORITY waiting, call the oldest PRIORITY first.
+     * - However, to avoid starving NORMAL guests, the system must not serve two PRIORITY guests in a row if a NORMAL guest is waiting.
+     * - After serving one PRIORITY, the next call should be NORMAL (if any NORMAL exists).
+     * - If no NORMAL exists, continue serving PRIORITY.
+     * - If no PRIORITY exists, serve NORMAL.
+     * - Within the same type (Priority or Normal), use FIFO order (oldest first).
+     * - The logic must apply separately per SECTION.
+     */
+    private function getNextInquiryByPriority($categoryId)
+    {
+        // Get all waiting inquiries in the category, ordered by creation time
+        $waitingInquiries = Inquiry::today()
+            ->byCategory($categoryId)
+            ->waiting()
+            ->orderBy('created_at')
+            ->get();
+
+        if ($waitingInquiries->isEmpty()) {
+            return null;
+        }
+
+        // Get the currently serving inquiry (if any) and last completed inquiry
+        $currentlyServing = Inquiry::today()
+            ->byCategory($categoryId)
+            ->where('status', 'serving')
+            ->first();
+            
+        $lastServedInquiry = Inquiry::today()
+            ->byCategory($categoryId)
+            ->where('status', 'completed')
+            ->orderBy('completed_at', 'desc')
+            ->first();
+
+        // If someone is currently being served, use their priority type
+        // Otherwise, if there's a last served record, use that
+        // If starting fresh, we'll serve normal first
+        if ($currentlyServing) {
+            $lastServedType = $currentlyServing->priority;
+        } else {
+            $lastServedType = $lastServedInquiry ? $lastServedInquiry->priority : null;
+        }
+
+        // Separate priority and normal inquiries
+        $priorityInquiries = $waitingInquiries->filter(function ($inquiry) {
+            return $inquiry->priority === 'priority';
+        });
+
+        $normalInquiries = $waitingInquiries->filter(function ($inquiry) {
+            return $inquiry->priority === 'normal';
+        });
+
+        // If there are no priority inquiries, return the oldest normal inquiry
+        if ($priorityInquiries->isEmpty()) {
+            return $normalInquiries->first();
+        }
+
+        // If there are no normal inquiries, return the oldest priority inquiry
+        if ($normalInquiries->isEmpty()) {
+            return $priorityInquiries->first();
+        }
+
+        // If starting fresh (no one currently serving and no last served), 
+        // serve the oldest normal inquiry first to establish fairness
+        if ($lastServedType === null) {
+            return $normalInquiries->first();
+        }
+        
+        // If last served was priority and there are normal inquiries available,
+        // return the oldest normal inquiry to avoid serving two priority in a row
+        if ($lastServedType === 'priority') {
+            return $normalInquiries->first();
+        }
+
+        // Otherwise (last served was normal), return the oldest priority inquiry (priority first rule)
+        return $priorityInquiries->first();
     }
 
     /**

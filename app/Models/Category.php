@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use App\Models\Inquiry;
 
 class Category extends Model
 {
@@ -64,9 +66,36 @@ class Category extends Model
      */
     public function generateQueueNumber(): string
     {
-        $counter = $this->getTodayCounter();
-        $counter->increment('last_number');
-        
-        return sprintf('%s-%03d', $this->code, $counter->last_number);
+        // Use database transaction to ensure atomicity
+        return DB::transaction(function () {
+            $counter = $this->getTodayCounter();
+            $counter->increment('last_number');
+            
+            $queueNumber = sprintf('%s-%03d', $this->code, $counter->last_number);
+            
+            // Check if this queue number already exists for today
+            $existing = Inquiry::where('queue_number', $queueNumber)
+                             ->whereDate('date', now()->toDateString())
+                             ->exists();
+            
+            // If it exists, increment again and try a new one
+            if ($existing) {
+                $counter->increment('last_number');
+                $queueNumber = sprintf('%s-%03d', $this->code, $counter->last_number);
+                
+                // Double check
+                $existing = Inquiry::where('queue_number', $queueNumber)
+                                 ->whereDate('date', now()->toDateString())
+                                 ->exists();
+                
+                if ($existing) {
+                    // Use timestamp as fallback to ensure uniqueness
+                    $timestamp = now()->format('His'); // HHMMSS
+                    $queueNumber = sprintf('%s-%03d-%s', $this->code, $counter->last_number, $timestamp);
+                }
+            }
+            
+            return $queueNumber;
+        });
     }
 }
