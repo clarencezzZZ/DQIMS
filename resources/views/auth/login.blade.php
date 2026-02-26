@@ -30,25 +30,30 @@
         body {
             font-family: 'Poppins', sans-serif;
             min-height: 100vh;
-            background: linear-gradient(135deg, #e8f5e9 0%, #e3f2fd 50%, #ffffff 100%);
             position: relative;
             overflow-x: hidden;
         }
 
-        /* Nature-inspired background pattern */
-        body::before {
-            content: '';
+        /* Background video */
+        .video-background {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: 
-                radial-gradient(circle at 10% 20%, rgba(46, 125, 50, 0.08) 0%, transparent 20%),
-                radial-gradient(circle at 90% 80%, rgba(21, 101, 192, 0.08) 0%, transparent 20%),
-                radial-gradient(circle at 50% 50%, rgba(46, 125, 50, 0.03) 0%, transparent 30%);
-            pointer-events: none;
-            z-index: 0;
+            object-fit: cover;
+            z-index: -2;
+        }
+
+        /* Video overlay for better text readability */
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(26, 95, 42, 0.7) 0%, rgba(13, 61, 22, 0.7) 50%, rgba(21, 101, 192, 0.7) 100%);
+            z-index: -1;
         }
 
         .login-wrapper {
@@ -565,6 +570,15 @@
     </style>
 </head>
 <body>
+    <!-- Background Video -->
+    <video class="video-background" autoplay muted loop playsinline>
+        <source src="{{ asset('images/216134_medium.mp4') }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+    
+    <!-- Video Overlay -->
+    <div class="video-overlay"></div>
+    
     <div class="login-wrapper">
         <div class="login-container">
             <!-- Left Panel - Branding -->

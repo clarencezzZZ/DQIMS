@@ -26,8 +26,12 @@ Route::get('/', function () {
 // Monitor displays (public access)
 Route::prefix('monitor')->name('monitor.')->group(function () {
     Route::get('/lobby', [MonitorController::class, 'lobby'])->name('lobby');
+    Route::get('/lobby1', [MonitorController::class, 'lobby1'])->name('lobby1');
+    Route::get('/lobby2', [MonitorController::class, 'lobby2'])->name('lobby2');
     Route::get('/third-floor', [MonitorController::class, 'thirdFloor'])->name('third-floor');
     Route::get('/queue-data', [MonitorController::class, 'queueData'])->name('queue-data');
+    Route::get('/queue-data-lobby1', [MonitorController::class, 'queueDataLobby1'])->name('queue-data-lobby1');
+    Route::get('/queue-data-lobby2', [MonitorController::class, 'queueDataLobby2'])->name('queue-data-lobby2');
     Route::get('/category-data/{category}', [MonitorController::class, 'categoryData'])->name('category-data');
     Route::get('/announcements', [MonitorController::class, 'announcements'])->name('announcements');
 });
@@ -42,6 +46,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/store', [FrontDeskController::class, 'store'])->name('store');
         Route::get('/ticket/{inquiry}', [FrontDeskController::class, 'printTicket'])->name('ticket');
         Route::get('/queue-status', [FrontDeskController::class, 'queueStatus'])->name('queue-status');
+        Route::get('/live-status', [FrontDeskController::class, 'showQueueStatus'])->name('live-status');
         Route::get('/recent-inquiries', [FrontDeskController::class, 'recentInquiries'])->name('recent-inquiries');
     });
 
@@ -78,9 +83,12 @@ Route::middleware(['auth'])->group(function () {
         // Assessment Management - Allow adminfront
         Route::get('/assessments', [AdminController::class, 'assessments'])->name('assessments');
         Route::get('/assessments/{assessment}', [AdminController::class, 'showAssessment'])->name('assessments.show');
+        Route::get('/assessments/{assessment}/edit', [AdminController::class, 'editAssessment'])->name('assessments.edit');
+        Route::put('/assessments/{assessment}', [AdminController::class, 'updateAssessment'])->name('assessments.update');
         Route::get('/inquiries/{inquiry}/assessment/create', [AdminController::class, 'createAssessment'])->name('assessments.create');
         Route::post('/inquiries/{inquiry}/assessment', [AdminController::class, 'storeAssessment'])->name('assessments.store');
         Route::post('/assessments/store-direct', [AdminController::class, 'storeDirectAssessment'])->name('assessments.store-direct');
+        Route::get('/assessments/last-number/{year}/{month}', [AdminController::class, 'getLastAssessmentNumber'])->name('assessments.last-number');
         Route::delete('/assessments/{assessment}', [AdminController::class, 'destroyAssessment'])->name('assessments.destroy');
         
         // User Management - Admin only (restrict from adminfront)

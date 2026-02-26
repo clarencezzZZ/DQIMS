@@ -45,8 +45,11 @@
                                     <i class="bi bi-telephone text-success"></i> Contact Number
                                 </label>
                                 <input type="tel" class="form-control form-control-lg @error('contact_number') is-invalid @enderror" 
-                                       id="contact_number" name="contact_number" placeholder="09XX XXX XXXX" 
-                                       value="{{ old('contact_number') }}">
+                                       id="contact_number" name="contact_number" placeholder="09XXXXXXXXX" 
+                                       value="{{ old('contact_number') }}" maxlength="11" pattern="09[0-9]{9}">
+                                <div class="invalid-feedback" id="contact_number_error">
+                                    Contact number must be exactly 11 digits starting with 09
+                                </div>
                                 @error('contact_number')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -143,7 +146,7 @@
 
                         <!-- Submit Buttons -->
                         <div class="d-flex gap-3">
-                            <button type="submit" class="btn btn-success btn-lg flex-fill">
+                            <button type="submit" class="btn btn-success btn-lg flex-fill" id="submitBtn">
                                 <i class="bi bi-ticket-perforated"></i> Generate Queue Ticket
                             </button>
                             <a href="{{ route('front-desk.index') }}" class="btn btn-outline-secondary btn-lg">
@@ -156,6 +159,10 @@
         </div>
     </div>
 </div>
+
+<!-- Notification Container -->
+<div class="notification-container" id="notificationContainer"></div>
+
 @endsection
 
 @section('styles')
@@ -265,6 +272,127 @@
         opacity: 0;
         pointer-events: none;
     }
+    
+    /* Animated Alert Styles */
+    .notification-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        width: 380px;
+    }
+    
+    .notification-alert {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 15px;
+        box-shadow: 0 10px 30px rgba(40, 167, 69, 0.3);
+        transform: translateX(120%);
+        opacity: 0;
+        transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        position: relative;
+        overflow: hidden;
+        border: none;
+    }
+    
+    .notification-alert.show {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    
+    .notification-alert.error {
+        background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);
+        box-shadow: 0 10px 30px rgba(220, 53, 69, 0.3);
+    }
+    
+    .notification-alert.warning {
+        background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+        box-shadow: 0 10px 30px rgba(255, 193, 7, 0.3);
+        color: #212529;
+    }
+    
+    .notification-alert .alert-icon {
+        font-size: 2.2rem;
+        margin-right: 15px;
+        animation: pulse 1.5s infinite;
+    }
+    
+    .notification-alert .alert-content h5 {
+        font-weight: 600;
+        margin: 0 0 8px 0;
+        font-size: 1.1rem;
+    }
+    
+    .notification-alert .alert-content p {
+        margin: 0;
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    .notification-alert .close-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: all 0.3s ease;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+    
+    .notification-alert .close-btn:hover {
+        opacity: 1;
+        background: rgba(255, 255, 255, 0.2);
+        transform: rotate(90deg);
+    }
+    
+    .notification-alert.warning .close-btn {
+        color: #212529;
+    }
+    
+    .notification-alert .progress-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.3);
+        width: 100%;
+        transform-origin: left;
+        transform: scaleX(0);
+        animation: progress-decrease 5s linear forwards;
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    
+    @keyframes progress-decrease {
+        0% { transform: scaleX(1); }
+        100% { transform: scaleX(0); }
+    }
+    
+    /* Loading spinner for submit button */
+    .btn-loading .spinner-border {
+        width: 1.2rem;
+        height: 1.2rem;
+        margin-right: 8px;
+    }
+    
+    .btn-loading .btn-text {
+        opacity: 0.8;
+    }
 </style>
 @endsection
 
@@ -302,6 +430,54 @@
         
         // Initialize priority card selection
         updatePriorityCards();
+    });
+
+    // Professional Contact Number Validation - Clean Implementation
+    document.addEventListener('DOMContentLoaded', function() {
+        const contactInput = document.getElementById('contact_number');
+        const contactError = document.getElementById('contact_number_error');
+        
+        if (!contactInput) {
+            console.log('Contact input not found');
+            return;
+        }
+        
+        console.log('Contact validation initialized');
+        
+        // Real-time validation
+        contactInput.addEventListener('input', function() {
+            const value = this.value.replace(/\D/g, ''); // Remove non-digits
+            this.value = value;
+            
+            // Validate format
+            if (value.length === 0) {
+                this.classList.remove('is-invalid');
+                if (contactError) contactError.style.display = 'none';
+            } else if (value.length === 11 && value.startsWith('09')) {
+                this.classList.remove('is-invalid');
+                if (contactError) contactError.style.display = 'none';
+            } else {
+                this.classList.add('is-invalid');
+                if (contactError) contactError.style.display = 'block';
+            }
+        });
+        
+        // Prevent non-numeric input
+        contactInput.addEventListener('keypress', function(e) {
+            const char = String.fromCharCode(e.which);
+            if (!/[0-9]/.test(char)) {
+                e.preventDefault();
+            }
+        });
+        
+        // Validation on blur
+        contactInput.addEventListener('blur', function() {
+            const value = this.value;
+            if (value.length > 0 && (value.length !== 11 || !value.startsWith('09'))) {
+                this.classList.add('is-invalid');
+                if (contactError) contactError.style.display = 'block';
+            }
+        });
     });
 
     // Priority card selection function
@@ -342,6 +518,129 @@
     const priorityInputs = document.querySelectorAll('input[name="priority"]');
     priorityInputs.forEach(input => {
         input.addEventListener('change', updatePriorityCards);
+    });
+    
+    // Test if JavaScript is working
+    console.log('Front Desk Create page loaded - JavaScript is working!');
+    
+    // Notification System
+    const notificationContainer = document.getElementById('notificationContainer');
+    
+    // Show notification function
+    function showNotification(message, type = 'success', title = 'Success', autoClose = true) {
+        const alert = document.createElement('div');
+        alert.className = `notification-alert ${type}`;
+        
+        let icon = 'bi-check-circle-fill';
+        if (type === 'error') icon = 'bi-x-circle-fill';
+        if (type === 'warning') icon = 'bi-exclamation-triangle-fill';
+        
+        alert.innerHTML = `
+            <div class="d-flex align-items-start">
+                <i class="alert-icon bi ${icon}"></i>
+                <div class="alert-content flex-grow-1">
+                    <h5>${title}</h5>
+                    <p>${message}</p>
+                </div>
+                <button class="close-btn" onclick="this.parentElement.parentElement.remove()">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            <div class="progress-bar"></div>
+        `;
+        
+        notificationContainer.appendChild(alert);
+        
+        // Trigger animation
+        setTimeout(() => {
+            alert.classList.add('show');
+        }, 10);
+        
+        // Auto close after 5 seconds
+        if (autoClose) {
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.classList.remove('show');
+                    setTimeout(() => {
+                        if (alert.parentNode) {
+                            alert.remove();
+                        }
+                    }, 500);
+                }
+            }, 5000);
+        }
+    }
+    
+    // AJAX Form Submission with Contact Validation
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('inquiryForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const contactInput = document.getElementById('contact_number');
+        
+        if (form && submitBtn) {
+            form.addEventListener('submit', function(e) {
+                // Validate contact number before submission
+                if (contactInput && contactInput.value.length > 0) {
+                    if (contactInput.value.length !== 11 || !contactInput.value.startsWith('09')) {
+                        e.preventDefault();
+                        contactInput.classList.add('is-invalid');
+                        const contactError = document.getElementById('contact_number_error');
+                        if (contactError) contactError.style.display = 'block';
+                        alert('Please enter a valid 11-digit contact number starting with 09');
+                        contactInput.focus();
+                        return;
+                    }
+                }
+                
+                e.preventDefault();
+                console.log('Form submission processing...');
+                
+                // Show loading state
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = `
+                    <span class="spinner-border spinner-border-sm" role="status"></span>
+                    <span class="btn-text">Processing...</span>
+                `;
+                submitBtn.disabled = true;
+                
+                // Get form data
+                const formData = new FormData(form);
+                
+                // Submit via AJAX
+                fetch('{{ route('front-desk.store') }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success notification
+                        alert(`SUCCESS!\nQueue Number: ${data.queue_number}\nGuest: ${data.guest_name}\nCategory: ${data.category}`);
+                        
+                        // Reset form
+                        form.reset();
+                        document.getElementById('section_label').textContent = 'Select a category to see section details';
+                        document.getElementById('section_label').className = 'text-muted';
+                        updatePriorityCards();
+                    } else {
+                        alert('Form submission failed. Please check the form and try again.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An unexpected error occurred. Please try again.');
+                })
+                .finally(() => {
+                    // Reset button
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                });
+            });
+        }
     });
 </script>
 @endsection

@@ -18,7 +18,21 @@ class AdminController extends Controller
      */
     public function index()
     {
-        $categories = Category::where('is_active', true)->get();
+        $categories = Category::where('is_active', true)->get()->map(function ($category) {
+            $hexColor = ltrim($category->color, '#');
+            $r = hexdec(substr($hexColor, 0, 2));
+            $g = hexdec(substr($hexColor, 2, 2));
+            $b = hexdec(substr($hexColor, 4, 2));
+            
+            // Calculate brightness
+            $brightness = ($r * 299 + $g * 587 + $b * 114) / 1000;
+            
+            // Determine contrast color
+            $category->contrast_color = $brightness > 128 ? '#000000' : '#FFFFFF';
+            
+            return $category;
+        });
+        
         $todayStats = $this->getTodayStats();
         
         return view('admin.index', compact('categories', 'todayStats'));
@@ -239,7 +253,64 @@ class AdminController extends Controller
      */
     public function showAssessment(Assessment $assessment)
     {
+        $assessment->load(['processedBy', 'officerOfDay', 'category']);
         return view('admin.assessment-show', compact('assessment'));
+    }
+
+    /**
+     * Show the form for editing the specified assessment.
+     */
+    public function editAssessment(Assessment $assessment)
+    {
+        $assessment->load(['processedBy', 'officerOfDay', 'category']);
+        $lotaOfficer = User::where('name', 'Mr. Stanley M. Lota')->first();
+        return view('admin.assessment-edit', compact('assessment', 'lotaOfficer'));
+    }
+
+    /**
+     * Update the specified assessment in storage.
+     */
+    public function updateAssessment(Request $request, Assessment $assessment)
+    {
+        $validator = Validator::make($request->all(), [
+            'fees' => 'required|numeric|min:0',
+            'remarks' => 'nullable|string',
+            'officer_of_day' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        // Handle officer of the day selection
+        $officerOfDay = $request->officer_of_day;
+        if ($officerOfDay === 'other') {
+            $officerOfDay = $request->new_officer_name;
+        }
+
+        // Build names detail JSON if provided
+        $namesDetail = [];
+        if ($request->names) {
+            foreach ($request->names as $index => $name) {
+                if (!empty($name)) {
+                    $namesDetail[] = [
+                        'name' => $name,
+                        'quantity' => $request->quantities[$index] ?? 1,
+                        'amount' => $request->amounts[$index] ?? 0,
+                    ];
+                }
+            }
+        }
+
+        $assessment->update([
+            'fees' => $request->fees,
+            'remarks' => $request->remarks,
+            'officer_of_day' => $officerOfDay,
+            'names_detail' => json_encode($namesDetail),
+        ]);
+
+        return redirect()->route('admin.assessments.show', $assessment)
+            ->with('success', 'Assessment updated successfully.');
     }
 
     /**
@@ -413,7 +484,7 @@ class AdminController extends Controller
     public function storeDirectAssessment(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'bill_number' => 'required|string|max:50',
+            'assessment_number' => 'required|string|max:50',
             'responsibility_center' => 'required|string|max:50',
             'assessment_date' => 'required|date',
             'guest_name' => 'required|string|max:255',
@@ -449,8 +520,8 @@ class AdminController extends Controller
         }
 
         $assessment = Assessment::create([
-            'assessment_number' => $this->generateAssessmentNumber(),
-            'bill_number' => $request->bill_number,
+            'assessment_number' => $request->assessment_number,
+            'bill_number' => $request->assessment_number, // Keep for backward compatibility
             'responsibility_center' => $request->responsibility_center,
             'inquiry_id' => null, // Direct assessment, no inquiry
             'queue_number' => 'DIRECT-' . time(),
@@ -516,6 +587,34 @@ class AdminController extends Controller
         } catch (\Exception $e) {
             return redirect()->route('admin.assessments')
                 ->with('error', 'Failed to delete assessment: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get the last assessment number for the given year and month
+     */
+    public function getLastAssessmentNumber($year, $month)
+    {
+        try {
+            // Get the last assessment number for the given year and month
+            $lastAssessment = Assessment::whereYear('created_at', $year)
+                ->whereMonth('created_at', $month)
+                ->orderBy('id', 'desc')
+                ->first();
+
+            if ($lastAssessment) {
+                $lastNumber = intval(substr($lastAssessment->assessment_number, -4));
+            } else {
+                $lastNumber = 0;
+            }
+
+            return response()->json([
+                'last_number' => $lastNumber
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'last_number' => 0
+            ]);
         }
     }
 

@@ -51,18 +51,38 @@
                             <input type="text" class="form-control bg-light" id="address" value="{{ $assessment->address }}" readonly>
                         </div>
 
-                        <!-- Category/Request Type -->
+                        <!-- Description/Request Type -->
                         <div class="mb-4">
-                            <label for="request_type" class="form-label fw-bold">
-                                <i class="bi bi-folder text-warning"></i> Category/Request Type
+                            <label for="description_type" class="form-label fw-bold">
+                                <i class="bi bi-folder text-warning"></i> Description/Request Type
                             </label>
-                            <input type="text" class="form-control bg-light" id="request_type" value="{{ $assessment->category?->code ?: $assessment->request_type }}" readonly>
+                            <select name="description_type" class="form-select @error('description_type') is-invalid @enderror" 
+                                    id="description_type" required>
+                                <option value="">-- Select Description --</option>
+                                <option value="Cadastral Cost" {{ old('description_type', $assessment->request_type) == 'Cadastral Cost' ? 'selected' : '' }}>Cadastral Cost</option>
+                                <option value="Certification: A&D Status" {{ old('description_type', $assessment->request_type) == 'Certification: A&D Status' ? 'selected' : '' }}>Certification: A&D Status</option>
+                                <option value="Certification: Cadastral Map" {{ old('description_type', $assessment->request_type) == 'Certification: Cadastral Map' ? 'selected' : '' }}>Certification: Cadastral Map</option>
+                                <option value="Certification Cancellation Of Approved Plan" {{ old('description_type', $assessment->request_type) == 'Certification Cancellation Of Approved Plan' ? 'selected' : '' }}>Certification Cancellation Of Approved Plan</option>
+                                <option value="Certification GPP" {{ old('description_type', $assessment->request_type) == 'Certification GPP' ? 'selected' : '' }}>Certification GPP</option>
+                                <option value="Certification Lot Data Computation" {{ old('description_type', $assessment->request_type) == 'Certification Lot Data Computation' ? 'selected' : '' }}>Certification Lot Data Computation</option>
+                                <option value="Certification Lot Status" {{ old('description_type', $assessment->request_type) == 'Certification Lot Status' ? 'selected' : '' }}>Certification Lot Status</option>
+                                <option value="Certification Rejection Order" {{ old('description_type', $assessment->request_type) == 'Certification Rejection Order' ? 'selected' : '' }}>Certification Rejection Order</option>
+                                <option value="Certification Survey Plan" {{ old('description_type', $assessment->request_type) == 'Certification Survey Plan' ? 'selected' : '' }}>Certification Survey Plan</option>
+                                <option value="Certification: Technical Description" {{ old('description_type', $assessment->request_type) == 'Certification: Technical Description' ? 'selected' : '' }}>Certification: Technical Description</option>
+                                <option value="GE Credit" {{ old('description_type', $assessment->request_type) == 'GE Credit' ? 'selected' : '' }}>GE Credit</option>
+                                <option value="Verification Fee" {{ old('description_type', $assessment->request_type) == 'Verification Fee' ? 'selected' : '' }}>Verification Fee</option>
+                                <option value="Inspection Fee" {{ old('description_type', $assessment->request_type) == 'Inspection Fee' ? 'selected' : '' }}>Inspection Fee</option>
+                            </select>
+                            @error('description_type')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <div class="form-text">Select the same description options as used in new assessment requests</div>
                         </div>
 
                         <!-- Fees -->
                         <div class="mb-4">
                             <label for="fees" class="form-label fw-bold">
-                                <i class="bi bi-currency-dollar text-warning"></i> Assessment Fees (₱) <span class="text-danger">*</span>
+                                <i class="bi bi-currency-peso text-warning"></i> Assessment Fees (₱) <span class="text-danger">*</span>
                             </label>
                             <div class="input-group input-group-lg">
                                 <span class="input-group-text">₱</span>
@@ -85,7 +105,7 @@
                             <select class="form-select @error('officer_of_day') is-invalid @enderror" 
                                     id="officer_of_day" name="officer_of_day" required>
                                 <option value="">-- Select Officer of the Day --</option>
-                                <option value="{{ $lotaOfficer->id ?? '' }}" {{ old('officer_of_day', $assessment->officer_of_day) == ($lotaOfficer->id ?? '') ? 'selected' : '' }}>Mr. Stanly M. Lota</option>
+                                <option value="{{ $lotaOfficer->id ?? '' }}" {{ old('officer_of_day', $assessment->officer_of_day) == ($lotaOfficer->id ?? '') ? 'selected' : '' }}>Mr. Stanley M. Lota</option>
                                 <option value="other" {{ old('officer_of_day', $assessment->officer_of_day) == 'other' ? 'selected' : '' }}>Other</option>
                             </select>
                             @error('officer_of_day')
@@ -150,13 +170,17 @@
 <script>
     // Initialize names data from the assessment
     document.addEventListener('DOMContentLoaded', function() {
-        const namesDetail = @json(json_decode($assessment->names_detail));
+        const namesDetail = @json(json_decode($assessment->names_detail, true));
         if (namesDetail && Array.isArray(namesDetail)) {
             namesDetail.forEach(item => {
-                addNameRowEdit(item.name, item.quantity, item.amount);
+                // Skip template placeholders
+                if (item.name && item.name !== '${name}' && item.name.trim() !== '') {
+                    addNameRowEdit(item.name, item.quantity || 1, item.amount || 0);
+                }
             });
-        } else {
-            // Add a default row if no names exist
+        }
+        // Add at least one row if no valid names exist
+        if (document.getElementById('namesContainer').children.length === 0) {
             addNameRowEdit();
         }
     });

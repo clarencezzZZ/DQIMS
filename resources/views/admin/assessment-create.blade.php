@@ -129,7 +129,7 @@
                             <select class="form-select @error('officer_of_day') is-invalid @enderror" 
                                     id="officer_of_day" name="officer_of_day" required>
                                 <option value="">-- Select Officer of the Day --</option>
-                                <option value="{{ $lotaOfficer->id ?? '' }}">Mr. Stanly M. Lota</option>
+                                <option value="{{ $lotaOfficer->id ?? '' }}">Mr. Stanley M. Lota</option>
                                 <option value="other">Other</option>
                             </select>
                             <div id="newOfficerInput" class="mt-2" style="display: none;">

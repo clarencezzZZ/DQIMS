@@ -37,10 +37,10 @@
                     <div class="modal-body">
                         <!-- Header Info -->
                         <div class="row g-3 mb-4">
-                            <!-- Bill Number (Auto-generated) -->
+                            <!-- Assessment Number (Auto-generated) -->
                             <div class="col-md-4">
-                                <label class="form-label fw-bold">Bill Number</label>
-                                <input type="text" name="bill_number" id="bill_number" class="form-control bg-light" readonly>
+                                <label class="form-label fw-bold">Assessment Number</label>
+                                <input type="text" name="assessment_number" id="assessment_number" class="form-control bg-light" readonly>
                             </div>
                             <!-- Responsibility Center -->
                             <div class="col-md-4">
@@ -118,7 +118,7 @@
                             <label class="form-label fw-bold">Officer of the Day</label>
                             <select name="officer_of_day" id="officerSelect" class="form-select" required>
                                 <option value="">-- Select Officer of the Day --</option>
-                                <option value="{{ $lotaOfficer->id ?? '' }}">Mr. Stanly M. Lota</option>
+                                <option value="{{ $lotaOfficer->id ?? '' }}">Mr. Stanley M. Lota</option>
                                 <option value="other">Other</option>
                             </select>
                             <div id="newOfficerInput" class="mt-2" style="display: none;">
@@ -214,7 +214,7 @@
                                         @endif
                                     @endif
                                 </td>
-                                <td>{{ $assessment->reference ?? 'N/A' }}</td>
+                                <td>{{ $assessment->remarks ?? $assessment->reference ?? 'N/A' }}</td>
                                 <td><strong>₱{{ number_format($assessment->fees, 2) }}</strong></td>
                                 <td>{{ $assessment->processedBy->name ?? 'N/A' }}</td>
                                 <td>
@@ -222,7 +222,10 @@
                                         <a href="{{ route('admin.assessments.show', $assessment) }}" class="btn btn-sm btn-outline-primary" title="View">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <button type="button" class="btn btn-sm btn-outline-warning" onclick="confirmDelete({{ $assessment->id }})" title="Delete">
+                                        <a href="{{ route('admin.assessments.edit', $assessment) }}" class="btn btn-sm btn-outline-warning" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete({{ $assessment->id }})" title="Delete">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </div>
@@ -296,19 +299,28 @@
 
 @section('scripts')
 <script>
-    // Generate next bill number
-    function generateBillNumber() {
+    // Generate next assessment number
+    function generateAssessmentNumber() {
         const year = new Date().getFullYear();
         const month = String(new Date().getMonth() + 1).padStart(2, '0');
-        // Get last assessment bill number and increment
-        // For now, generate based on timestamp to ensure uniqueness
-        const random = Math.floor(Math.random() * 9000) + 1000;
-        return `${year}-${month}-${random}`;
+        // Get last assessment number for this month and increment
+        fetch('/admin/assessments/last-number/' + year + '/' + month)
+            .then(response => response.json())
+            .then(data => {
+                const nextNumber = data.last_number + 1;
+                const formattedNumber = String(nextNumber).padStart(4, '0');
+                document.getElementById('assessment_number').value = `${year}-${month}-${formattedNumber}`;
+            })
+            .catch(error => {
+                // Fallback to timestamp-based approach
+                const timestamp = String(new Date().getTime()).slice(-4);
+                document.getElementById('assessment_number').value = `${year}-${month}-${timestamp}`;
+            });
     }
 
-    // Initialize bill number when modal opens
+    // Initialize assessment number when modal opens
     document.getElementById('newRequestModal').addEventListener('show.bs.modal', function () {
-        document.getElementById('bill_number').value = generateBillNumber();
+        generateAssessmentNumber();
         // Add first name row by default
         if (document.getElementById('namesContainer').children.length === 0) {
             addNameRow();

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bar Elevation Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-12">
+                <h2 class="mb-4"><i class="bi bi-bar-chart"></i> Bar Elevation Test</h2>
+                
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Test Controls</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button id="testElevation" class="btn btn-primary">
+                                <i class="bi bi-arrow-up-circle"></i> Test Bar Elevation
+                            </button>
+                            <button id="testDropdown" class="btn btn-info">
+                                <i class="bi bi-funnel"></i> Simulate Dropdown Change
+                            </button>
+                            <button id="testForm" class="btn btn-warning">
+                                <i class="bi bi-send"></i> Simulate Form Submit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Test Chart</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="testChart" height="300"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Console Output</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="consoleOutput" class="bg-dark text-light p-3 rounded" style="height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.9rem;">
+                            > Console output will appear here...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Console output redirection
+        const originalLog = console.log;
+        const consoleOutput = document.getElementById('consoleOutput');
+        
+        console.log = function(message) {
+            originalLog.apply(console, arguments);
+            const timestamp = new Date().toLocaleTimeString();
+            consoleOutput.innerHTML += `[${timestamp}] ${message}\n`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+
+        // Test Chart
+        let testChart;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Test page loaded');
+            
+            // Initialize test chart
+            const ctx = document.getElementById('testChart').getContext('2d');
+            testChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['A', 'B', 'C', 'D', 'E'],
+                    datasets: [{
+                        label: 'Test Data',
+                        data: [12, 19, 3, 5, 2],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 205, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 205, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    animation: {
+                        duration: 600,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+            
+            console.log('Test chart initialized');
+        });
+
+        // Test functions
+        document.getElementById('testElevation').addEventListener('click', function() {
+            console.log('Testing bar elevation...');
+            triggerBarElevation();
+        });
+
+        document.getElementById('testDropdown').addEventListener('click', function() {
+            console.log('Simulating dropdown change...');
+            triggerBarElevation();
+        });
+
+        document.getElementById('testForm').addEventListener('click', function() {
+            console.log('Simulating form submission...');
+            triggerBarElevation();
+        });
+
+        // Bar elevation function
+        function triggerBarElevation() {
+            if (!testChart) {
+                console.log('Chart not initialized');
+                return;
+            }
+            
+            console.log('Triggering bar elevation animation');
+            
+            // Store original data
+            const originalData = testChart.data.datasets[0].data.slice();
+            
+            // Animate bars upward
+            testChart.data.datasets[0].data = originalData.map(value => value * 1.2);
+            testChart.update('active');
+            
+            console.log('Bars elevated - returning to original in 600ms');
+            
+            // Return to original after animation
+            setTimeout(() => {
+                testChart.data.datasets[0].data = originalData;
+                testChart.update();
+                console.log('Bars returned to original position');
+            }, 600);
+        }
+    </script>
+</body>
+</html>

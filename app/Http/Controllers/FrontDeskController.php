@@ -36,7 +36,7 @@ class FrontDeskController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'guest_name' => 'required|string|max:255',
-            'contact_number' => 'nullable|string|max:20',
+            'contact_number' => 'nullable|string|regex:/^09\d{9}$/',
             'category_id' => 'required|exists:categories,id',
             'purpose' => 'nullable|string',
             'priority' => 'nullable|in:normal,priority',
@@ -91,7 +91,18 @@ class FrontDeskController extends Controller
             'date' => now()->toDateString(),
         ]);
 
-        // Redirect to monitor display
+        // Return JSON response for AJAX handling
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Generated ticket has been submitted successfully!',
+                'queue_number' => $queueNumber,
+                'guest_name' => $request->guest_name,
+                'category' => $category->name
+            ]);
+        }
+
+        // Fallback for non-AJAX requests (redirect to monitor)
         return redirect()->route('monitor.lobby')
             ->with('success', 'Inquiry created successfully! Queue number: ' . $queueNumber);
     }
@@ -113,7 +124,7 @@ class FrontDeskController extends Controller
     }
 
     /**
-     * Get current queue status for all sections
+     * Get current queue status for all sections (JSON API)
      */
     public function queueStatus()
     {
@@ -168,6 +179,14 @@ class FrontDeskController extends Controller
         }
 
         return response()->json($data);
+    }
+
+    /**
+     * Display the live queue status page
+     */
+    public function showQueueStatus()
+    {
+        return view('front-desk.queue-status');
     }
 
     /**

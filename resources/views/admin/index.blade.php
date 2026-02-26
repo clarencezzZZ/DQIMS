@@ -192,6 +192,7 @@
                             <thead>
                                 <tr>
                                     <th>Category</th>
+                                    <th>Section</th>
                                     <th>Code</th>
                                     <th>Waiting</th>
                                     <th>Serving</th>
@@ -209,10 +210,8 @@
                                         $total = \App\Models\Inquiry::today()->where('category_id', $category->id)->count();
                                     @endphp
                                     <tr>
-                                        <td>
-                                            <span class="badge" style="background-color: {{ $category->color }}">&nbsp;</span>
-                                            {{ $category->name }}
-                                        </td>
+                                        <td>{{ $category->name }}</td>
+                                        <td><span class="badge" style="background-color: {{ $category->color }}; color: {{ $category->contrast_color }};">{{ $category->section }}</span></td>
                                         <td><code>{{ $category->code }}</code></td>
                                         <td><span class="badge bg-warning">{{ $waiting }}</span></td>
                                         <td><span class="badge bg-info">{{ $serving }}</span></td>

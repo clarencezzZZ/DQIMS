@@ -34,6 +34,48 @@ class MonitorController extends Controller
     }
     
     /**
+     * Display lobby1 monitor (SCS and LES only)
+     */
+    public function lobby1()
+    {
+        // Get only SCS and LES sections
+        $sections = ['SCS', 'LES'];
+        
+        $sectionData = [];
+        foreach ($sections as $section) {
+            $categories = Category::where('section', $section)->where('is_active', true)->get();
+            $sectionData[$section] = [
+                'name' => $section,
+                'categories' => $categories,
+                'color' => $this->getSectionColor($section),
+            ];
+        }
+        
+        return view('monitor.lobby1', compact('sectionData'));
+    }
+    
+    /**
+     * Display lobby2 monitor (ACS and OOSS only)
+     */
+    public function lobby2()
+    {
+        // Get only ACS and OOSS sections
+        $sections = ['ACS', 'OOSS'];
+        
+        $sectionData = [];
+        foreach ($sections as $section) {
+            $categories = Category::where('section', $section)->where('is_active', true)->get();
+            $sectionData[$section] = [
+                'name' => $section,
+                'categories' => $categories,
+                'color' => $this->getSectionColor($section),
+            ];
+        }
+        
+        return view('monitor.lobby2', compact('sectionData'));
+    }
+    
+    /**
      * Get color for section
      */
     private function getSectionColor($section)
@@ -66,6 +108,100 @@ class MonitorController extends Controller
             ->select('section')
             ->distinct()
             ->pluck('section');
+        
+        $data = ['sections' => []];
+
+        foreach ($sections as $section) {
+            $categories = Category::where('section', $section)->where('is_active', true)->pluck('id');
+            
+            // Get currently serving (only serving status, not completed)
+            $nowServing = Inquiry::today()
+                ->whereIn('category_id', $categories)
+                ->where('status', 'serving')
+                ->with('servedBy', 'category')
+                ->first();
+
+            // Get waiting count (only waiting status)
+            $waitingCount = Inquiry::today()
+                ->whereIn('category_id', $categories)
+                ->where('status', 'waiting')
+                ->count();
+
+            // Get latest waiting inquiry
+            $latestWaiting = Inquiry::today()
+                ->whereIn('category_id', $categories)
+                ->where('status', 'waiting')
+                ->with('category')
+                ->oldest('created_at')
+                ->first();
+
+            $data['sections'][$section] = [
+                'section' => $section,
+                'color' => $this->getSectionColor($section),
+                'now_serving' => $nowServing ? $nowServing->queue_number : null,
+                'now_serving_category' => $nowServing && $nowServing->category ? $nowServing->category->code : null,
+                'latest_waiting' => $latestWaiting ? $latestWaiting->queue_number : null,
+                'latest_waiting_category' => $latestWaiting && $latestWaiting->category ? $latestWaiting->category->code : null,
+                'waiting_count' => $waitingCount,
+            ];
+        }
+
+        return response()->json($data);
+    }
+    
+    /**
+     * Get current queue data for lobby1 monitor (SCS and LES only)
+     */
+    public function queueDataLobby1()
+    {
+        $sections = ['SCS', 'LES'];
+        
+        $data = ['sections' => []];
+
+        foreach ($sections as $section) {
+            $categories = Category::where('section', $section)->where('is_active', true)->pluck('id');
+            
+            // Get currently serving (only serving status, not completed)
+            $nowServing = Inquiry::today()
+                ->whereIn('category_id', $categories)
+                ->where('status', 'serving')
+                ->with('servedBy', 'category')
+                ->first();
+
+            // Get waiting count (only waiting status)
+            $waitingCount = Inquiry::today()
+                ->whereIn('category_id', $categories)
+                ->where('status', 'waiting')
+                ->count();
+
+            // Get latest waiting inquiry
+            $latestWaiting = Inquiry::today()
+                ->whereIn('category_id', $categories)
+                ->where('status', 'waiting')
+                ->with('category')
+                ->oldest('created_at')
+                ->first();
+
+            $data['sections'][$section] = [
+                'section' => $section,
+                'color' => $this->getSectionColor($section),
+                'now_serving' => $nowServing ? $nowServing->queue_number : null,
+                'now_serving_category' => $nowServing && $nowServing->category ? $nowServing->category->code : null,
+                'latest_waiting' => $latestWaiting ? $latestWaiting->queue_number : null,
+                'latest_waiting_category' => $latestWaiting && $latestWaiting->category ? $latestWaiting->category->code : null,
+                'waiting_count' => $waitingCount,
+            ];
+        }
+
+        return response()->json($data);
+    }
+    
+    /**
+     * Get current queue data for lobby2 monitor (ACS and OOSS only)
+     */
+    public function queueDataLobby2()
+    {
+        $sections = ['ACS', 'OOSS'];
         
         $data = ['sections' => []];
 

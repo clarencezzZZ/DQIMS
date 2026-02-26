@@ -16,6 +16,9 @@
                     <a href="{{ route('admin.assessments') }}" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left"></i> Back
                     </a>
+                    <a href="{{ route('admin.assessments.edit', $assessment) }}" class="btn btn-outline-warning">
+                        <i class="bi bi-pencil"></i> Edit
+                    </a>
                     <button onclick="window.print()" class="btn btn-outline-primary">
                         <i class="bi bi-printer"></i> Print
                     </button>
@@ -57,14 +60,18 @@
                         <div class="col-md-6">
                             <table class="table table-borderless table-sm">
                                 <tr>
-                                    <td class="text-muted" width="40%">Category:</td>
+                                    <td class="text-muted" width="40%">Category/Request Type:</td>
                                     <td>
                                         @if($assessment->category)
                                             <span class="badge" style="background-color: {{ $assessment->category->color }}">
                                                 {{ $assessment->category->name }}
                                             </span>
                                         @else
-                                            N/A
+                                            @if($assessment->request_type)
+                                                <span class="badge bg-info">{{ $assessment->request_type }}</span>
+                                            @else
+                                                N/A
+                                            @endif
                                         @endif
                                     </td>
                                 </tr>
@@ -88,6 +95,50 @@
                         </div>
                     </div>
 
+                    <!-- Names with Quantity & Amount -->
+                    @if($assessment->names_detail && $assessment->names_detail !== '[]')
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-success mb-3"><i class="bi bi-people"></i> Names with Quantity & Amount</h6>
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Quantity</th>
+                                            <th>Amount (₱)</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @php
+                                            $namesData = json_decode($assessment->names_detail, true);
+                                        @endphp
+                                        @if(is_array($namesData))
+                                            @foreach($namesData as $item)
+                                                @if(isset($item['name']) && $item['name'] !== '${name}' && !empty($item['name']))
+                                                    <tr>
+                                                        <td>{{ $item['name'] }}</td>
+                                                        <td>{{ $item['quantity'] ?? 1 }}</td>
+                                                        <td>{{ number_format($item['amount'] ?? 0, 2) }}</td>
+                                                        <td>{{ number_format(($item['quantity'] ?? 1) * ($item['amount'] ?? 0), 2) }}</td>
+                                                    </tr>
+                                                @endif
+                                            @endforeach
+                                        @endif
+                                    </tbody>
+                                    @if($assessment->fees > 0)
+                                        <tfoot class="table-light">
+                                            <tr>
+                                                <th colspan="3" class="text-end">Grand Total:</th>
+                                                <th>₱{{ number_format($assessment->fees, 2) }}</th>
+                                            </tr>
+                                        </tfoot>
+                                    @endif
+                                </table>
+                            </div>
+                        </div>
+                    @endif
+
                     <!-- Remarks -->
                     @if($assessment->remarks)
                         <div class="mb-4">
@@ -107,6 +158,16 @@
                                 <tr>
                                     <td class="text-muted">Processed By:</td>
                                     <td class="fw-bold">{{ $assessment->processedBy->name ?? 'N/A' }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Officer of the Day:</td>
+                                    <td class="fw-bold">
+                                        @if(is_numeric($assessment->officer_of_day))
+                                            {{ $assessment->officerOfDay->name ?? 'N/A' }}
+                                        @else
+                                            {{ $assessment->officer_of_day ?? 'N/A' }}
+                                        @endif
+                                    </td>
                                 </tr>
                             </table>
                         </div>

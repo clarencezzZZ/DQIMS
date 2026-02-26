@@ -350,12 +350,12 @@
                                                     $isNext = $inquiry->category && isset($nextInquiries[$inquiry->category_id]) && $nextInquiries[$inquiry->category_id] == $inquiry->id;
                                                 @endphp
                                                 <button type="button" 
-                                                        class="btn {{ $isNext ? 'btn-info' : 'btn-outline-secondary' }} btn-sm d-flex align-items-center justify-content-center rounded-circle" 
+                                                        class="btn {{ $isNext ? 'btn-success' : 'btn-outline-secondary' }} btn-sm d-flex align-items-center justify-content-center rounded-circle" 
                                                         style="width: 40px; height: 40px;"
                                                         onclick="{{ $isNext ? 'updateStatus(' . $inquiry->id . ', \'serving\')' : 'showQueueOrderWarning(\'' . $section['name'] . '\')' }}" 
                                                         title="{{ $isNext ? 'Start Serving This Case' : 'Not Next in Queue - Click for Queue Order' }}"
                                                         {{ $isNext ? '' : 'disabled' }}>
-                                                    <i class="bi bi-play-fill"></i>
+                                                    <i class="bi bi-person-badge"></i>
                                                 </button>
                                                 <button type="button" 
                                                         class="btn btn-success btn-sm d-flex align-items-center justify-content-center rounded-circle" 
@@ -388,10 +388,11 @@
                                                 </span>
                                             @elseif($inquiry->status == 'skipped')
                                                 <button type="button" 
-                                                        class="btn btn-info btn-sm d-flex align-items-center justify-content-center rounded-circle" 
-                                                        style="width: 40px; height: 40px;"
-                                                        onclick="updateStatus({{ $inquiry->id }}, 'serving')" title="Serve Now">
-                                                    <i class="bi bi-play-fill"></i>
+                                                        class="btn btn-success btn-sm d-flex align-items-center justify-content-center rounded-circle" 
+                                                        style="width: 40px; height: 40px;" 
+                                                        onclick="updateStatus({{ $inquiry->id }}, 'serving')" 
+                                                        title="Start Serving This Case">
+                                                    <i class="bi bi-person-badge"></i>
                                                 </button>
                                                 <button type="button" 
                                                         class="btn btn-secondary btn-sm d-flex align-items-center justify-content-center rounded-circle" 

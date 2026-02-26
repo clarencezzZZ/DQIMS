@@ -30,13 +30,15 @@ class ReportController extends Controller
             'date_from' => 'nullable|date',
             'date_to' => 'nullable|date',
             'category' => 'nullable|exists:categories,id',
-            'status' => 'nullable|in:all,waiting,serving,completed,skipped',
+            'status' => 'nullable|in:all,waiting,serving,completed,skipped,forwarded',
+            'section' => 'nullable|string',
         ]);
 
         $dateRange = $this->getDateRange($request);
         $data = $this->getReportData($dateRange, $request);
 
-        return response()->json($data);
+        // Return the reports view with the data to display the generated report
+        return view('reports.index', array_merge($data, ['categories' => Category::where('is_active', true)->get()]));
     }
 
     /**
@@ -95,6 +97,13 @@ class ReportController extends Controller
             $query->where('status', $request->status);
         }
 
+        // Filter by section if provided
+        if ($request->filled('section') && $request->section !== '') {
+            $query->whereHas('category', function ($q) use ($request) {
+                $q->where('section', $request->section);
+            });
+        }
+
         $inquiries = $query->with(['category', 'servedBy'])->get();
 
         // Statistics by category
@@ -102,10 +111,16 @@ class ReportController extends Controller
         $categories = Category::where('is_active', true)->get();
 
         foreach ($categories as $category) {
+            // Only include categories that match the section filter (if applied)
+            if ($request->filled('section') && $request->section !== '' && $category->section !== $request->section) {
+                continue;
+            }
+            
             $catInquiries = $inquiries->where('category_id', $category->id);
             
             $categoryStats[$category->code] = [
                 'name' => $category->name,
+                'section' => $category->section,
                 'total' => $catInquiries->count(),
                 'waiting' => $catInquiries->where('status', 'waiting')->count(),
                 'serving' => $catInquiries->where('status', 'serving')->count(),
@@ -145,6 +160,13 @@ class ReportController extends Controller
             $dateRange['end']->toDateString()
         ])->with(['category', 'processedBy'])->get();
 
+        // Filter assessments by section if provided
+        if ($request->filled('section') && $request->section !== '') {
+            $assessments = $assessments->filter(function ($assessment) use ($request) {
+                return $assessment->category && $assessment->category->section === $request->section;
+            });
+        }
+
         $totalFees = $assessments->sum('fees');
 
         return [
@@ -168,6 +190,15 @@ class ReportController extends Controller
      */
     public function exportPdf(Request $request)
     {
+        $request->validate([
+            'report_type' => 'sometimes|in:daily,weekly,monthly,yearly,custom',
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date',
+            'category' => 'nullable|exists:categories,id',
+            'status' => 'nullable|in:all,waiting,serving,completed,skipped,forwarded',
+            'section' => 'nullable|string',
+        ]);
+
         $dateRange = $this->getDateRange($request);
         $data = $this->getReportData($dateRange, $request);
 
@@ -183,6 +214,15 @@ class ReportController extends Controller
      */
     public function exportExcel(Request $request)
     {
+        $request->validate([
+            'report_type' => 'sometimes|in:daily,weekly,monthly,yearly,custom',
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date',
+            'category' => 'nullable|exists:categories,id',
+            'status' => 'nullable|in:all,waiting,serving,completed,skipped,forwarded',
+            'section' => 'nullable|string',
+        ]);
+
         $dateRange = $this->getDateRange($request);
         $data = $this->getReportData($dateRange, $request);
 
@@ -253,6 +293,15 @@ class ReportController extends Controller
      */
     public function print(Request $request)
     {
+        $request->validate([
+            'report_type' => 'sometimes|in:daily,weekly,monthly,yearly,custom',
+            'date_from' => 'nullable|date',
+            'date_to' => 'nullable|date',
+            'category' => 'nullable|exists:categories,id',
+            'status' => 'nullable|in:all,waiting,serving,completed,skipped,forwarded',
+            'section' => 'nullable|string',
+        ]);
+
         $dateRange = $this->getDateRange($request);
         $data = $this->getReportData($dateRange, $request);
 

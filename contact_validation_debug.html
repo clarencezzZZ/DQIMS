@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Validation Debug Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <h4 class="mb-0"><i class="bi bi-bug"></i> Contact Validation Debug</h4>
+                    </div>
+                    <div class="card-body">
+                        <form id="debugForm">
+                            <div class="mb-3">
+                                <label for="contact_number" class="form-label fw-bold">
+                                    Contact Number (Debug)
+                                </label>
+                                <input type="tel" class="form-control" 
+                                       id="contact_number" name="contact_number" placeholder="09XXXXXXXXX" 
+                                       maxlength="11" pattern="09[0-9]{9}">
+                                <div class="invalid-feedback" id="contact_number_error">
+                                    Contact number must be exactly 11 digits starting with 09
+                                </div>
+                                <div class="form-text" id="debugInfo">
+                                    Debug info will appear here
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">Test Validation</button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="testInputs()">
+                                    Test Input Events
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Console Output</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="consoleOutput" class="bg-dark text-light p-3 rounded" style="height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.9rem;">
+                            > Debug console output...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Console redirection
+        const originalLog = console.log;
+        const consoleOutput = document.getElementById('consoleOutput');
+        const debugInfo = document.getElementById('debugInfo');
+        
+        console.log = function(message) {
+            originalLog.apply(console, arguments);
+            const timestamp = new Date().toLocaleTimeString();
+            consoleOutput.innerHTML += `[${timestamp}] ${message}\n`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+
+        // Debug test
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Loaded - Initializing debug validation');
+            
+            const contactInput = document.getElementById('contact_number');
+            const contactError = document.getElementById('contact_number_error');
+            const form = document.getElementById('debugForm');
+            
+            if (!contactInput) {
+                console.log('❌ ERROR: Contact input not found!');
+                return;
+            }
+            
+            console.log('✅ Contact input found');
+            
+            // Real-time validation
+            contactInput.addEventListener('input', function() {
+                const value = this.value.replace(/\D/g, '');
+                this.value = value;
+                
+                console.log(`Input event: "${value}" (length: ${value.length})`);
+                
+                if (value.length === 0) {
+                    this.classList.remove('is-invalid');
+                    if (contactError) contactError.style.display = 'none';
+                    debugInfo.innerHTML = '<span class="text-muted">Empty field</span>';
+                } else if (value.length === 11 && value.startsWith('09')) {
+                    this.classList.remove('is-invalid');
+                    if (contactError) contactError.style.display = 'none';
+                    debugInfo.innerHTML = '<span class="text-success">✓ Valid 11-digit number</span>';
+                } else {
+                    this.classList.add('is-invalid');
+                    if (contactError) contactError.style.display = 'block';
+                    debugInfo.innerHTML = `<span class="text-danger">✗ Invalid: ${value.length} digits ${value.startsWith('09') ? '(correct prefix)' : '(wrong prefix)'}</span>`;
+                }
+            });
+            
+            // Prevent non-numeric
+            contactInput.addEventListener('keypress', function(e) {
+                const char = String.fromCharCode(e.which);
+                console.log(`Keypress: "${char}" (${char.charCodeAt(0)})`);
+                if (!/[0-9]/.test(char)) {
+                    console.log('Blocked non-numeric character');
+                    e.preventDefault();
+                }
+            });
+            
+            // Form submission
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    console.log('Form submitted');
+                    
+                    const value = contactInput.value;
+                    console.log(`Final validation: "${value}"`);
+                    
+                    if (value.length > 0) {
+                        if (value.length !== 11 || !value.startsWith('09')) {
+                            console.log('❌ Validation failed - showing error');
+                            contactInput.classList.add('is-invalid');
+                            if (contactError) contactError.style.display = 'block';
+                            alert('Validation Error: ' + contactError.textContent);
+                            return;
+                        }
+                    }
+                    
+                    console.log('✅ Validation passed');
+                    alert('SUCCESS: Valid contact number - ' + value);
+                });
+            }
+        });
+        
+        function testInputs() {
+            const testCases = [
+                '09123456789', // Valid
+                '0912345678',  // Too short
+                '08123456789', // Wrong prefix
+                '091234567890', // Too long
+                '0912345678a'  // Contains letter
+            ];
+            
+            testCases.forEach((test, index) => {
+                setTimeout(() => {
+                    console.log(`Testing: ${test}`);
+                    const input = document.getElementById('contact_number');
+                    input.value = test;
+                    input.dispatchEvent(new Event('input'));
+                }, index * 1000);
+            });
+        }
+    </script>
+</body>
+</html>
