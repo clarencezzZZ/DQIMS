@@ -40,7 +40,7 @@
                             <label for="guest_name" class="form-label fw-bold">
                                 <i class="bi bi-person text-warning"></i> Guest Name
                             </label>
-                            <input type="text" class="form-control bg-light" id="guest_name" value="{{ $assessment->guest_name }}" readonly>
+                            <input type="text" class="form-control" id="guest_name" name="guest_name" value="{{ old('guest_name', $assessment->guest_name) }}">
                         </div>
 
                         <!-- Address -->
@@ -48,7 +48,7 @@
                             <label for="address" class="form-label fw-bold">
                                 <i class="bi bi-house text-warning"></i> Address
                             </label>
-                            <input type="text" class="form-control bg-light" id="address" value="{{ $assessment->address }}" readonly>
+                            <input type="text" class="form-control" id="address" name="address" value="{{ old('address', $assessment->address) }}">
                         </div>
 
                         <!-- Description/Request Type -->
@@ -105,8 +105,10 @@
                             <select class="form-select @error('officer_of_day') is-invalid @enderror" 
                                     id="officer_of_day" name="officer_of_day" required>
                                 <option value="">-- Select Officer of the Day --</option>
-                                <option value="{{ $lotaOfficer->id ?? '' }}" {{ old('officer_of_day', $assessment->officer_of_day) == ($lotaOfficer->id ?? '') ? 'selected' : '' }}>Mr. Stanley M. Lota</option>
-                                <option value="other" {{ old('officer_of_day', $assessment->officer_of_day) == 'other' ? 'selected' : '' }}>Other</option>
+                                @foreach($officers as $officer)
+                                    <option value="{{ $officer->user_id ?? $officer->id }}" {{ (old('officer_of_day', $assessment->officer_of_day) == ($officer->user_id ?? $officer->id) || (is_numeric($assessment->officer_of_day) && $assessment->officer_of_day == ($officer->user_id ?? $officer->id))) ? 'selected' : '' }}>{{ $officer->name }}</option>
+                                @endforeach
+                                <option value="other" {{ !is_numeric(old('officer_of_day', $assessment->officer_of_day)) && old('officer_of_day', $assessment->officer_of_day) != '' ? 'selected' : '' }}>Other</option>
                             </select>
                             @error('officer_of_day')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -116,7 +118,8 @@
                         <!-- New Officer Input (Hidden by default) -->
                         <div id="newOfficerInput" class="mb-4" style="display: none;">
                             <label class="form-label fw-bold">Enter New Officer Name</label>
-                            <input type="text" name="new_officer_name" id="newOfficerName" class="form-control" placeholder="Enter officer name">
+                            <input type="text" name="new_officer_name" id="newOfficerName" class="form-control" placeholder="Enter officer name" 
+                                   value="{{ $assessment->custom_officer_name ?: (is_numeric($assessment->officer_of_day) ? '' : $assessment->officer_of_day) }}">
                         </div>
 
                         <!-- Names with Quantity and Amount -->
@@ -195,16 +198,16 @@
         row.id = rowId;
         row.innerHTML = `
             <div class="col-md-5">
-                <input type="text" name="names[]" class="form-control" placeholder="Enter name" value="\${name}" required>
+                <input type="text" name="names[]" class="form-control" placeholder="Enter name" value="${name.replace(/\$/g, '\$\$')}" required>
             </div>
             <div class="col-md-2">
-                <input type="number" name="quantities[]" class="form-control quantity-input" placeholder="Qty" value="\${quantity}" min="1" onchange="calculateTotalEdit()">
+                <input type="number" name="quantities[]" class="form-control quantity-input" placeholder="Qty" value="${quantity}" min="1" onchange="calculateTotalEdit()">
             </div>
             <div class="col-md-4">
-                <input type="number" name="amounts[]" class="form-control amount-input" placeholder="Amount" step="0.01" min="0" value="\${amount}" onchange="calculateTotalEdit()">
+                <input type="number" name="amounts[]" class="form-control amount-input" placeholder="Amount" step="0.01" min="0" value="${amount}" onchange="calculateTotalEdit()">
             </div>
             <div class="col-md-1">
-                <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeNameRowEdit('\${rowId}')">
+                <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeNameRowEdit('${rowId}')">
                     <i class="bi bi-trash"></i>
                 </button>
             </div>
@@ -254,8 +257,12 @@
     // Initialize the display based on current selection
     document.addEventListener('DOMContentLoaded', function() {
         const officerSelect = document.getElementById('officer_of_day');
-        if (officerSelect && officerSelect.value === 'other') {
-            document.getElementById('newOfficerInput').style.display = 'block';
+        const newOfficerInput = document.getElementById('newOfficerInput');
+        
+        // Check if current selection is "other" or if there's a custom officer name
+        if (officerSelect && (officerSelect.value === 'other' || document.getElementById('newOfficerName').value !== '')) {
+            newOfficerInput.style.display = 'block';
+            document.getElementById('newOfficerName').required = true;
         }
     });
 

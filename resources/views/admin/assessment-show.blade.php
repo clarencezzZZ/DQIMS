@@ -129,7 +129,7 @@
                                     @if($assessment->fees > 0)
                                         <tfoot class="table-light">
                                             <tr>
-                                                <th colspan="3" class="text-end">Grand Total:</th>
+                                                <th colspan="3" class="text-end">Total:</th>
                                                 <th>₱{{ number_format($assessment->fees, 2) }}</th>
                                             </tr>
                                         </tfoot>
@@ -162,8 +162,10 @@
                                 <tr>
                                     <td class="text-muted">Officer of the Day:</td>
                                     <td class="fw-bold">
-                                        @if(is_numeric($assessment->officer_of_day))
-                                            {{ $assessment->officerOfDay->name ?? 'N/A' }}
+                                        @if($assessment->custom_officer_name)
+                                            {{ $assessment->custom_officer_name }}
+                                        @elseif($assessment->officer_of_day && is_numeric($assessment->officer_of_day))
+                                            {{ $assessment->officerOfDay ? $assessment->officerOfDay->name : 'N/A' }}
                                         @else
                                             {{ $assessment->officer_of_day ?? 'N/A' }}
                                         @endif

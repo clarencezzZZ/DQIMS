@@ -118,7 +118,9 @@
                             <label class="form-label fw-bold">Officer of the Day</label>
                             <select name="officer_of_day" id="officerSelect" class="form-select" required>
                                 <option value="">-- Select Officer of the Day --</option>
-                                <option value="{{ $lotaOfficer->id ?? '' }}">Mr. Stanley M. Lota</option>
+                                @foreach($officers as $officer)
+                                    <option value="{{ $officer->user_id ?? $officer->id }}">{{ $officer->name }}</option>
+                                @endforeach
                                 <option value="other">Other</option>
                             </select>
                             <div id="newOfficerInput" class="mt-2" style="display: none;">
@@ -155,14 +157,22 @@
                     <input type="date" name="date_to" class="form-control" value="{{ request('date_to') }}">
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Category</label>
+                    <label class="form-label">Description/Type</label>
                     <select name="category" class="form-select">
-                        <option value="">All Categories</option>
-                        @foreach($categories as $category)
-                            <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
-                                {{ $category->name }}
-                            </option>
-                        @endforeach
+                        <option value="">All Types</option>
+                        <option value="Cadastral Cost" {{ request('category') == 'Cadastral Cost' ? 'selected' : '' }}>Cadastral Cost</option>
+                        <option value="Certification: A&D Status" {{ request('category') == 'Certification: A&D Status' ? 'selected' : '' }}>Certification: A&D Status</option>
+                        <option value="Certification: Cadastral Map" {{ request('category') == 'Certification: Cadastral Map' ? 'selected' : '' }}>Certification: Cadastral Map</option>
+                        <option value="Certification Cancellation Of Approved Plan" {{ request('category') == 'Certification Cancellation Of Approved Plan' ? 'selected' : '' }}>Certification Cancellation Of Approved Plan</option>
+                        <option value="Certification GPP" {{ request('category') == 'Certification GPP' ? 'selected' : '' }}>Certification GPP</option>
+                        <option value="Certification Lot Data Computation" {{ request('category') == 'Certification Lot Data Computation' ? 'selected' : '' }}>Certification Lot Data Computation</option>
+                        <option value="Certification Lot Status" {{ request('category') == 'Certification Lot Status' ? 'selected' : '' }}>Certification Lot Status</option>
+                        <option value="Certification Rejection Order" {{ request('category') == 'Certification Rejection Order' ? 'selected' : '' }}>Certification Rejection Order</option>
+                        <option value="Certification Survey Plan" {{ request('category') == 'Certification Survey Plan' ? 'selected' : '' }}>Certification Survey Plan</option>
+                        <option value="Certification: Technical Description" {{ request('category') == 'Certification: Technical Description' ? 'selected' : '' }}>Certification: Technical Description</option>
+                        <option value="GE Credit" {{ request('category') == 'GE Credit' ? 'selected' : '' }}>GE Credit</option>
+                        <option value="Verification Fee" {{ request('category') == 'Verification Fee' ? 'selected' : '' }}>Verification Fee</option>
+                        <option value="Inspection Fee" {{ request('category') == 'Inspection Fee' ? 'selected' : '' }}>Inspection Fee</option>
                     </select>
                 </div>
                 <div class="col-md-3">
@@ -191,6 +201,7 @@
                             <th>Reference</th>
                             <th>Total</th>
                             <th>Processed By</th>
+                            <th>Officer of the Day</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -217,6 +228,15 @@
                                 <td>{{ $assessment->remarks ?? $assessment->reference ?? 'N/A' }}</td>
                                 <td><strong>₱{{ number_format($assessment->fees, 2) }}</strong></td>
                                 <td>{{ $assessment->processedBy->name ?? 'N/A' }}</td>
+                                <td>
+                                    @if($assessment->custom_officer_name)
+                                        {{ $assessment->custom_officer_name }}
+                                    @elseif($assessment->officer_of_day && is_numeric($assessment->officer_of_day))
+                                        {{ $assessment->officerOfDay ? $assessment->officerOfDay->name : 'N/A' }}
+                                    @else
+                                        {{ $assessment->officer_of_day ?? 'N/A' }}
+                                    @endif
+                                </td>
                                 <td>
                                     <div class="d-flex gap-2">
                                         <a href="{{ route('admin.assessments.show', $assessment) }}" class="btn btn-sm btn-outline-primary" title="View">

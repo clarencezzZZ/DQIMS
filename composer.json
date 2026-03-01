@@ -27,7 +27,10 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "exclude-from-classmap": [
+            "vendor/spatie/error-solutions/legacy/"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

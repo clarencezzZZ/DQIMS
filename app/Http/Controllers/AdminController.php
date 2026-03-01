@@ -214,7 +214,10 @@ class AdminController extends Controller
                 ->with('info', 'Assessment already exists for this inquiry.');
         }
 
-        return view('admin.assessment-create', compact('inquiry'));
+        $officers = \App\Models\OfficerOfDay::active()->get();
+        $lotaOfficer = User::where('name', 'Mr. Stanley M. Lota')->first();
+
+        return view('admin.assessment-create', compact('inquiry', 'officers', 'lotaOfficer'));
     }
 
     /**
@@ -225,10 +228,19 @@ class AdminController extends Controller
         $validator = Validator::make($request->all(), [
             'fees' => 'required|numeric|min:0',
             'remarks' => 'nullable|string',
+            'officer_of_day' => 'required',
         ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
+        }
+
+        // Handle officer of the day selection
+        $officerOfDay = $request->officer_of_day;
+        $customOfficerName = null;
+        if ($officerOfDay === 'other') {
+            $customOfficerName = $request->new_officer_name;
+            $officerOfDay = null; // Set to null since we're using custom name
         }
 
         $assessment = Assessment::create([
@@ -241,6 +253,8 @@ class AdminController extends Controller
             'fees' => $request->fees,
             'remarks' => $request->remarks,
             'processed_by' => Auth::id(),
+            'officer_of_day' => $officerOfDay,
+            'custom_officer_name' => $customOfficerName,
             'assessment_date' => now()->toDateString(),
         ]);
 
@@ -263,8 +277,9 @@ class AdminController extends Controller
     public function editAssessment(Assessment $assessment)
     {
         $assessment->load(['processedBy', 'officerOfDay', 'category']);
+        $officers = \App\Models\OfficerOfDay::active()->get();
         $lotaOfficer = User::where('name', 'Mr. Stanley M. Lota')->first();
-        return view('admin.assessment-edit', compact('assessment', 'lotaOfficer'));
+        return view('admin.assessment-edit', compact('assessment', 'officers', 'lotaOfficer'));
     }
 
     /**
@@ -273,6 +288,8 @@ class AdminController extends Controller
     public function updateAssessment(Request $request, Assessment $assessment)
     {
         $validator = Validator::make($request->all(), [
+            'guest_name' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
             'fees' => 'required|numeric|min:0',
             'remarks' => 'nullable|string',
             'officer_of_day' => 'required',
@@ -284,8 +301,13 @@ class AdminController extends Controller
 
         // Handle officer of the day selection
         $officerOfDay = $request->officer_of_day;
+        $customOfficerName = null;
         if ($officerOfDay === 'other') {
-            $officerOfDay = $request->new_officer_name;
+            $customOfficerName = $request->new_officer_name;
+            $officerOfDay = null; // Set to null since we're using custom name
+        } elseif (is_numeric($officerOfDay)) {
+            // Ensure it's stored as integer if it's numeric
+            $officerOfDay = (int) $officerOfDay;
         }
 
         // Build names detail JSON if provided
@@ -302,12 +324,22 @@ class AdminController extends Controller
             }
         }
 
+        // Debug: Log the values being updated
+        \Log::info('Updating assessment ' . $assessment->id . ': officer_of_day=' . $officerOfDay . ', custom_officer_name=' . $customOfficerName);
+        
         $assessment->update([
+            'guest_name' => $request->guest_name,
+            'address' => $request->address,
             'fees' => $request->fees,
             'remarks' => $request->remarks,
             'officer_of_day' => $officerOfDay,
+            'custom_officer_name' => $customOfficerName,
             'names_detail' => json_encode($namesDetail),
         ]);
+
+        // Debug: Log the values after update
+        $assessment->refresh();
+        \Log::info('After update - officer_of_day=' . $assessment->officer_of_day . ', custom_officer_name=' . $assessment->custom_officer_name);
 
         return redirect()->route('admin.assessments.show', $assessment)
             ->with('success', 'Assessment updated successfully.');
@@ -329,13 +361,13 @@ class AdminController extends Controller
         }
 
         if ($request->filled('category')) {
-            $query->byCategory($request->category);
+            $query->where('request_type', $request->category);
         }
 
         $assessments = $query->latest()->paginate(20);
         $categories = Category::where('is_active', true)->get();
-        $officers = User::where('role', '!=', User::ROLE_FRONT_DESK)->active()->get();
-        $lotaOfficer = User::where('name', 'Mr. Stanly M. Lota')->first();
+        $officers = \App\Models\OfficerOfDay::active()->get();
+        $lotaOfficer = User::where('name', 'Mr. Stanley M. Lota')->first();
         
         // Get recent event logs
         $eventLogs = EventLog::with('user')
@@ -499,10 +531,22 @@ class AdminController extends Controller
             'amounts.*' => 'nullable|numeric|min:0',
             'fees' => 'required|numeric|min:0',
             'remarks' => 'nullable|string',
+            'officer_of_day' => 'required',
         ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
+        }
+
+        // Handle officer of the day selection
+        $officerOfDay = $request->officer_of_day;
+        $customOfficerName = null;
+        if ($officerOfDay === 'other') {
+            $customOfficerName = $request->new_officer_name;
+            $officerOfDay = null; // Set to null since we're using custom name
+            
+            // Do not add new custom officer to officers_of_day table
+            // to maintain restricted dropdown with only Mr. Stanley M. Lota and Other
         }
 
         // Build names detail JSON
@@ -535,6 +579,8 @@ class AdminController extends Controller
             'fees' => $request->fees,
             'remarks' => $request->remarks,
             'processed_by' => Auth::user()->id,
+            'officer_of_day' => $officerOfDay,
+            'custom_officer_name' => $customOfficerName,
             'assessment_date' => $request->assessment_date,
         ]);
 

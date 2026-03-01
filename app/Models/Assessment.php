@@ -26,6 +26,7 @@ class Assessment extends Model
         'remarks',
         'processed_by',
         'officer_of_day',
+        'custom_officer_name',
         'assessment_date'
     ];
 
@@ -81,6 +82,14 @@ class Assessment extends Model
     public function scopeDateRange($query, $startDate, $endDate)
     {
         return $query->whereBetween('assessment_date', [$startDate, $endDate]);
+    }
+
+    /**
+     * Scope by category
+     */
+    public function scopeByCategory($query, $categoryId)
+    {
+        return $query->where('category_id', $categoryId);
     }
 
     /**
