@@ -467,17 +467,29 @@ class AdminController extends Controller
     public function storeCategory(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'code' => 'required|string|max:10|unique:categories',
+            'section' => 'required|string|max:20',
+            'section_name' => 'required|string|max:100',
             'name' => 'required|string|max:255',
+            'code' => 'required|string|max:50|unique:categories',
             'description' => 'nullable|string',
             'color' => 'required|string|max:7',
+            'lobby' => 'nullable|string|max:20',
         ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
-
-        Category::create($request->all());
+                
+        Category::create([
+            'section' => $request->section,
+            'section_name' => $request->section_name,
+            'code' => $request->code,
+            'name' => $request->name,
+            'description' => $request->description,
+            'color' => $request->color,
+            'lobby' => $request->lobby,
+            'is_active' => true,
+        ]);
 
         return back()->with('success', 'Category created successfully.');
     }
@@ -488,26 +500,73 @@ class AdminController extends Controller
     public function updateCategory(Request $request, Category $category)
     {
         $validator = Validator::make($request->all(), [
-            'code' => 'required|string|max:10|unique:categories,code,' . $category->id,
+            'section' => 'required|string|max:20',
+            'section_name' => 'required|string|max:100',
             'name' => 'required|string|max:255',
+            'code' => 'required|string|max:50|unique:categories,code,' . $category->id,
             'description' => 'nullable|string',
             'color' => 'required|string|max:7',
+            'lobby' => 'nullable|string|max:20',
             'is_active' => 'boolean',
         ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
-
+        
         $category->update([
+            'section' => $request->section,
+            'section_name' => $request->section_name,
             'code' => $request->code,
             'name' => $request->name,
             'description' => $request->description,
             'color' => $request->color,
+            'lobby' => $request->lobby,
             'is_active' => $request->is_active ?? false,
         ]);
 
         return back()->with('success', 'Category updated successfully.');
+    }
+
+    /**
+     * Remove the specified category from storage.
+     */
+    public function destroyCategory(Category $category)
+    {
+        try {
+            // Check if category has related inquiries or assessments
+            if ($category->inquiries()->count() > 0) {
+                return back()->with('error', 'Cannot delete category. It has associated inquiries.');
+            }
+            
+            if ($category->assessments()->count() > 0) {
+                return back()->with('error', 'Cannot delete category. It has associated assessments.');
+            }
+            
+            // Handle assigned users - reset their assigned category to null
+            $assignedUsers = $category->assignedUsers;
+            foreach ($assignedUsers as $user) {
+                $user->assigned_category_id = null;
+                $user->save();
+            }
+            
+            // Log the deletion event
+            EventLog::create([
+                'user_id' => Auth::user()->id,
+                'action' => 'deleted',
+                'category_name' => $category->name,
+                'description' => 'Category deleted by ' . Auth::user()->name,
+                'old_values' => json_encode($category->toArray()),
+                'new_values' => null,
+            ]);
+            
+            // Delete the category
+            $category->delete();
+            
+            return redirect()->route('admin.categories')->with('success', 'Category deleted successfully.');
+        } catch (\Exception $e) {
+            return redirect()->route('admin.categories')->with('error', 'Failed to delete category: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -516,7 +575,6 @@ class AdminController extends Controller
     public function storeDirectAssessment(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'assessment_number' => 'required|string|max:50',
             'responsibility_center' => 'required|string|max:50',
             'assessment_date' => 'required|date',
             'guest_name' => 'required|string|max:255',
@@ -537,6 +595,9 @@ class AdminController extends Controller
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
+
+        // Generate unique assessment number on the server side to prevent duplicates
+        $assessmentNumber = $this->generateAssessmentNumber();
 
         // Handle officer of the day selection
         $officerOfDay = $request->officer_of_day;
@@ -564,8 +625,8 @@ class AdminController extends Controller
         }
 
         $assessment = Assessment::create([
-            'assessment_number' => $request->assessment_number,
-            'bill_number' => $request->assessment_number, // Keep for backward compatibility
+            'assessment_number' => $assessmentNumber,
+            'bill_number' => $assessmentNumber, // Keep for backward compatibility
             'responsibility_center' => $request->responsibility_center,
             'inquiry_id' => null, // Direct assessment, no inquiry
             'queue_number' => 'DIRECT-' . time(),
@@ -593,20 +654,11 @@ class AdminController extends Controller
      */
     private function generateAssessmentNumber()
     {
-        $prefix = 'DENR';
         $year = date('Y');
-        $lastAssessment = \App\Models\Assessment::whereYear('created_at', $year)
-            ->orderBy('id', 'desc')
-            ->first();
-
-        if ($lastAssessment) {
-            $lastNumber = intval(substr($lastAssessment->assessment_number, -6));
-            $newNumber = $lastNumber + 1;
-        } else {
-            $newNumber = 1;
-        }
-
-        return $prefix . '-' . $year . '-' . str_pad($newNumber, 6, '0', STR_PAD_LEFT);
+        $month = date('m');
+        
+        // Use the sequence model to ensure uniqueness
+        return \App\Models\AssessmentSequence::getNextNumber($year, $month);
     }
 
     /**
@@ -643,13 +695,21 @@ class AdminController extends Controller
     {
         try {
             // Get the last assessment number for the given year and month
-            $lastAssessment = Assessment::whereYear('created_at', $year)
-                ->whereMonth('created_at', $month)
-                ->orderBy('id', 'desc')
-                ->first();
+            $lastAssessment = Assessment::whereRaw(
+                "DATE_FORMAT(created_at, '%Y-%m') = ?", 
+                ["{$year}-{$month}"]
+            )
+            ->orderBy('assessment_number', 'desc')
+            ->first();
 
             if ($lastAssessment) {
-                $lastNumber = intval(substr($lastAssessment->assessment_number, -4));
+                // Extract the number from the existing format (YYYY-MM-NNNN)
+                $parts = explode('-', $lastAssessment->assessment_number);
+                if (isset($parts[2]) && is_numeric($parts[2])) {
+                    $lastNumber = intval($parts[2]);
+                } else {
+                    $lastNumber = 0;
+                }
             } else {
                 $lastNumber = 0;
             }

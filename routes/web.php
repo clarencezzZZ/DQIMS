@@ -103,6 +103,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/categories', [AdminController::class, 'categories'])->name('categories');
             Route::post('/categories', [AdminController::class, 'storeCategory'])->name('categories.store');
             Route::put('/categories/{category}', [AdminController::class, 'updateCategory'])->name('categories.update');
+            Route::delete('/categories/{category}', [AdminController::class, 'destroyCategory'])->name('categories.destroy');
         });
     });
 

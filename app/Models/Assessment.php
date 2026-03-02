@@ -97,10 +97,10 @@ class Assessment extends Model
      */
     public static function generateAssessmentNumber(): string
     {
-        $prefix = 'ASM';
-        $date = now()->format('Ymd');
-        $count = self::whereDate('assessment_date', now()->toDateString())->count() + 1;
+        $year = date('Y');
+        $month = date('m');
         
-        return sprintf('%s-%s-%04d', $prefix, $date, $count);
+        // Use the sequence model to ensure uniqueness
+        return \App\Models\AssessmentSequence::getNextNumber($year, $month);
     }
 }

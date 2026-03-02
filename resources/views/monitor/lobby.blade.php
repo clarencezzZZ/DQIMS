@@ -20,29 +20,60 @@
         }
         .section-card {
             background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
+            border-radius: 40px;
             overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 35px 90px rgba(0, 0, 0, 0.6);
             transition: transform 0.3s ease;
+            height: 600px;
+            min-width: 380px;
+            width: 100%;
         }
         .section-card:hover {
             transform: scale(1.02);
         }
         .section-header {
-            padding: 20px;
+            padding: 40px;
             color: white;
             font-weight: bold;
+            font-size: 3.2rem;
         }
+        
+        /* Grid container for 3x3 layout */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 25px;
+            padding: 20px;
+            min-height: 80vh;
+        }
+        
+        /* Card positions in the grid */
+        .card-position-acs { grid-column: 1; grid-row: 1; }
+        .card-position-ooss { grid-column: 2; grid-row: 1; }
+        .card-position-scs { grid-column: 3; grid-row: 1; }
+        .card-position-les { grid-column: 1; grid-row: 2; }
+        .card-position-additional-1 { grid-column: 2; grid-row: 2; }
+        .card-position-additional-2 { grid-column: 3; grid-row: 2; }
+        .card-position-additional-3 { grid-column: 1; grid-row: 3; }
+        .card-position-additional-4 { grid-column: 2; grid-row: 3; }
+        .card-position-additional-5 { grid-column: 3; grid-row: 3; }
         .queue-number {
-            font-size: 3.5rem;
+            font-size: 7.5rem;
             font-weight: bold;
             color: #1a5f2a;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            text-shadow: 5px 5px 10px rgba(0,0,0,0.4);
         }
         .waiting-badge {
-            font-size: 1.5rem;
-            padding: 10px 20px;
+            font-size: 2.5rem;
+            padding: 25px 35px;
             border-radius: 50px;
+        }
+        .status-text {
+            font-size: 2.8rem;
+        }
+        .category-text {
+            font-size: 2.3rem;
         }
         .fullscreen-btn {
             position: fixed;
@@ -106,26 +137,194 @@
         </div>
     </div>
 
-    <!-- Queue Status Cards - Grouped by Section -->
-    <div class="container-fluid py-5">
-        <div class="row g-4" id="queueDisplay">
-            @foreach($sectionData as $section => $data)
-            <div class="col-md-6 col-lg-3">
+    <!-- Queue Status Cards - 3x3 Grid Layout -->
+    <div class="container-fluid py-4">
+        <div class="grid-container" id="queueDisplay">
+            <!-- Fixed positions: ACS (col 1), OOSS (col 2), SCS (col 3) in first row, LES (col 1 of second row), others follow -->
+            
+            <!-- Grid Position 1: ACS (Top Left) -->
+            @if(isset($sectionData['ACS']))
+            <div class="card-position-acs">
+                <div class="section-card h-100">
+                    <div class="section-header d-flex justify-content-between align-items-center" style="background-color: {{ $sectionData['ACS']['color'] }}">
+                        <h2 class="mb-0 fw-bold">{{ 'ACS' }}</h2>
+                        <span class="badge bg-dark waiting-badge" id="waiting_ACS">Waiting: 0</span>
+                    </div>
+                    <div class="p-5 text-center">
+                        <div class="queue-number mb-3" id="serving_ACS">---</div>
+                        <div class="text-muted status-text" id="status_ACS">No Queue</div>
+                        <div class="mt-3 text-muted category-text" id="category_ACS"></div>
+                    </div>
+                </div>
+            </div>
+            @endif
+            
+            <!-- Grid Position 2: OOSS (Top Center) -->
+            @if(isset($sectionData['OOSS']))
+            <div class="card-position-ooss">
+                <div class="section-card h-100">
+                    <div class="section-header d-flex justify-content-between align-items-center" style="background-color: {{ $sectionData['OOSS']['color'] }}">
+                        <h2 class="mb-0 fw-bold">{{ 'OOSS' }}</h2>
+                        <span class="badge bg-dark waiting-badge" id="waiting_OOSS">Waiting: 0</span>
+                    </div>
+                    <div class="p-5 text-center">
+                        <div class="queue-number mb-3" id="serving_OOSS">---</div>
+                        <div class="text-muted status-text" id="status_OOSS">No Queue</div>
+                        <div class="mt-3 text-muted category-text" id="category_OOSS"></div>
+                    </div>
+                </div>
+            </div>
+            @endif
+            
+            <!-- Grid Position 3: SCS (Top Right) -->
+            @if(isset($sectionData['SCS']))
+            <div class="card-position-scs">
+                <div class="section-card h-100">
+                    <div class="section-header d-flex justify-content-between align-items-center" style="background-color: {{ $sectionData['SCS']['color'] }}">
+                        <h2 class="mb-0 fw-bold">{{ 'SCS' }}</h2>
+                        <span class="badge bg-dark waiting-badge" id="waiting_SCS">Waiting: 0</span>
+                    </div>
+                    <div class="p-5 text-center">
+                        <div class="queue-number mb-3" id="serving_SCS">---</div>
+                        <div class="text-muted status-text" id="status_SCS">No Queue</div>
+                        <div class="mt-3 text-muted category-text" id="category_SCS"></div>
+                    </div>
+                </div>
+            </div>
+            @endif
+            
+            <!-- Grid Position 4: LES (Middle Left) -->
+            @if(isset($sectionData['LES']))
+            <div class="card-position-les">
+                <div class="section-card h-100">
+                    <div class="section-header d-flex justify-content-between align-items-center" style="background-color: {{ $sectionData['LES']['color'] }}">
+                        <h2 class="mb-0 fw-bold">{{ 'LES' }}</h2>
+                        <span class="badge bg-dark waiting-badge" id="waiting_LES">Waiting: 0</span>
+                    </div>
+                    <div class="p-5 text-center">
+                        <div class="queue-number mb-3" id="serving_LES">---</div>
+                        <div class="text-muted status-text" id="status_LES">No Queue</div>
+                        <div class="mt-3 text-muted category-text" id="category_LES"></div>
+                    </div>
+                </div>
+            </div>
+            @endif
+            
+            <!-- Additional sections fill remaining spots in order (Row 2 - Card 5, Row 2 - Card 6, etc.) -->
+            @php
+            $fixedSections = ['ACS', 'OOSS', 'SCS', 'LES'];
+            $dynamicSections = [];
+            foreach($sectionData as $section => $data) {
+                if(!in_array($section, $fixedSections)) {
+                    $dynamicSections[] = $section;
+                }
+            }
+            @endphp
+            
+            @foreach($dynamicSections as $index => $section)
+            @php 
+                $data = $sectionData[$section]; 
+                $positionClass = 'card-position-additional-' . ($index + 1);
+            @endphp
+            <div class="{{ $positionClass }}">
                 <div class="section-card h-100">
                     <div class="section-header d-flex justify-content-between align-items-center" style="background-color: {{ $data['color'] }}">
                         <h2 class="mb-0 fw-bold">{{ $section }}</h2>
                         <span class="badge bg-dark waiting-badge" id="waiting_{{ $section }}">Waiting: 0</span>
                     </div>
-                    <div class="p-4 text-center">
+                    <div class="p-5 text-center">
                         <div class="queue-number mb-3" id="serving_{{ $section }}">---</div>
-                        <div class="text-muted fs-5" id="status_{{ $section }}">No Queue</div>
-                        <div class="mt-3 text-muted" id="category_{{ $section }}"></div>
+                        <div class="text-muted status-text" id="status_{{ $section }}">No Queue</div>
+                        <div class="mt-3 text-muted category-text" id="category_{{ $section }}"></div>
                     </div>
                 </div>
             </div>
             @endforeach
         </div>
     </div>
+    
+    <!-- Responsive adjustments for different screen sizes -->
+    <style>
+        @media (max-width: 1200px) {
+            .grid-container {
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: repeat(4, 1fr);
+                gap: 20px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            .card-position-acs { grid-column: 1; grid-row: 1; }
+            .card-position-ooss { grid-column: 2; grid-row: 1; }
+            .card-position-scs { grid-column: 1; grid-row: 2; }
+            .card-position-les { grid-column: 2; grid-row: 2; }
+            .card-position-additional-1 { grid-column: 1; grid-row: 3; }
+            .card-position-additional-2 { grid-column: 2; grid-row: 3; }
+            .card-position-additional-3 { grid-column: 1; grid-row: 4; }
+            .card-position-additional-4 { grid-column: 2; grid-row: 4; }
+            .card-position-additional-5 { grid-column: 1; grid-row: 5; }
+        }
+        
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: repeat(6, 1fr);
+                gap: 15px;
+                padding: 15px;
+                margin: 0 auto;
+            }
+            .card-position-acs { grid-column: 1; grid-row: 1; }
+            .card-position-ooss { grid-column: 1; grid-row: 2; }
+            .card-position-scs { grid-column: 1; grid-row: 3; }
+            .card-position-les { grid-column: 1; grid-row: 4; }
+            .card-position-additional-1 { grid-column: 1; grid-row: 5; }
+            .card-position-additional-2 { grid-column: 1; grid-row: 6; }
+            .card-position-additional-3 { grid-column: 1; grid-row: 7; }
+            .card-position-additional-4 { grid-column: 1; grid-row: 8; }
+            .card-position-additional-5 { grid-column: 1; grid-row: 9; }
+            
+            .section-card {
+                min-width: auto;
+                height: auto;
+                min-height: 300px;
+            }
+            
+            .section-header {
+                font-size: 2.2rem;
+                padding: 25px;
+            }
+            
+            .queue-number {
+                font-size: 5rem;
+            }
+            
+            .status-text {
+                font-size: 2rem;
+            }
+            
+            .category-text {
+                font-size: 1.6rem;
+            }
+        }
+        
+        @media (min-width: 1920px) {
+            .section-card {
+                min-width: 450px;
+            }
+            
+            .section-header {
+                font-size: 3.5rem;
+            }
+            
+            .queue-number {
+                font-size: 8.5rem;
+            }
+            
+            .grid-container {
+                margin: 0 auto;
+                padding: 30px;
+            }
+        }
+    </style>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
