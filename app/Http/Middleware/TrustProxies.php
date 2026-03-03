@@ -12,7 +12,7 @@ class TrustProxies extends Middleware
      *
      * @var array<int, string>|string|null
      */
-    protected $proxies;
+    protected $proxies = '*';
 
     /**
      * The headers that should be used to detect proxies.
@@ -25,4 +25,13 @@ class TrustProxies extends Middleware
         Request::HEADER_X_FORWARDED_PORT |
         Request::HEADER_X_FORWARDED_PROTO |
         Request::HEADER_X_FORWARDED_AWS_ELB;
+    
+    /**
+     * Determine if the request is from a trusted proxy.
+     * Override to always trust proxies in local environment
+     */
+    public function trustingProxies($request)
+    {
+        return true; // Trust all proxies for Cloudflare tunnel
+    }
 }

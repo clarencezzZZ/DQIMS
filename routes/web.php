@@ -36,8 +36,35 @@ Route::prefix('monitor')->name('monitor.')->group(function () {
     Route::get('/announcements', [MonitorController::class, 'announcements'])->name('announcements');
 });
 
+// Public front-desk queue status (for monitor display)
+Route::prefix('front-desk')->name('front-desk.')->group(function () {
+    Route::get('/queue-status', [FrontDeskController::class, 'queueStatus'])->name('queue-status');
+    Route::get('/live-status', [FrontDeskController::class, 'showQueueStatus'])->name('live-status');
+});
+
 // Authenticated routes
 Route::middleware(['auth'])->group(function () {
+    
+    // Diagnostic test page (for debugging)
+    Route::get('/diagnostic-test', function() {
+        return view('diagnostic-test');
+    })->name('diagnostic-test');
+    
+    // API routes for section dashboard (inside auth middleware)
+    Route::prefix('api')->group(function () {
+        Route::get('/categories', function() {
+            \Log::info('=== API Categories Request ===');
+            \Log::info('User ID: ' . auth()->id());
+            \Log::info('Username: ' . auth()->user()->username);
+            
+            $categories = \App\Models\Category::all();
+            
+            \Log::info('Categories count: ' . $categories->count());
+            \Log::info('=== End API Categories Request ===');
+            
+            return response()->json($categories);
+        })->name('api.categories');
+    });
     
     // Front Desk Routes
     Route::middleware(['role:front_desk,admin'])->prefix('front-desk')->name('front-desk.')->group(function () {
@@ -45,14 +72,15 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/create', [FrontDeskController::class, 'create'])->name('create');
         Route::post('/store', [FrontDeskController::class, 'store'])->name('store');
         Route::get('/ticket/{inquiry}', [FrontDeskController::class, 'printTicket'])->name('ticket');
-        Route::get('/queue-status', [FrontDeskController::class, 'queueStatus'])->name('queue-status');
-        Route::get('/live-status', [FrontDeskController::class, 'showQueueStatus'])->name('live-status');
         Route::get('/recent-inquiries', [FrontDeskController::class, 'recentInquiries'])->name('recent-inquiries');
     });
 
     // Section Staff Routes
     Route::middleware(['role:section_staff,admin'])->prefix('section')->name('section.')->group(function () {
         Route::get('/', [SectionController::class, 'index'])->name('index');
+        Route::get('/debug', function() {
+            return view('debug-section');
+        })->name('debug');
         Route::get('/test', function() {
             $user = auth()->user();
             return response()->json([
@@ -130,14 +158,6 @@ Route::middleware(['auth'])->group(function () {
         
         return redirect('/');
     })->name('dashboard');
-});
-
-// API routes for section dashboard
-Route::middleware(['auth'])->prefix('api')->group(function () {
-    Route::get('/categories', function() {
-        $categories = \App\Models\Category::all();
-        return response()->json($categories);
-    })->name('api.categories');
 });
 
 // Auth routes

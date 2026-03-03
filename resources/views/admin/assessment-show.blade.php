@@ -3,7 +3,7 @@
 @section('title', 'View Assessment')
 
 @section('content')
-<div class="container">
+<div class="container print-container">
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <!-- Page Header -->
@@ -192,16 +192,116 @@
     @media print {
         body {
             background: white;
+            margin: 0;
+            padding: 0;
+            font-size: 12pt;
+            line-height: 1.4;
         }
+        
         .navbar, .sidebar, .btn, .no-print {
             display: none !important;
         }
+        
+        .container, .print-container {
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .row {
+            margin: 0;
+        }
+        
+        .col-lg-8 {
+            max-width: 100%;
+            flex: 0 0 100%;
+        }
+        
+        #assessment-print {
+            page-break-inside: avoid;
+            page-break-after: auto;
+            border: 2px solid #28a745;
+            box-shadow: none !important;
+            margin: 0;
+            padding: 10px;
+        }
+        
         .card {
             border: 2px solid #28a745;
             box-shadow: none !important;
         }
-        .container {
-            max-width: 100%;
+        
+        .card-header {
+            padding: 10px;
+            page-break-after: avoid;
+        }
+        
+        .card-body {
+            padding: 15px;
+            page-break-inside: avoid;
+        }
+        
+        .card-footer {
+            padding: 10px;
+            page-break-before: avoid;
+        }
+        
+        h2, h3, h4, h6 {
+            margin-top: 5px;
+            margin-bottom: 5px;
+            page-break-after: avoid;
+        }
+        
+        .table {
+            page-break-inside: avoid;
+        }
+        
+        .table th, .table td {
+            padding: 4px;
+            font-size: 11pt;
+        }
+        
+        .mb-4, .my-4 {
+            margin-bottom: 8px !important;
+        }
+        
+        .p-4 {
+            padding: 10px !important;
+        }
+        
+        .p-3 {
+            padding: 8px !important;
+        }
+        
+        hr {
+            margin: 10px 0;
+            page-break-after: avoid;
+        }
+        
+        /* Ensure content stays together */
+        .bg-light {
+            padding: 8px;
+            page-break-inside: avoid;
+        }
+        
+        /* Prevent table rows from breaking */
+        tr {
+            page-break-inside: avoid;
+        }
+        
+        /* Adjust font sizes for better fit */
+        .text-muted {
+            font-size: 10pt;
+        }
+        
+        .fw-bold {
+            font-size: 11pt;
+        }
+        
+        /* Ensure the entire card fits on one page */
+        @page {
+            size: A4;
+            margin: 10mm;
         }
     }
 </style>

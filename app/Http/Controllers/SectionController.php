@@ -21,7 +21,14 @@ class SectionController extends Controller
         
         $category = $user->assignedCategory;
         
-        \Log::info('Category assigned: ' . ($category ? $category->id : 'none'));
+        // Check if category is passed via URL parameter (for admin viewing specific category)
+        if (request()->has('category')) {
+            $categoryId = request()->input('category');
+            $category = \App\Models\Category::find($categoryId);
+            \Log::info('Category from URL parameter: ' . ($category ? $category->id : 'none'));
+        } else {
+            \Log::info('Category assigned: ' . ($category ? $category->id : 'none'));
+        }
 
         // Allow admin and section staff users to access section dashboard even without category assignment
         if (!$category && !$user->isAdmin() && !$user->isSectionStaff()) {
@@ -30,11 +37,14 @@ class SectionController extends Controller
 
         // For admin and section staff users without category, show all categories or a selection interface
         if ((!$category && $user->isAdmin()) || (!$category && $user->isSectionStaff())) {
-            // For now, let's pass null category and handle it in the view
-            return view('section.index', ['category' => null]);
+            // Pass all categories for modal
+            $categories = \App\Models\Category::where('is_active', true)->get();
+            return view('section.index', ['category' => null, 'categories' => $categories]);
         }
 
-        return view('section.index', compact('category'));
+        // Get all active categories for modal even when viewing specific category
+        $categories = \App\Models\Category::where('is_active', true)->get();
+        return view('section.index', compact('category', 'categories'));
     }
 
     /**
@@ -413,30 +423,57 @@ class SectionController extends Controller
     {
         $user = Auth::user();
         $categoryId = $user->assigned_category_id;
+        $targetCategoryId = request()->input('category_id');
+
+        \Log::info('=== Statistics Request ===');
+        \Log::info('User ID: ' . $user->id);
+        \Log::info('Username: ' . $user->username);
+        \Log::info('User Role: ' . $user->role);
+        \Log::info('Assigned Category ID: ' . ($categoryId ?? 'null'));
+        \Log::info('Requested category_id param: ' . ($targetCategoryId ?? 'null'));
 
         // Allow section staff to access all categories if not assigned to a specific one
         if (!$categoryId && $user->isSectionStaff()) {
             // For section staff with no assigned category, get statistics for all categories
-            $targetCategoryId = request()->input('category_id');
-            
             if ($targetCategoryId) {
                 // Get statistics for a specific category
+                \Log::info('Path: Section staff - Stats for specific category: ' . $targetCategoryId);
                 $today = Inquiry::today()->byCategory($targetCategoryId);
             } else {
                 // Get statistics for all categories
+                \Log::info('Path: Section staff - Stats for all categories');
+                $today = Inquiry::today();
+            }
+        } elseif (!$categoryId && $user->isAdmin()) {
+            // For admin users with no category, check if requesting specific category
+            if ($targetCategoryId) {
+                // Get statistics for a specific category
+                \Log::info('Path: Admin - Stats for specific category: ' . $targetCategoryId);
+                $today = Inquiry::today()->byCategory($targetCategoryId);
+            } else {
+                // Get statistics for ALL categories (admin overview)
+                \Log::info('Path: Admin - Stats for all categories');
                 $today = Inquiry::today();
             }
         } elseif (!$categoryId && !$user->isAdmin() && !$user->isSectionStaff()) {
+            \Log::error('Path: Unauthorized - No category assigned');
             return response()->json(['error' => 'No category assigned'], 403);
         } else {
+            // User has an assigned category
+            \Log::info('Path: User with assigned category - Stats for category: ' . $categoryId);
             $today = Inquiry::today()->byCategory($categoryId);
         }
 
-        return response()->json([
+        $stats = [
             'waiting' => (clone $today)->waiting()->count(),
             'serving' => (clone $today)->where('status', 'serving')->count(),
             'completed' => (clone $today)->completed()->count(),
             'skipped' => (clone $today)->where('status', 'skipped')->count(),
-        ]);
+        ];
+
+        \Log::info('Statistics result:', $stats);
+        \Log::info('=== End Statistics Request ===');
+
+        return response()->json($stats);
     }
 }
