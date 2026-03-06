@@ -147,12 +147,13 @@
             <div class="card-position-acs">
                 <div class="section-card h-100">
                     <div class="section-header d-flex justify-content-between align-items-center" style="background-color: {{ $sectionData['ACS']['color'] }}">
-                        <h2 class="mb-0 fw-bold">{{ 'ACS' }}</h2>
+                        <h2 class="mb-0 fw-bold">{{ $sectionData['ACS']['name'] }}</h2>
                         <span class="badge bg-dark waiting-badge" id="waiting_ACS">Waiting: 0</span>
                     </div>
                     <div class="p-5 text-center">
                         <div class="queue-number mb-3" id="serving_ACS">---</div>
                         <div class="text-muted status-text" id="status_ACS">No Queue</div>
+                        <div class="mt-2 text-muted status-text" style="font-size: 2.0rem;" id="next_queue_ACS"></div>
                         <div class="mt-3 text-muted category-text" id="category_ACS"></div>
                     </div>
                 </div>
@@ -164,12 +165,13 @@
             <div class="card-position-ooss">
                 <div class="section-card h-100">
                     <div class="section-header d-flex justify-content-between align-items-center" style="background-color: {{ $sectionData['OOSS']['color'] }}">
-                        <h2 class="mb-0 fw-bold">{{ 'OOSS' }}</h2>
+                        <h2 class="mb-0 fw-bold">{{ $sectionData['OOSS']['name'] }}</h2>
                         <span class="badge bg-dark waiting-badge" id="waiting_OOSS">Waiting: 0</span>
                     </div>
                     <div class="p-5 text-center">
                         <div class="queue-number mb-3" id="serving_OOSS">---</div>
                         <div class="text-muted status-text" id="status_OOSS">No Queue</div>
+                        <div class="mt-2 text-muted status-text" style="font-size: 2.0rem;" id="next_queue_OOSS"></div>
                         <div class="mt-3 text-muted category-text" id="category_OOSS"></div>
                     </div>
                 </div>
@@ -181,12 +183,13 @@
             <div class="card-position-scs">
                 <div class="section-card h-100">
                     <div class="section-header d-flex justify-content-between align-items-center" style="background-color: {{ $sectionData['SCS']['color'] }}">
-                        <h2 class="mb-0 fw-bold">{{ 'SCS' }}</h2>
+                        <h2 class="mb-0 fw-bold">{{ $sectionData['SCS']['name'] }}</h2>
                         <span class="badge bg-dark waiting-badge" id="waiting_SCS">Waiting: 0</span>
                     </div>
                     <div class="p-5 text-center">
                         <div class="queue-number mb-3" id="serving_SCS">---</div>
                         <div class="text-muted status-text" id="status_SCS">No Queue</div>
+                        <div class="mt-2 text-muted status-text" style="font-size: 2.0rem;" id="next_queue_SCS"></div>
                         <div class="mt-3 text-muted category-text" id="category_SCS"></div>
                     </div>
                 </div>
@@ -198,12 +201,13 @@
             <div class="card-position-les">
                 <div class="section-card h-100">
                     <div class="section-header d-flex justify-content-between align-items-center" style="background-color: {{ $sectionData['LES']['color'] }}">
-                        <h2 class="mb-0 fw-bold">{{ 'LES' }}</h2>
+                        <h2 class="mb-0 fw-bold">{{ $sectionData['LES']['name'] }}</h2>
                         <span class="badge bg-dark waiting-badge" id="waiting_LES">Waiting: 0</span>
                     </div>
                     <div class="p-5 text-center">
                         <div class="queue-number mb-3" id="serving_LES">---</div>
                         <div class="text-muted status-text" id="status_LES">No Queue</div>
+                        <div class="mt-2 text-muted status-text" style="font-size: 2.0rem;" id="next_queue_LES"></div>
                         <div class="mt-3 text-muted category-text" id="category_LES"></div>
                     </div>
                 </div>
@@ -229,12 +233,13 @@
             <div class="{{ $positionClass }}">
                 <div class="section-card h-100">
                     <div class="section-header d-flex justify-content-between align-items-center" style="background-color: {{ $data['color'] }}">
-                        <h2 class="mb-0 fw-bold">{{ $section }}</h2>
+                        <h2 class="mb-0 fw-bold">{{ $data['name'] }}</h2>
                         <span class="badge bg-dark waiting-badge" id="waiting_{{ $section }}">Waiting: 0</span>
                     </div>
                     <div class="p-5 text-center">
                         <div class="queue-number mb-3" id="serving_{{ $section }}">---</div>
                         <div class="text-muted status-text" id="status_{{ $section }}">No Queue</div>
+                        <div class="mt-2 text-muted status-text" style="font-size: 2.0rem;" id="next_queue_{{ $section }}"></div>
                         <div class="mt-3 text-muted category-text" id="category_{{ $section }}"></div>
                     </div>
                 </div>
@@ -330,6 +335,9 @@
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
     
     <script>
+    // Cache buster - forces browser to reload this script
+    console.log('Lobby Monitor Script Loaded - ' + new Date().toISOString());
+    
     // Fullscreen toggle function
     function toggleFullscreen() {
         if (!document.fullscreenElement) {
@@ -389,26 +397,82 @@
             const servingEl = document.getElementById('serving_' + section);
             const statusEl = document.getElementById('status_' + section);
             const categoryEl = document.getElementById('category_' + section);
+            const nextQueueEl = document.getElementById('next_queue_' + section);
             
             if (servingEl && statusEl) {
                 if (info.now_serving) {
-                    servingEl.textContent = info.now_serving;
+                    // Someone is being served
+                    const queueNum = formatQueueNumber(info.now_serving);
+                    servingEl.textContent = queueNum;
                     servingEl.style.color = '#1a5f2a';
                     statusEl.textContent = 'Now Serving';
-                    if (categoryEl) categoryEl.textContent = info.now_serving_category || '';
-                } else if (info.latest_waiting) {
-                    servingEl.textContent = info.latest_waiting;
+                    
+                    // Show next in queue if available
+                    if (nextQueueEl) {
+                        if (info.second_in_queue) {
+                            const nextNum = formatQueueNumber(info.second_in_queue);
+                            nextQueueEl.innerHTML = '<div style="font-size: 1.8rem; margin-top: 10px;">Next in Queue</div><div style="font-weight: bold; color: #f39c12;">' + nextNum + '</div>';
+                        } else if (info.first_in_queue) {
+                            const nextNum = formatQueueNumber(info.first_in_queue);
+                            nextQueueEl.innerHTML = '<div style="font-size: 1.8rem; margin-top: 10px;">Next in Queue</div><div style="font-weight: bold; color: #f39c12;">' + nextNum + '</div>';
+                        } else {
+                            nextQueueEl.textContent = '';
+                        }
+                    }
+                    
+                    // Hide category text - we don't want to display it
+                    if (categoryEl) categoryEl.textContent = '';
+                } else if (info.first_in_queue) {
+                    // No one being served, show first in queue
+                    const queueNum = formatQueueNumber(info.first_in_queue);
+                    servingEl.textContent = queueNum;
                     servingEl.style.color = '#f39c12';
-                    statusEl.textContent = 'Next in Queue';
-                    if (categoryEl) categoryEl.textContent = info.latest_waiting_category || '';
+                    statusEl.textContent = 'Now Serving';
+                    
+                    // Show next in queue if available
+                    if (nextQueueEl) {
+                        if (info.second_in_queue) {
+                            const nextNum = formatQueueNumber(info.second_in_queue);
+                            nextQueueEl.innerHTML = '<div style="font-size: 1.8rem; margin-top: 10px;">Next in Queue</div><div style="font-weight: bold; color: #f39c12;">' + nextNum + '</div>';
+                        } else {
+                            nextQueueEl.textContent = '';
+                        }
+                    }
+                    
+                    // Hide category text - we don't want to display it
+                    if (categoryEl) categoryEl.textContent = '';
                 } else {
                     servingEl.textContent = '---';
                     servingEl.style.color = '#6c757d';
                     statusEl.textContent = 'No Queue';
+                    if (nextQueueEl) nextQueueEl.textContent = '';
                     if (categoryEl) categoryEl.textContent = '';
                 }
             }
         }
+    }
+
+    // Format queue number to show only sequential number
+    function formatQueueNumber(fullQueueNumber) {
+        console.log('Formatting queue number:', fullQueueNumber);
+        
+        // Try to extract the last number after the last hyphen
+        // e.g., "SECSIME NO.R4A-L_SMD-01-009" -> "#9"
+        // e.g., "dsds-001" -> "#1"
+        const parts = fullQueueNumber.split('-');
+        if (parts.length > 0) {
+            const lastPart = parts[parts.length - 1];
+            const num = parseInt(lastPart.replace(/^0+/, '')); // Remove leading zeros
+            console.log('Extracted number:', num);
+            if (!isNaN(num)) {
+                const formatted = '#' + num;
+                console.log('Formatted as:', formatted);
+                return formatted;
+            }
+        }
+        // Fallback: if no number found, return the original
+        console.log('Returning original:', fullQueueNumber);
+        return fullQueueNumber;
     }
 
     // Auto-refresh every 5 seconds

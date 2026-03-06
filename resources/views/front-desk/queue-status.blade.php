@@ -130,17 +130,18 @@
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Queue #</th>
-                                    <th>Guest Name</th>
-                                    <th>Category</th>
-                                    <th>Status</th>
-                                    <th>Time</th>
-                                    <th>Actions</th>
+                                    <th width="8%" class="text-center fw-bold">#</th>
+                                    <th width="18%" class="fw-bold"><i class="bi bi-person me-1"></i>GUEST NAME</th>
+                                    <th width="32%" class="fw-bold"><i class="bi bi-tag me-1"></i>SERVICE TYPE</th>
+                                    <th width="10%" class="text-center fw-bold"><i class="bi bi-hourglass-split me-1"></i>STATUS</th>
+                                    <th width="10%" class="text-center fw-bold"><i class="bi bi-clock me-1"></i>TIME</th>
+                                    <th width="22%" class="fw-bold"><i class="bi bi-geo-alt me-1"></i>SECTION</th>
+                                    <th width="10%" class="text-center fw-bold"><i class="bi bi-printer me-1"></i>ACTION</th>
                                 </tr>
                             </thead>
                             <tbody id="recentInquiries">
                                 <tr>
-                                    <td colspan="6" class="text-center py-4">
+                                    <td colspan="7" class="text-center py-4">
                                         <div class="spinner-border text-primary" role="status">
                                             <span class="visually-hidden">Loading...</span>
                                         </div>
@@ -159,6 +160,25 @@
 
 @section('scripts')
 <script>
+    // Format queue number to show only sequential number
+    function formatQueueNumber(fullQueueNumber) {
+        if (!fullQueueNumber) return '---';
+        
+        // Try to extract the last number after the last hyphen
+        // e.g., "SECSIME NO.R4A-L_SMD-01-009" -> "#9"
+        // e.g., "dsds-001" -> "#1"
+        const parts = fullQueueNumber.split('-');
+        if (parts.length > 0) {
+            const lastPart = parts[parts.length - 1];
+            const num = parseInt(lastPart.replace(/^0+/, '')); // Remove leading zeros
+            if (!isNaN(num)) {
+                return '#' + num;
+            }
+        }
+        // Fallback: if no number found, return the original
+        return fullQueueNumber;
+    }
+
     // Load queue status
     function loadQueueStatus() {
         fetch('{{ route('front-desk.queue-status') }}')
@@ -200,7 +220,10 @@
         let html = '<div class="row">';
         for (const [section, info] of Object.entries(data.sections)) {
             const hasWaiting = info.waiting_count > 0;
-            const displayNumber = info.now_serving || info.latest_waiting || '---';
+            // Format queue numbers
+            const nowServing = info.now_serving ? formatQueueNumber(info.now_serving) : null;
+            const latestWaiting = info.latest_waiting ? formatQueueNumber(info.latest_waiting) : null;
+            const displayNumber = nowServing || latestWaiting || '---';
             const statusText = info.now_serving ? 'Now Serving' : (hasWaiting ? 'Next in Queue' : 'No Queue');
             const statusClass = info.now_serving ? 'text-success' : (hasWaiting ? 'text-warning' : 'text-muted');
             
@@ -208,7 +231,7 @@
                 <div class="col-md-6 col-lg-3 mb-3">
                     <div class="card border-info h-100">
                         <div class="card-header bg-info text-white">
-                            <h6 class="mb-0">${section}</h6>
+                            <h6 class="mb-0">${info.section_name || section}</h6>
                         </div>
                         <div class="card-body text-center">
                             <div class="display-4 fw-bold mb-2 text-info">
@@ -235,24 +258,12 @@
         container.innerHTML = html;
     }
 
-    // Load recent inquiries
-    function loadRecentInquiries() {
-        fetch('{{ route('front-desk.recent-inquiries') }}')
-            .then(response => response.text())
-            .then(html => {
-                document.getElementById('recentInquiries').innerHTML = html;
-            })
-            .catch(error => console.error('Error loading recent inquiries:', error));
-    }
-
-    // Auto-refresh every 10 seconds
+    // Auto-refresh queue status only every 10 seconds (recent inquiries remain static)
     setInterval(() => {
         loadQueueStatus();
-        loadRecentInquiries();
     }, 10000);
 
-    // Initial load
+    // Initial load - queue status only (recent inquiries loaded once on page load)
     loadQueueStatus();
-    loadRecentInquiries();
 </script>
 @endsection

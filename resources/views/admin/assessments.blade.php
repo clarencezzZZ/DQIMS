@@ -69,14 +69,9 @@
                             </div>
                         </div>
 
-                        <!-- Legal Basis (Fixed) -->
+                        <!-- Description -->
                         <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Legal Basis (DAO/SBC)</label>
-                                <input type="text" name="legal_basis" class="form-control bg-light" value="1993-20" readonly>
-                            </div>
-                            <!-- Description -->
-                            <div class="col-md-6">
+                            <div class="col-md-12">
                                 <label class="form-label fw-bold">Description</label>
                                 <select name="description_type" class="form-select" required>
                                     <option value="">-- Select Description --</option>
@@ -84,7 +79,7 @@
                                     <option value="Certification: A&D Status">Certification: A&D Status</option>
                                     <option value="Certification: Cadastral Map">Certification: Cadastral Map</option>
                                     <option value="Certification Cancellation Of Approved Plan">Certification Cancellation Of Approved Plan</option>
-                                    <option value="Certification GPP">Certification GPP</option>
+                                    <option value="Certification GPPC">Certification GPPC</option>
                                     <option value="Certification Lot Data Computation">Certification Lot Data Computation</option>
                                     <option value="Certification Lot Status">Certification Lot Status</option>
                                     <option value="Certification Rejection Order">Certification Rejection Order</option>
@@ -97,12 +92,12 @@
                             </div>
                         </div>
 
-                        <!-- Names with Quantity and Amount -->
+                        <!-- Names/Item -->
                         <div class="mb-4">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <label class="form-label fw-bold mb-0">Names with Quantity & Amount</label>
+                                <label class="form-label fw-bold mb-0">Names/Item</label>
                                 <button type="button" class="btn btn-sm btn-outline-success" onclick="addNameRow()">
-                                    <i class="bi bi-plus-lg"></i> Add Name
+                                    <i class="bi bi-plus-lg"></i> Add Item
                                 </button>
                             </div>
                             <div id="namesContainer">
@@ -114,20 +109,13 @@
                             </div>
                         </div>
 
-                        <!-- Officer of the Day Selection -->
+                        <!-- Officer incharge Selection -->
                         <div class="mb-4">
-                            <label class="form-label fw-bold">Officer of the Day</label>
-                            <select name="officer_of_day" id="officerSelect" class="form-select" required>
-                                <option value="">-- Select Officer of the Day --</option>
-                                @foreach($officers as $officer)
-                                    <option value="{{ $officer->user_id ?? $officer->id }}">{{ $officer->name }}</option>
-                                @endforeach
-                                <option value="other">Other</option>
+                            <label class="form-label fw-bold">Officer incharge</label>
+                            <select name="officer_in_charge" id="officerSelect" class="form-select" required>
+                                <option value="">-- Select Officer incharge --</option>
+                                <option value="lota">Mr. Stanley M. Lota</option>
                             </select>
-                            <div id="newOfficerInput" class="mt-2" style="display: none;">
-                                <label class="form-label">Enter New Officer Name</label>
-                                <input type="text" name="new_officer_name" id="newOfficerName" class="form-control" placeholder="Enter officer name">
-                            </div>
                         </div>
 
                         <!-- Remarks -->
@@ -165,7 +153,7 @@
                         <option value="Certification: A&D Status" {{ request('category') == 'Certification: A&D Status' ? 'selected' : '' }}>Certification: A&D Status</option>
                         <option value="Certification: Cadastral Map" {{ request('category') == 'Certification: Cadastral Map' ? 'selected' : '' }}>Certification: Cadastral Map</option>
                         <option value="Certification Cancellation Of Approved Plan" {{ request('category') == 'Certification Cancellation Of Approved Plan' ? 'selected' : '' }}>Certification Cancellation Of Approved Plan</option>
-                        <option value="Certification GPP" {{ request('category') == 'Certification GPP' ? 'selected' : '' }}>Certification GPP</option>
+                        <option value="Certification GPPC" {{ request('category') == 'Certification GPPC' ? 'selected' : '' }}>Certification GPPC</option>
                         <option value="Certification Lot Data Computation" {{ request('category') == 'Certification Lot Data Computation' ? 'selected' : '' }}>Certification Lot Data Computation</option>
                         <option value="Certification Lot Status" {{ request('category') == 'Certification Lot Status' ? 'selected' : '' }}>Certification Lot Status</option>
                         <option value="Certification Rejection Order" {{ request('category') == 'Certification Rejection Order' ? 'selected' : '' }}>Certification Rejection Order</option>
@@ -202,7 +190,7 @@
                             <th>Reference</th>
                             <th>Total</th>
                             <th>Processed By</th>
-                            <th>Officer of the Day</th>
+                            <th>Officer in Charge</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -232,10 +220,12 @@
                                 <td>
                                     @if($assessment->custom_officer_name)
                                         {{ $assessment->custom_officer_name }}
-                                    @elseif($assessment->officer_of_day && is_numeric($assessment->officer_of_day))
-                                        {{ $assessment->officerOfDay ? $assessment->officerOfDay->name : 'N/A' }}
+                                    @elseif($assessment->officer_in_charge === 'lota')
+                                        Mr. Stanley M. Lota
+                                    @elseif($assessment->officer_in_charge && is_numeric($assessment->officer_in_charge))
+                                        {{ $assessment->officerInCharge ? $assessment->officerInCharge->name : 'N/A' }}
                                     @else
-                                        {{ $assessment->officer_of_day ?? 'N/A' }}
+                                        {{ $assessment->officer_in_charge ?? 'N/A' }}
                                     @endif
                                 </td>
                                 <td>
@@ -246,9 +236,6 @@
                                         <a href="{{ route('admin.assessments.edit', $assessment) }}" class="btn btn-sm btn-outline-warning" title="Edit">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete({{ $assessment->id }})" title="Delete">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -271,61 +258,16 @@
         @endif
     </div>
 </div>
-
-<!-- Event Logs Section -->
-<div class="card shadow-sm mt-4">
-    <div class="card-header bg-dark text-white">
-        <h5 class="mb-0"><i class="bi bi-clock-history"></i> Event Logs</h5>
-    </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-bordered mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th width="15%">Date & Time</th>
-                        <th width="15%">User</th>
-                        <th width="10%">Action</th>
-                        <th width="15%">Assessment Number</th>
-                        <th>Description</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($eventLogs as $log)
-                        <tr>
-                            <td>{{ $log->created_at->format('M d, Y H:i:s') }}</td>
-                            <td>{{ $log->user->name ?? 'Unknown User' }}</td>
-                            <td>
-                                @if($log->action === 'deleted')
-                                    <span class="badge bg-danger">{{ ucfirst($log->action) }}</span>
-                                @elseif($log->action === 'updated')
-                                    <span class="badge bg-warning text-dark">{{ ucfirst($log->action) }}</span>
-                                @else
-                                    <span class="badge bg-info">{{ ucfirst($log->action) }}</span>
-                                @endif
-                            </td>
-                            <td>{{ $log->assessment_number }}</td>
-                            <td>{{ $log->description }}</td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="text-center text-muted py-3">No event logs found</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
 @endsection
 
 @section('scripts')
 <script>
     // Generate temporary assessment number for UX purposes
-    // The server will generate the actual unique number
+    // The server will generate the actual unique number (yearly reset format: YYYY-MM-NNNN)
     function generateAssessmentNumber() {
         const year = new Date().getFullYear();
         const month = String(new Date().getMonth() + 1).padStart(2, '0');
-        // Get last assessment number for this month and increment (for display only)
+        // Get last assessment number for this year and increment (for display only)
         fetch('/admin/assessments/last-number/' + year + '/' + month)
             .then(response => response.json())
             .then(data => {
@@ -359,7 +301,7 @@
         row.id = rowId;
         row.innerHTML = `
             <div class="col-md-5">
-                <input type="text" name="names[]" class="form-control" placeholder="Enter name" required>
+                <input type="text" name="names[]" class="form-control" placeholder="Enter item name" required>
             </div>
             <div class="col-md-2">
                 <input type="number" name="quantities[]" class="form-control quantity-input" placeholder="Qty" value="1" min="1" onchange="calculateTotal()">
@@ -402,44 +344,7 @@
         document.getElementById('feesInput').value = total.toFixed(2);
     }
 
-    // Toggle new officer input based on selection
-    document.getElementById('officerSelect')?.addEventListener('change', function() {
-        const newOfficerInput = document.getElementById('newOfficerInput');
-        if (this.value === 'other') {
-            newOfficerInput.style.display = 'block';
-            document.getElementById('newOfficerName').required = true;
-        } else {
-            newOfficerInput.style.display = 'none';
-            document.getElementById('newOfficerName').required = false;
-        }
-    });
 
-    function confirmDelete(id) {
-        if (confirm('Are you sure you want to delete this assessment? This action cannot be undone.')) {
-            // Create a form and submit it to delete the assessment
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = `/admin/assessments/` + id;
-            
-            // Add CSRF token
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-            const tokenField = document.createElement('input');
-            tokenField.type = 'hidden';
-            tokenField.name = '_token';
-            tokenField.value = csrfToken;
-            form.appendChild(tokenField);
-            
-            // Add method spoofing for DELETE
-            const methodField = document.createElement('input');
-            methodField.type = 'hidden';
-            methodField.name = '_method';
-            methodField.value = 'DELETE';
-            form.appendChild(methodField);
-            
-            document.body.appendChild(form);
-            form.submit();
-        }
-    }
 
     // Make functions globally accessible
     window.addNameRow = addNameRow;

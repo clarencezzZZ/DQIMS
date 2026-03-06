@@ -25,7 +25,7 @@ class Assessment extends Model
         'fees',
         'remarks',
         'processed_by',
-        'officer_of_day',
+        'officer_in_charge',
         'custom_officer_name',
         'assessment_date'
     ];
@@ -61,11 +61,11 @@ class Assessment extends Model
     }
 
     /**
-     * Get the officer of the day for this assessment
+     * Get the officer in charge for this assessment
      */
-    public function officerOfDay()
+    public function officerInCharge()
     {
-        return $this->belongsTo(User::class, 'officer_of_day');
+        return $this->belongsTo(User::class, 'officer_in_charge');
     }
 
     /**

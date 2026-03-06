@@ -63,15 +63,11 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">Status</label>
-                    <select name="status" class="form-select">
-                        <option value="" {{ old('status', request('status')) == '' ? 'selected' : '' }}>All Status</option>
-                        <option value="waiting" {{ old('status', request('status')) == 'waiting' ? 'selected' : '' }}>Waiting</option>
-                        <option value="serving" {{ old('status', request('status')) == 'serving' ? 'selected' : '' }}>Serving</option>
-                        <option value="completed" {{ old('status', request('status')) == 'completed' ? 'selected' : '' }}>Completed</option>
-                        <option value="skipped" {{ old('status', request('status')) == 'skipped' ? 'selected' : '' }}>Skipped</option>
-                        <option value="forwarded" {{ old('status', request('status')) == 'forwarded' ? 'selected' : '' }}>Forwarded</option>
-                    </select>
+                    <label class="form-label">&nbsp;</label>
+                    <div class="p-2 bg-success text-white rounded text-center fw-bold">
+                        <i class="bi bi-check-circle"></i> COMPLETED
+                    </div>
+                    <input type="hidden" name="status" value="completed">
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Section</label>
@@ -105,7 +101,7 @@
         
         <!-- Report Summary Cards -->
         <div class="row mb-4">
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <div class="card bg-primary text-white">
                     <div class="card-body text-center">
                         <h6 class="text-white-50 mb-1">Total Inquiries</h6>
@@ -113,23 +109,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-2">
-                <div class="card bg-warning text-dark">
-                    <div class="card-body text-center">
-                        <h6 class="text-white-50 mb-1">Waiting</h6>
-                        <h3 class="mb-0">{{ $overall_stats['waiting'] }}</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
-                <div class="card bg-info text-white">
-                    <div class="card-body text-center">
-                        <h6 class="text-white-50 mb-1">Serving</h6>
-                        <h3 class="mb-0">{{ $overall_stats['serving'] }}</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <div class="card bg-success text-white">
                     <div class="card-body text-center">
                         <h6 class="text-white-50 mb-1">Completed</h6>
@@ -137,7 +117,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <div class="card bg-danger text-white">
                     <div class="card-body text-center">
                         <h6 class="text-white-50 mb-1">Skipped</h6>
@@ -145,7 +125,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-2">
+            <div class="col-md-3">
                 <div class="card bg-secondary text-white">
                     <div class="card-body text-center">
                         <h6 class="text-white-50 mb-1">Revenue</h6>
@@ -167,11 +147,7 @@
                             <tr>
                                 <th>Category</th>
                                 <th>Section</th>
-                                <th>Waiting</th>
-                                <th>Serving</th>
                                 <th>Completed</th>
-                                <th>Skipped</th>
-                                <th>Forwarded</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -180,11 +156,7 @@
                                     <tr>
                                         <td>{{ $stats['name'] }}</td>
                                         <td>{{ $stats['section'] }}</td>
-                                        <td><span class="badge bg-warning">{{ $stats['waiting'] }}</span></td>
-                                        <td><span class="badge bg-info">{{ $stats['serving'] }}</span></td>
                                         <td><span class="badge bg-success">{{ $stats['completed'] }}</span></td>
-                                        <td><span class="badge bg-danger">{{ $stats['skipped'] }}</span></td>
-                                        <td><span class="badge bg-secondary">{{ $stats['forwarded'] }}</span></td>
                                     </tr>
                                 @endif
                             @endforeach
@@ -310,7 +282,7 @@
 @endsection
 
 @section('scripts')
-<script src="{{ asset('js/chart.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 // Toggle date fields based on report type selection
 function toggleDateFields() {
@@ -370,145 +342,11 @@ function toggleDateFields() {
     }
 }
 
-// Reset filters to default values
-function resetFilters() {
-    const form = document.getElementById('reportFilterForm');
-    
-    // Reset the form to default values
-    form.reset();
-    
-    // Set report type back to daily (first option)
-    const reportTypeSelect = form.querySelector('select[name="report_type"]');
-    if (reportTypeSelect) {
-        reportTypeSelect.value = 'daily';
-    }
-    
-    // Reset and disable date fields to today's date
-    const dateFromField = document.getElementById('dateFromField');
-    const dateToField = document.getElementById('dateToField');
-    
-    if (dateFromField) {
-        dateFromField.disabled = true;
-        dateFromField.value = '{{ date('Y-m-d') }}';
-    }
-    
-    if (dateToField) {
-        dateToField.disabled = true;
-        dateToField.value = '{{ date('Y-m-d') }}';
-    }
-    
-    // Reset all select fields to their first option (empty/default)
-    const selectFields = form.querySelectorAll('select');
-    selectFields.forEach(select => {
-        if (select.name !== 'report_type') { // Don't reset report_type as we already set it
-            select.selectedIndex = 0;
-        }
-    });
-    
-    // Small delay to ensure DOM updates before triggering toggle
-    setTimeout(() => {
-        // Trigger the toggle function to set proper date values based on report type
-        toggleDateFields();
-        console.log('Filters reset to default values');
-        
-        // Reload the page to show default daily stats instead of report results
-        window.location.href = '/reports';
-    }, 10);
-}
-    
-// Initialize date fields on page load
-document.addEventListener('DOMContentLoaded', function() {
-    // Wait a bit for the form values to be populated from old() helper
-    setTimeout(() => {
-        // Check if we're displaying report results
-        const hasReportResults = document.querySelector('.alert-success') !== null;
-        
-        // If we have report results, it means we just generated a report, so preserve the submitted dates
-        // Otherwise, apply the date range logic based on report type
-        if (!hasReportResults) {
-            toggleDateFields();
-        } else {
-            // If we have report results, just ensure the fields are properly enabled/disabled
-            // based on the selected report type, but don't recalculate the dates
-            const reportType = document.querySelector('select[name="report_type"]').value;
-            const dateFromField = document.getElementById('dateFromField');
-            const dateToField = document.getElementById('dateToField');
-            
-            if (reportType === 'custom' && dateFromField && dateToField) {
-                dateFromField.disabled = false;
-                dateToField.disabled = false;
-            } else if (dateFromField && dateToField) {
-                dateFromField.disabled = true;
-                dateToField.disabled = true;
-            }
-            // Preserve the dates from the form submission by not recalculating them
-        }
-    }, 100);
-});
-
-// Handle form submission to preserve dates when submitting
-document.getElementById('reportFilterForm').addEventListener('submit', function(e) {
-    // Only update dates if report type is not custom (to preserve user-entered custom dates)
-    const reportTypeSelect = this.querySelector('select[name="report_type"]');
-    const reportType = reportTypeSelect.value;
-    
-    if (reportType !== 'custom') {
-        // For non-custom reports, ensure the dates are set according to report type
-        const dateFromField = document.getElementById('dateFromField');
-        const dateToField = document.getElementById('dateToField');
-        
-        if (dateFromField && dateToField) {
-            // Update date fields based on report type, but only if they're disabled
-            // (meaning they weren't manually entered by the user)
-            if (dateFromField.disabled && dateToField.disabled) {
-                toggleDateFields();
-            }
-        }
-    }
-    // Allow normal form submission
-    // The dates will be preserved in the form submission
-});
-
-// Export report in different formats
-function exportReport(format) {
-    const formData = new FormData(document.getElementById('reportFilterForm'));
-    const params = new URLSearchParams();
-        
-    // Collect all form values
-    for (let [key, value] of formData.entries()) {
-        if (value) {
-            params.append(key, value);
-        }
-    }
-        
-    // Add CSRF token
-    params.append('_token', document.querySelector('input[name="_token"]').value);
-        
-    // Build URL based on format
-    let url;
-    switch(format) {
-        case 'pdf':
-            url = '{{ route("reports.export-pdf") }}?' + params.toString();
-            break;
-        case 'excel':
-            url = '{{ route("reports.export-excel") }}?' + params.toString();
-            break;
-        case 'print':
-            url = '{{ route("reports.print") }}?' + params.toString();
-            break;
-        default:
-            url = '{{ route("reports.export-pdf") }}?' + params.toString();
-    }
-        
-    // Open the export URL in a new tab/window
-    window.open(url, '_blank');
-}
-
 console.log('Chart.js script loaded');
 
 // Check if Chart is available immediately
 if (typeof Chart !== 'undefined') {
-    console.log('Chart.js is available, version:', Chart.version);
+    console.log('Chart.js is available, version:', Chart.version || 'unknown');
 } else {
     console.error('Chart.js is not available');
 }
@@ -679,8 +517,8 @@ class BarElevator {
                 sectionData.push({{ $total }});
             @endforeach
         @else
-            // Use default data
-            sectionLabels = ['ACS', 'OOSS', 'SCS', 'LES'];
+            // Use default data with full section names (without 'SECTION' word)
+            sectionLabels = ['AGGREGATE AND CORRECTION', 'ORIGINAL AND OTHER SURVEYS', 'SURVEYS AND CONTROL', 'LAND EVALUATION'];
             sectionData = [2, 1, 1, 0];
         @endif
         

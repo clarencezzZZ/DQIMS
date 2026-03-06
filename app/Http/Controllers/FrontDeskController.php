@@ -10,6 +10,20 @@ use Illuminate\Support\Facades\Validator;
 class FrontDeskController extends Controller
 {
     /**
+     * Get full section name from acronym
+     */
+    private function getSectionFullName($section)
+    {
+        $sectionNames = [
+            'ACS' => 'AGGREGATE AND CORRECTION SECTION',
+            'OOSS' => 'ORIGINAL AND OTHER SURVEYS SECTION',
+            'LES' => 'LAND EVALUATION SECTION',
+            'SCS' => 'SURVEYS AND CONTROL SECTION',
+        ];
+        return $sectionNames[$section] ?? $section;
+    }
+    
+    /**
      * Display the front desk dashboard
      */
     public function index()
@@ -82,7 +96,7 @@ class FrontDeskController extends Controller
         $inquiry = Inquiry::create([
             'queue_number' => $queueNumber,
             'guest_name' => $request->guest_name,
-            'contact_number' => $request->contact_number,
+            'address' => $request->address,
             'category_id' => $request->category_id,
             'request_type' => $category->name,
             'purpose' => $request->purpose,
@@ -169,7 +183,8 @@ class FrontDeskController extends Controller
                 ->latest()
                 ->first();
             
-            $data['sections'][$section] = [
+            $data['sections'][$this->getSectionFullName($section)] = [
+                'acronym' => $section,
                 'waiting_count' => $waitingCount,
                 'now_serving' => $nowServing ? $nowServing->queue_number : null,
                 'now_serving_category' => $nowServing ? $nowServing->category->code : null,
@@ -205,14 +220,14 @@ class FrontDeskController extends Controller
         if ($inquiries->isEmpty()) {
             $html = '
                 <tr>
-                    <td colspan="6" class="text-center py-4 text-muted">
+                    <td colspan="7" class="text-center py-4 text-muted">
                         <i class="bi bi-inbox" style="font-size: 2rem;"></i>
                         <p class="mt-2">No inquiries yet today</p>
                     </td>
                 </tr>
             ';
         } else {
-            foreach ($inquiries as $inquiry) {
+            foreach ($inquiries as $index => $inquiry) {
                 $statusBadge = '';
                 if ($inquiry->status == 'waiting') {
                     $statusBadge = '<span class="badge bg-warning text-dark">Waiting</span>';
@@ -225,17 +240,27 @@ class FrontDeskController extends Controller
                 }
 
                 $categoryBadge = $inquiry->category 
-                    ? '<span class="badge" style="background-color: ' . $inquiry->category->color . '">' . $inquiry->category->code . '</span>'
+                    ? '<span class="badge" style="background-color: ' . $inquiry->category->color . '">' . $inquiry->category->name . '</span>'
                     : '<span class="badge bg-secondary">N/A</span>';
+
+                // Format queue number to show only #N
+                $formattedQueueNumber = $this->formatQueueNumber($inquiry->queue_number);
+
+                // Get section name
+                $sectionName = 'N/A';
+                if ($inquiry->category && $inquiry->category->section) {
+                    $sectionName = $this->getSectionFullName($inquiry->category->section);
+                }
 
                 $html .= '
                     <tr>
-                        <td><span class="badge bg-dark fs-6">' . $inquiry->queue_number . '</span></td>
+                        <td><span class="badge bg-dark fs-6">' . $formattedQueueNumber . '</span></td>
                         <td>' . $inquiry->guest_name . '</td>
                         <td>' . $categoryBadge . '</td>
-                        <td>' . $statusBadge . '</td>
-                        <td>' . $inquiry->created_at->format('h:i A') . '</td>
-                        <td>
+                        <td class="text-center">' . $statusBadge . '</td>
+                        <td class="text-center">' . $inquiry->created_at->format('h:i A') . '</td>
+                        <td><span class="badge bg-secondary">' . $sectionName . '</span></td>
+                        <td class="text-center">
                             <a href="' . route('front-desk.ticket', $inquiry) . '" target="_blank" class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-printer"></i> Print
                             </a>
@@ -246,5 +271,26 @@ class FrontDeskController extends Controller
         }
 
         return response($html);
+    }
+
+    /**
+     * Format queue number to show only sequential number as #N
+     */
+    private function formatQueueNumber($fullQueueNumber)
+    {
+        if (!$fullQueueNumber) return '---';
+        
+        // Try to extract the last number after the last hyphen
+        // e.g., "SECSIME NO.R4A-L_SMD-01-009" -> "#9"
+        $parts = explode('-', $fullQueueNumber);
+        if (count($parts) > 0) {
+            $lastPart = end($parts);
+            $num = intval(preg_replace('/^0+/', '', $lastPart)); // Remove leading zeros
+            if ($num > 0 || $lastPart === '0') {
+                return '#' . $num;
+            }
+        }
+        // Fallback: if no number found, return the original
+        return $fullQueueNumber;
     }
 }

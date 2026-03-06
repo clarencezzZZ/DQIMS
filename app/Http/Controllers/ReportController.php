@@ -12,6 +12,20 @@ use PDF;
 class ReportController extends Controller
 {
     /**
+     * Get full section name from acronym
+     */
+    private function getSectionFullName($section)
+    {
+        $sectionNames = [
+            'ACS' => 'AGGREGATE AND CORRECTION',
+            'OOSS' => 'ORIGINAL AND OTHER SURVEYS',
+            'LES' => 'LAND EVALUATION',
+            'SCS' => 'SURVEYS AND CONTROL',
+        ];
+        return $sectionNames[$section] ?? $section;
+    }
+    
+    /**
      * Display reports dashboard
      */
     public function index()
@@ -120,7 +134,8 @@ class ReportController extends Controller
             
             $categoryStats[$category->code] = [
                 'name' => $category->name,
-                'section' => $category->section,
+                'section' => $this->getSectionFullName($category->section),
+                'section_acronym' => $category->section,
                 'total' => $catInquiries->count(),
                 'waiting' => $catInquiries->where('status', 'waiting')->count(),
                 'serving' => $catInquiries->where('status', 'serving')->count(),

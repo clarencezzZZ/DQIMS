@@ -63,7 +63,7 @@
                                 <option value="Certification: A&D Status" {{ old('description_type', $assessment->request_type) == 'Certification: A&D Status' ? 'selected' : '' }}>Certification: A&D Status</option>
                                 <option value="Certification: Cadastral Map" {{ old('description_type', $assessment->request_type) == 'Certification: Cadastral Map' ? 'selected' : '' }}>Certification: Cadastral Map</option>
                                 <option value="Certification Cancellation Of Approved Plan" {{ old('description_type', $assessment->request_type) == 'Certification Cancellation Of Approved Plan' ? 'selected' : '' }}>Certification Cancellation Of Approved Plan</option>
-                                <option value="Certification GPP" {{ old('description_type', $assessment->request_type) == 'Certification GPP' ? 'selected' : '' }}>Certification GPP</option>
+                                <option value="Certification GPPC" {{ old('description_type', $assessment->request_type) == 'Certification GPPC' ? 'selected' : '' }}>Certification GPPC</option>
                                 <option value="Certification Lot Data Computation" {{ old('description_type', $assessment->request_type) == 'Certification Lot Data Computation' ? 'selected' : '' }}>Certification Lot Data Computation</option>
                                 <option value="Certification Lot Status" {{ old('description_type', $assessment->request_type) == 'Certification Lot Status' ? 'selected' : '' }}>Certification Lot Status</option>
                                 <option value="Certification Rejection Order" {{ old('description_type', $assessment->request_type) == 'Certification Rejection Order' ? 'selected' : '' }}>Certification Rejection Order</option>
@@ -97,37 +97,27 @@
                             <div class="form-text">Enter the total assessment fees in Philippine Peso</div>
                         </div>
 
-                        <!-- Officer of the Day Selection -->
+                        <!-- Officer incharge Selection -->
                         <div class="mb-4">
-                            <label for="officer_of_day" class="form-label fw-bold">
-                                <i class="bi bi-person-badge text-warning"></i> Officer of the Day <span class="text-danger">*</span>
+                            <label for="officer_in_charge" class="form-label fw-bold">
+                                <i class="bi bi-person-badge text-warning"></i> Officer incharge <span class="text-danger">*</span>
                             </label>
-                            <select class="form-select @error('officer_of_day') is-invalid @enderror" 
-                                    id="officer_of_day" name="officer_of_day" required>
-                                <option value="">-- Select Officer of the Day --</option>
-                                @foreach($officers as $officer)
-                                    <option value="{{ $officer->user_id ?? $officer->id }}" {{ (old('officer_of_day', $assessment->officer_of_day) == ($officer->user_id ?? $officer->id) || (is_numeric($assessment->officer_of_day) && $assessment->officer_of_day == ($officer->user_id ?? $officer->id))) ? 'selected' : '' }}>{{ $officer->name }}</option>
-                                @endforeach
-                                <option value="other" {{ !is_numeric(old('officer_of_day', $assessment->officer_of_day)) && old('officer_of_day', $assessment->officer_of_day) != '' ? 'selected' : '' }}>Other</option>
+                            <select class="form-select @error('officer_in_charge') is-invalid @enderror" 
+                                    id="officer_in_charge" name="officer_in_charge" required>
+                                <option value="">-- Select Officer incharge --</option>
+                                <option value="lota" {{ old('officer_in_charge', $assessment->officer_in_charge) === 'lota' || $assessment->officer_in_charge === 'lota' ? 'selected' : '' }}>Mr. Stanley M. Lota</option>
                             </select>
-                            @error('officer_of_day')
+                            @error('officer_in_charge')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        <!-- New Officer Input (Hidden by default) -->
-                        <div id="newOfficerInput" class="mb-4" style="display: none;">
-                            <label class="form-label fw-bold">Enter New Officer Name</label>
-                            <input type="text" name="new_officer_name" id="newOfficerName" class="form-control" placeholder="Enter officer name" 
-                                   value="{{ $assessment->custom_officer_name ?: (is_numeric($assessment->officer_of_day) ? '' : $assessment->officer_of_day) }}">
-                        </div>
-
-                        <!-- Names with Quantity and Amount -->
+                        <!-- Names/Item -->
                         <div class="mb-4">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <label class="form-label fw-bold">Names with Quantity & Amount</label>
+                                <label class="form-label fw-bold">Names/Item</label>
                                 <button type="button" class="btn btn-sm btn-outline-success" onclick="addNameRowEdit()">
-                                    <i class="bi bi-plus-lg"></i> Add Name
+                                    <i class="bi bi-plus-lg"></i> Add Item
                                 </button>
                             </div>
                             <div id="namesContainer">
@@ -198,7 +188,7 @@
         row.id = rowId;
         row.innerHTML = `
             <div class="col-md-5">
-                <input type="text" name="names[]" class="form-control" placeholder="Enter name" value="${name.replace(/\$/g, '\$\$')}" required>
+                <input type="text" name="names[]" class="form-control" placeholder="Enter item name" value="${name.replace(/\$/g, '\$\$')}" required>
             </div>
             <div class="col-md-2">
                 <input type="number" name="quantities[]" class="form-control quantity-input" placeholder="Qty" value="${quantity}" min="1" onchange="calculateTotalEdit()">
@@ -242,29 +232,7 @@
         document.getElementById('feesInput').value = total.toFixed(2);
     }
 
-    // Toggle new officer input based on selection
-    document.getElementById('officer_of_day')?.addEventListener('change', function() {
-        const newOfficerInput = document.getElementById('newOfficerInput');
-        if (this.value === 'other') {
-            newOfficerInput.style.display = 'block';
-            document.getElementById('newOfficerName').required = true;
-        } else {
-            newOfficerInput.style.display = 'none';
-            document.getElementById('newOfficerName').required = false;
-        }
-    });
 
-    // Initialize the display based on current selection
-    document.addEventListener('DOMContentLoaded', function() {
-        const officerSelect = document.getElementById('officer_of_day');
-        const newOfficerInput = document.getElementById('newOfficerInput');
-        
-        // Check if current selection is "other" or if there's a custom officer name
-        if (officerSelect && (officerSelect.value === 'other' || document.getElementById('newOfficerName').value !== '')) {
-            newOfficerInput.style.display = 'block';
-            document.getElementById('newOfficerName').required = true;
-        }
-    });
 
     // Format fees input
     document.getElementById('fees')?.addEventListener('blur', function() {

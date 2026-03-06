@@ -34,7 +34,7 @@ class FixStanleyLotaSeeder extends Seeder
             $officer->update(['user_id' => $user->id]);
         }
         
-        // Update existing assessments that have officer_of_day = 1 to use the correct officer
-        \App\Models\Assessment::where('officer_of_day', 1)->update(['officer_of_day' => $user->id]);
+        // Update existing assessments that have officer_in_charge = 1 to use the correct officer
+        \App\Models\Assessment::where('officer_in_charge', 1)->update(['officer_in_charge' => $user->id]);
     }
 }

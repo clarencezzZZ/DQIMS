@@ -12,7 +12,7 @@ class Inquiry extends Model
     protected $fillable = [
         'queue_number',
         'guest_name',
-        'contact_number',
+        'address',
         'email',
         'category_id',
         'request_type',

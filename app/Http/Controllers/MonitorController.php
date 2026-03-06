@@ -24,7 +24,8 @@ class MonitorController extends Controller
         foreach ($sections as $section) {
             $categories = Category::where('section', $section)->where('is_active', true)->get();
             $sectionData[$section] = [
-                'name' => $section,
+                'name' => $this->getSectionFullName($section),
+                'acronym' => $section,
                 'categories' => $categories,
                 'color' => $this->getSectionColor($section),
             ];
@@ -46,7 +47,8 @@ class MonitorController extends Controller
             $section = $category->section;
             if (!isset($sectionData[$section])) {
                 $sectionData[$section] = [
-                    'name' => $section,
+                    'name' => $this->getSectionFullName($section),
+                    'acronym' => $section,
                     'categories' => [],
                     'color' => $this->getSectionColor($section),
                 ];
@@ -70,7 +72,8 @@ class MonitorController extends Controller
             $section = $category->section;
             if (!isset($sectionData[$section])) {
                 $sectionData[$section] = [
-                    'name' => $section,
+                    'name' => $this->getSectionFullName($section),
+                    'acronym' => $section,
                     'categories' => [],
                     'color' => $this->getSectionColor($section),
                 ];
@@ -93,6 +96,20 @@ class MonitorController extends Controller
             'LES' => '#9b59b6',
         ];
         return $colors[$section] ?? '#6c757d';
+    }
+    
+    /**
+     * Get full section name from acronym
+     */
+    private function getSectionFullName($section)
+    {
+        $sectionNames = [
+            'ACS' => 'AGGREGATE AND CORRECTION SECTION',
+            'OOSS' => 'ORIGINAL AND OTHER SURVEYS SECTION',
+            'LES' => 'LAND EVALUATION SECTION',
+            'SCS' => 'SURVEYS AND CONTROL SECTION',
+        ];
+        return $sectionNames[$section] ?? $section;
     }
 
     /**
@@ -133,21 +150,30 @@ class MonitorController extends Controller
                 ->where('status', 'waiting')
                 ->count();
 
-            // Get latest waiting inquiry
-            $latestWaiting = Inquiry::today()
+            // Get all waiting inquiries ordered by created_at
+            $waitingInquiries = Inquiry::today()
                 ->whereIn('category_id', $categories)
                 ->where('status', 'waiting')
                 ->with('category')
                 ->oldest('created_at')
-                ->first();
+                ->get();
+
+            // First in queue (next to be served)
+            $firstInQueue = $waitingInquiries->first();
+            
+            // Second in queue (next after first)
+            $secondInQueue = $waitingInquiries->skip(1)->first();
 
             $data['sections'][$section] = [
-                'section' => $section,
+                'section' => $this->getSectionFullName($section),
+                'acronym' => $section,
                 'color' => $this->getSectionColor($section),
                 'now_serving' => $nowServing ? $nowServing->queue_number : null,
                 'now_serving_category' => $nowServing && $nowServing->category ? $nowServing->category->code : null,
-                'latest_waiting' => $latestWaiting ? $latestWaiting->queue_number : null,
-                'latest_waiting_category' => $latestWaiting && $latestWaiting->category ? $latestWaiting->category->code : null,
+                'first_in_queue' => $firstInQueue ? $firstInQueue->queue_number : null,
+                'first_in_queue_category' => $firstInQueue && $firstInQueue->category ? $firstInQueue->category->code : null,
+                'second_in_queue' => $secondInQueue ? $secondInQueue->queue_number : null,
+                'second_in_queue_category' => $secondInQueue && $secondInQueue->category ? $secondInQueue->category->code : null,
                 'waiting_count' => $waitingCount,
             ];
         }
@@ -168,16 +194,33 @@ class MonitorController extends Controller
             $section = $category->section;
             if (!isset($data['sections'][$section])) {
                 $data['sections'][$section] = [
-                    'section' => $section,
+                    'section' => $this->getSectionFullName($section),
+                    'acronym' => $section,
                     'color' => $this->getSectionColor($section),
                     'now_serving' => null,
                     'now_serving_category' => null,
-                    'latest_waiting' => null,
-                    'latest_waiting_category' => null,
+                    'first_in_queue' => null,
+                    'first_in_queue_category' => null,
+                    'second_in_queue' => null,
+                    'second_in_queue_category' => null,
                     'waiting_count' => 0,
                 ];
             }
             
+            // Get all waiting inquiries ordered by created_at for this category
+            $waitingInquiries = Inquiry::today()
+                ->where('category_id', $category->id)
+                ->where('status', 'waiting')
+                ->with('category')
+                ->oldest('created_at')
+                ->get();
+
+            // First in queue (next to be served)
+            $firstInQueue = $waitingInquiries->first();
+            
+            // Second in queue (next after first)
+            $secondInQueue = $waitingInquiries->skip(1)->first();
+
             // Get currently serving for this category
             $nowServing = Inquiry::today()
                 ->where('category_id', $category->id)
@@ -191,23 +234,20 @@ class MonitorController extends Controller
                 ->where('status', 'waiting')
                 ->count();
 
-            // Get latest waiting inquiry for this category
-            $latestWaiting = Inquiry::today()
-                ->where('category_id', $category->id)
-                ->where('status', 'waiting')
-                ->with('category')
-                ->oldest('created_at')
-                ->first();
-
             // Update section data with category information
             if ($nowServing) {
                 $data['sections'][$section]['now_serving'] = $nowServing->queue_number;
                 $data['sections'][$section]['now_serving_category'] = $nowServing->category ? $nowServing->category->code : null;
             }
             
-            if ($latestWaiting) {
-                $data['sections'][$section]['latest_waiting'] = $latestWaiting->queue_number;
-                $data['sections'][$section]['latest_waiting_category'] = $latestWaiting->category ? $latestWaiting->category->code : null;
+            if ($firstInQueue) {
+                $data['sections'][$section]['first_in_queue'] = $firstInQueue->queue_number;
+                $data['sections'][$section]['first_in_queue_category'] = $firstInQueue->category ? $firstInQueue->category->code : null;
+            }
+            
+            if ($secondInQueue) {
+                $data['sections'][$section]['second_in_queue'] = $secondInQueue->queue_number;
+                $data['sections'][$section]['second_in_queue_category'] = $secondInQueue->category ? $secondInQueue->category->code : null;
             }
             
             $data['sections'][$section]['waiting_count'] += $waitingCount;
@@ -229,16 +269,33 @@ class MonitorController extends Controller
             $section = $category->section;
             if (!isset($data['sections'][$section])) {
                 $data['sections'][$section] = [
-                    'section' => $section,
+                    'section' => $this->getSectionFullName($section),
+                    'acronym' => $section,
                     'color' => $this->getSectionColor($section),
                     'now_serving' => null,
                     'now_serving_category' => null,
-                    'latest_waiting' => null,
-                    'latest_waiting_category' => null,
+                    'first_in_queue' => null,
+                    'first_in_queue_category' => null,
+                    'second_in_queue' => null,
+                    'second_in_queue_category' => null,
                     'waiting_count' => 0,
                 ];
             }
             
+            // Get all waiting inquiries ordered by created_at for this category
+            $waitingInquiries = Inquiry::today()
+                ->where('category_id', $category->id)
+                ->where('status', 'waiting')
+                ->with('category')
+                ->oldest('created_at')
+                ->get();
+
+            // First in queue (next to be served)
+            $firstInQueue = $waitingInquiries->first();
+            
+            // Second in queue (next after first)
+            $secondInQueue = $waitingInquiries->skip(1)->first();
+
             // Get currently serving for this category
             $nowServing = Inquiry::today()
                 ->where('category_id', $category->id)
@@ -252,23 +309,20 @@ class MonitorController extends Controller
                 ->where('status', 'waiting')
                 ->count();
 
-            // Get latest waiting inquiry for this category
-            $latestWaiting = Inquiry::today()
-                ->where('category_id', $category->id)
-                ->where('status', 'waiting')
-                ->with('category')
-                ->oldest('created_at')
-                ->first();
-
             // Update section data with category information
             if ($nowServing) {
                 $data['sections'][$section]['now_serving'] = $nowServing->queue_number;
                 $data['sections'][$section]['now_serving_category'] = $nowServing->category ? $nowServing->category->code : null;
             }
             
-            if ($latestWaiting) {
-                $data['sections'][$section]['latest_waiting'] = $latestWaiting->queue_number;
-                $data['sections'][$section]['latest_waiting_category'] = $latestWaiting->category ? $latestWaiting->category->code : null;
+            if ($firstInQueue) {
+                $data['sections'][$section]['first_in_queue'] = $firstInQueue->queue_number;
+                $data['sections'][$section]['first_in_queue_category'] = $firstInQueue->category ? $firstInQueue->category->code : null;
+            }
+            
+            if ($secondInQueue) {
+                $data['sections'][$section]['second_in_queue'] = $secondInQueue->queue_number;
+                $data['sections'][$section]['second_in_queue_category'] = $secondInQueue->category ? $secondInQueue->category->code : null;
             }
             
             $data['sections'][$section]['waiting_count'] += $waitingCount;

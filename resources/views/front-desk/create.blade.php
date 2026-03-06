@@ -39,18 +39,15 @@
                                 @enderror
                             </div>
 
-                            <!-- Contact Number -->
+                            <!-- Address -->
                             <div class="col-md-6 mb-3">
-                                <label for="contact_number" class="form-label fw-bold">
-                                    <i class="bi bi-telephone text-success"></i> Contact Number
+                                <label for="address" class="form-label fw-bold">
+                                    <i class="bi bi-geo-alt text-success"></i> Address
                                 </label>
-                                <input type="tel" class="form-control form-control-lg @error('contact_number') is-invalid @enderror" 
-                                       id="contact_number" name="contact_number" placeholder="09XXXXXXXXX" 
-                                       value="{{ old('contact_number') }}" maxlength="11" pattern="09[0-9]{9}">
-                                <div class="invalid-feedback" id="contact_number_error">
-                                    Contact number must be exactly 11 digits starting with 09
-                                </div>
-                                @error('contact_number')
+                                <input type="text" class="form-control form-control-lg @error('address') is-invalid @enderror" 
+                                       id="address" name="address" placeholder="Enter address" 
+                                       value="{{ old('address') }}">
+                                @error('address')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -84,7 +81,7 @@
                                 <i class="bi bi-building text-success"></i> Section
                             </label>
                             <div class="p-3 rounded border" style="background-color: #e9ecef;">
-                                <span id="section_label" class="text-muted">Select a category to see section details</span>
+                                <span id="section_label" class="fw-bold text-dark">Select a category to see section details</span>
                             </div>
                             <input type="hidden" id="section" name="section">
                         </div>
@@ -409,8 +406,16 @@
         const sectionInput = document.getElementById('section');
         
         if (section && code) {
-            // Show full section label: ACS - SECSIME NO.R4A-L_SMD-01. CANCELATION OF PREVIOUSLY APPROVED SURVEY PLANS(DAR)
-            sectionLabel.textContent = section + ' - ' + code + '. ' + name;
+            // Show ONLY the section name meaning (without acronym, code, or description)
+            const sectionFullNameMap = {
+                'ACS': 'AGGREGATE AND CORRECTION',
+                'OOSS': 'ORIGINAL AND OTHER SURVEYS',
+                'LES': 'LAND EVALUATION',
+                'SCS': 'SURVEYS AND CONTROL'
+            };
+            
+            const sectionFullName = sectionFullNameMap[section] || section;
+            sectionLabel.textContent = sectionFullName;
             sectionLabel.className = 'fw-bold text-dark';
             sectionInput.value = section;
         } else {
@@ -430,54 +435,6 @@
         
         // Initialize priority card selection
         updatePriorityCards();
-    });
-
-    // Professional Contact Number Validation - Clean Implementation
-    document.addEventListener('DOMContentLoaded', function() {
-        const contactInput = document.getElementById('contact_number');
-        const contactError = document.getElementById('contact_number_error');
-        
-        if (!contactInput) {
-            console.log('Contact input not found');
-            return;
-        }
-        
-        console.log('Contact validation initialized');
-        
-        // Real-time validation
-        contactInput.addEventListener('input', function() {
-            const value = this.value.replace(/\D/g, ''); // Remove non-digits
-            this.value = value;
-            
-            // Validate format
-            if (value.length === 0) {
-                this.classList.remove('is-invalid');
-                if (contactError) contactError.style.display = 'none';
-            } else if (value.length === 11 && value.startsWith('09')) {
-                this.classList.remove('is-invalid');
-                if (contactError) contactError.style.display = 'none';
-            } else {
-                this.classList.add('is-invalid');
-                if (contactError) contactError.style.display = 'block';
-            }
-        });
-        
-        // Prevent non-numeric input
-        contactInput.addEventListener('keypress', function(e) {
-            const char = String.fromCharCode(e.which);
-            if (!/[0-9]/.test(char)) {
-                e.preventDefault();
-            }
-        });
-        
-        // Validation on blur
-        contactInput.addEventListener('blur', function() {
-            const value = this.value;
-            if (value.length > 0 && (value.length !== 11 || !value.startsWith('09'))) {
-                this.classList.add('is-invalid');
-                if (contactError) contactError.style.display = 'block';
-            }
-        });
     });
 
     // Priority card selection function
@@ -571,27 +528,13 @@
         }
     }
     
-    // AJAX Form Submission with Contact Validation
+    // AJAX Form Submission
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('inquiryForm');
         const submitBtn = document.getElementById('submitBtn');
-        const contactInput = document.getElementById('contact_number');
         
         if (form && submitBtn) {
             form.addEventListener('submit', function(e) {
-                // Validate contact number before submission
-                if (contactInput && contactInput.value.length > 0) {
-                    if (contactInput.value.length !== 11 || !contactInput.value.startsWith('09')) {
-                        e.preventDefault();
-                        contactInput.classList.add('is-invalid');
-                        const contactError = document.getElementById('contact_number_error');
-                        if (contactError) contactError.style.display = 'block';
-                        alert('Please enter a valid 11-digit contact number starting with 09');
-                        contactInput.focus();
-                        return;
-                    }
-                }
-                
                 e.preventDefault();
                 console.log('Form submission processing...');
                 

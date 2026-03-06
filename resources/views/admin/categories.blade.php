@@ -62,9 +62,6 @@
                             <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editCategoryModal{{ $category->id }}">
                                 <i class="bi bi-pencil"></i> Edit Category
                             </button>
-                            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteCategoryModal{{ $category->id }}">
-                                <i class="bi bi-trash"></i> Delete Category
-                            </button>
                         </div>
                     </div>
                 </div>

@@ -16,29 +16,35 @@ class AssessmentSequence extends Model
 
     /**
      * Get the next assessment number for the given year and month
+     * Format: YYYY-MM-NNNN (Year-Month-SequentialNumber)
+     * The sequential number resets every year (not monthly)
      */
     public static function getNextNumber(string $year, string $month): string
     {
-        $yearMonth = $year . '-' . $month;
+        // Use year only for the sequence key to reset yearly
+        // Format: YYYY-NNNN where NNNN resets at the start of each year
+        $yearOnly = $year;
+        $monthPadded = str_pad($month, 2, '0', STR_PAD_LEFT);
         
-        return \DB::transaction(function () use ($yearMonth) {
-            // Try to find existing sequence record
-            $sequence = self::where('year_month', $yearMonth)->lockForUpdate()->first();
+        return \DB::transaction(function () use ($yearOnly, $monthPadded) {
+            // Try to find existing sequence record for this year
+            $sequence = self::where('year_month', $yearOnly)->lockForUpdate()->first();
             
             if ($sequence) {
                 // Increment the current value
                 $sequence->increment('current_value');
                 $nextNumber = $sequence->current_value;
             } else {
-                // Create new sequence record starting with 1
+                // Create new sequence record starting with 1 for this year
                 $sequence = self::create([
-                    'year_month' => $yearMonth,
+                    'year_month' => $yearOnly,
                     'current_value' => 1,
                 ]);
                 $nextNumber = 1;
             }
             
-            return $yearMonth . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+            // Return format: YYYY-MM-NNNN (display includes month for better organization)
+            return $yearOnly . '-' . $monthPadded . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
         });
     }
 }

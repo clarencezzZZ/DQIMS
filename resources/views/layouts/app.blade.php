@@ -455,7 +455,7 @@
             @auth
             <div class="col-md-2 d-none d-md-block sidebar p-0">
                 <div class="d-flex flex-column">
-                    @if(auth()->user()->isFrontDesk() || auth()->user()->isAdmin())
+                    @if(auth()->user()->isFrontDesk() && auth()->user()->username !== 'admin')
                     <a href="{{ route('front-desk.index') }}" class="nav-link {{ request()->routeIs('front-desk.index') ? 'active' : '' }}">
                         <i class="bi bi-reception-4"></i> Front Desk
                     </a>
@@ -467,7 +467,7 @@
                     </a>
                     @endif
                     
-                    @if(auth()->user()->isSectionStaff() || auth()->user()->isAdmin())
+                    @if(auth()->user()->isSectionStaff() && auth()->user()->username !== 'admin')
                     <a href="{{ route('section.index') }}" class="nav-link {{ request()->routeIs('section.*') ? 'active' : '' }}">
                         <i class="bi bi-people"></i> Section Dashboard
                     </a>
@@ -475,22 +475,22 @@
                     
                     @if(auth()->user()->isAdmin())
                     <div class="sidebar-divider"></div>
+                    @if(auth()->user()->username === 'admin')
                     <a href="{{ route('admin.index') }}" class="nav-link {{ request()->routeIs('admin.index') ? 'active' : '' }}">
                         <i class="bi bi-speedometer2"></i> Admin Dashboard
                     </a>
                     <a href="{{ route('admin.inquiries') }}" class="nav-link {{ request()->routeIs('admin.inquiries') ? 'active' : '' }}">
                         <i class="bi bi-list-check"></i> All Inquiries
                     </a>
-                    <a href="{{ route('admin.assessments') }}" class="nav-link {{ request()->routeIs('admin.assessments*') ? 'active' : '' }}">
-                        <i class="bi bi-file-earmark-text"></i> Assessments
-                    </a>
-                    @if(auth()->user()->username === 'admin')
                     <a href="{{ route('admin.users') }}" class="nav-link {{ request()->routeIs('admin.users') ? 'active' : '' }}">
                         <i class="bi bi-people-fill"></i> Users
                     </a>
-                    @endif
                     <a href="{{ route('admin.categories') }}" class="nav-link {{ request()->routeIs('admin.categories') ? 'active' : '' }}">
                         <i class="bi bi-tags"></i> Categories
+                    </a>
+                    @endif
+                    <a href="{{ route('admin.assessments') }}" class="nav-link {{ request()->routeIs('admin.assessments*') ? 'active' : '' }}">
+                        <i class="bi bi-file-earmark-text"></i> Assessments
                     </a>
                     @endif
                     

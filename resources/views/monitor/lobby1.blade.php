@@ -240,13 +240,14 @@
             <div class="{{ $positionClass }}" data-section="{{ $section }}">
                 <div class="section-card h-100">
                     <div class="section-header d-flex justify-content-between align-items-center" style="background-color: {{ $data['color'] }}">
-                        <h2 class="mb-0 fw-bold">{{ $section }}</h2>
+                        <h2 class="mb-0 fw-bold">{{ $data['name'] }}</h2>
                         <span class="badge bg-dark waiting-badge" id="waiting_{{ $section }}">Waiting: 0</span>
                     </div>
                     <div class="card-content-area">
                         <div class="queue-info-container">
                             <div class="queue-number mb-3" id="serving_{{ $section }}">---</div>
                             <div class="text-muted status-text" id="status_{{ $section }}">No Queue</div>
+                            <div class="mt-2 text-muted status-text" style="font-size: 2.0rem;" id="next_queue_{{ $section }}"></div>
                         </div>
                         <div class="text-muted category-text" id="category_{{ $section }}"></div>
                     </div>
@@ -546,25 +547,58 @@
             const servingEl = document.getElementById('serving_' + section);
             const statusEl = document.getElementById('status_' + section);
             const categoryEl = document.getElementById('category_' + section);
+            const nextQueueEl = document.getElementById('next_queue_' + section);
             const cardContainer = document.querySelector(`[data-section="${section}"]`);
             
             if (servingEl && statusEl) {
                 if (info.now_serving) {
-                    servingEl.textContent = info.now_serving;
+                    // Someone is being served
+                    const queueNum = formatQueueNumber(info.now_serving);
+                    servingEl.textContent = queueNum;
                     servingEl.style.color = '#1a5f2a';
                     statusEl.textContent = 'Now Serving';
-                    if (categoryEl) categoryEl.textContent = info.now_serving_category || '';
+                    
+                    // Show next in queue if available
+                    if (nextQueueEl) {
+                        if (info.second_in_queue) {
+                            const nextNum = formatQueueNumber(info.second_in_queue);
+                            nextQueueEl.innerHTML = '<div style="font-size: 1.8rem; margin-top: 10px;">Next in Queue</div><div style="font-weight: bold; color: #f39c12;">' + nextNum + '</div>';
+                        } else if (info.first_in_queue) {
+                            const nextNum = formatQueueNumber(info.first_in_queue);
+                            nextQueueEl.innerHTML = '<div style="font-size: 1.8rem; margin-top: 10px;">Next in Queue</div><div style="font-weight: bold; color: #f39c12;">' + nextNum + '</div>';
+                        } else {
+                            nextQueueEl.textContent = '';
+                        }
+                    }
+                    
+                    // Hide category text - we don't want to display it
+                    if (categoryEl) categoryEl.textContent = '';
                     visibleSections.push(section);
-                } else if (info.latest_waiting) {
-                    servingEl.textContent = info.latest_waiting;
+                } else if (info.first_in_queue) {
+                    // No one being served, show first in queue
+                    const queueNum = formatQueueNumber(info.first_in_queue);
+                    servingEl.textContent = queueNum;
                     servingEl.style.color = '#f39c12';
-                    statusEl.textContent = 'Next in Queue';
-                    if (categoryEl) categoryEl.textContent = info.latest_waiting_category || '';
+                    statusEl.textContent = 'Now Serving';
+                    
+                    // Show next in queue if available
+                    if (nextQueueEl) {
+                        if (info.second_in_queue) {
+                            const nextNum = formatQueueNumber(info.second_in_queue);
+                            nextQueueEl.innerHTML = '<div style="font-size: 1.8rem; margin-top: 10px;">Next in Queue</div><div style="font-weight: bold; color: #f39c12;">' + nextNum + '</div>';
+                        } else {
+                            nextQueueEl.textContent = '';
+                        }
+                    }
+                    
+                    // Hide category text - we don't want to display it
+                    if (categoryEl) categoryEl.textContent = '';
                     visibleSections.push(section);
                 } else {
                     servingEl.textContent = '---';
                     servingEl.style.color = '#6c757d';
                     statusEl.textContent = 'No Queue';
+                    if (nextQueueEl) nextQueueEl.textContent = '';
                     if (categoryEl) categoryEl.textContent = '';
                     // Don't add to visible sections - hide card
                 }
@@ -573,6 +607,25 @@
         
         // Hide/show cards based on visibility
         hideInactiveCards(visibleSections);
+    }
+    
+    // Format queue number to show only sequential number
+    function formatQueueNumber(fullQueueNumber) {
+        if (!fullQueueNumber) return '---';
+        
+        // Try to extract the last number after the last hyphen
+        // e.g., "SECSIME NO.R4A-L_SMD-01-009" -> "#9"
+        // e.g., "dsds-001" -> "#1"
+        const parts = fullQueueNumber.split('-');
+        if (parts.length > 0) {
+            const lastPart = parts[parts.length - 1];
+            const num = parseInt(lastPart.replace(/^0+/, '')); // Remove leading zeros
+            if (!isNaN(num)) {
+                return '#' + num;
+            }
+        }
+        // Fallback: if no number found, return the original
+        return fullQueueNumber;
     }
     
     // Hide cards that don't have active queues

@@ -84,7 +84,7 @@ class AdminController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('guest_name', 'like', "%{$search}%")
                   ->orWhere('queue_number', 'like', "%{$search}%")
-                  ->orWhere('contact_number', 'like', "%{$search}%");
+                  ->orWhere('address', 'like', "%{$search}%");
             });
         }
 
@@ -93,15 +93,25 @@ class AdminController extends Controller
         // Get categories first for section grouping
         $categories = Category::where('is_active', true)->get();
         
+        // Map section acronyms to full names
+        $sectionNames = [
+            'ACS' => 'AGGREGATE AND CORRECTION',
+            'OOSS' => 'ORIGINAL AND OTHER SURVEYS',
+            'LES' => 'LAND EVALUATION',
+            'SCS' => 'SURVEYS AND CONTROL',
+        ];
+        
         // Group inquiries by section (not category)
-        $inquiriesBySection = $inquiries->groupBy(function($inquiry) {
-            return $inquiry->category ? $inquiry->category->section : 'Uncategorized';
+        $inquiriesBySection = $inquiries->groupBy(function($inquiry) use ($sectionNames) {
+            $sectionAcronym = $inquiry->category ? $inquiry->category->section : 'Uncategorized';
+            return $sectionNames[$sectionAcronym] ?? $sectionAcronym;
         });
         
         // Get section information for display
-        $sections = $categories->groupBy('section')->map(function($sectionCategories, $sectionName) {
+        $sections = $categories->groupBy('section')->map(function($sectionCategories, $sectionName) use ($sectionNames) {
             return [
-                'name' => $sectionName,
+                'name' => $sectionNames[$sectionName] ?? $sectionName,
+                'acronym' => $sectionName,
                 'categories' => $sectionCategories,
                 'color' => $sectionCategories->first()->color ?? '#6c757d',
                 'count' => $sectionCategories->count()
@@ -228,19 +238,18 @@ class AdminController extends Controller
         $validator = Validator::make($request->all(), [
             'fees' => 'required|numeric|min:0',
             'remarks' => 'nullable|string',
-            'officer_of_day' => 'required',
+            'officer_in_charge' => 'required',
         ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
 
-        // Handle officer of the day selection
-        $officerOfDay = $request->officer_of_day;
+        // Handle officer incharge selection
+        $officerInCharge = $request->officer_in_charge;
         $customOfficerName = null;
-        if ($officerOfDay === 'other') {
-            $customOfficerName = $request->new_officer_name;
-            $officerOfDay = null; // Set to null since we're using custom name
+        if ($officerInCharge === 'lota') {
+            $officerInCharge = 'lota'; // Keep as string identifier for Mr. Stanley M. Lota
         }
 
         $assessment = Assessment::create([
@@ -253,7 +262,7 @@ class AdminController extends Controller
             'fees' => $request->fees,
             'remarks' => $request->remarks,
             'processed_by' => Auth::id(),
-            'officer_of_day' => $officerOfDay,
+            'officer_in_charge' => $officerInCharge,
             'custom_officer_name' => $customOfficerName,
             'assessment_date' => now()->toDateString(),
         ]);
@@ -267,7 +276,7 @@ class AdminController extends Controller
      */
     public function showAssessment(Assessment $assessment)
     {
-        $assessment->load(['processedBy', 'officerOfDay', 'category']);
+        $assessment->load(['processedBy', 'officerInCharge', 'category']);
         return view('admin.assessment-show', compact('assessment'));
     }
 
@@ -276,7 +285,7 @@ class AdminController extends Controller
      */
     public function editAssessment(Assessment $assessment)
     {
-        $assessment->load(['processedBy', 'officerOfDay', 'category']);
+        $assessment->load(['processedBy', 'officerInCharge', 'category']);
         $officers = \App\Models\OfficerOfDay::active()->get();
         $lotaOfficer = User::where('name', 'Mr. Stanley M. Lota')->first();
         return view('admin.assessment-edit', compact('assessment', 'officers', 'lotaOfficer'));
@@ -292,22 +301,24 @@ class AdminController extends Controller
             'address' => 'required|string|max:255',
             'fees' => 'required|numeric|min:0',
             'remarks' => 'nullable|string',
-            'officer_of_day' => 'required',
+            'officer_in_charge' => 'required',
         ]);
 
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
 
-        // Handle officer of the day selection
-        $officerOfDay = $request->officer_of_day;
+        // Handle officer incharge selection
+        $officerInCharge = $request->officer_in_charge;
         $customOfficerName = null;
-        if ($officerOfDay === 'other') {
+        if ($officerInCharge === 'other') {
             $customOfficerName = $request->new_officer_name;
-            $officerOfDay = null; // Set to null since we're using custom name
-        } elseif (is_numeric($officerOfDay)) {
+            $officerInCharge = null; // Set to null since we're using custom name
+        } elseif ($officerInCharge === 'lota') {
+            $officerInCharge = 'lota'; // Keep as string identifier for Mr. Stanley M. Lota
+        } elseif (is_numeric($officerInCharge)) {
             // Ensure it's stored as integer if it's numeric
-            $officerOfDay = (int) $officerOfDay;
+            $officerInCharge = (int) $officerInCharge;
         }
 
         // Build names detail JSON if provided
@@ -325,21 +336,21 @@ class AdminController extends Controller
         }
 
         // Debug: Log the values being updated
-        \Log::info('Updating assessment ' . $assessment->id . ': officer_of_day=' . $officerOfDay . ', custom_officer_name=' . $customOfficerName);
+        \Log::info('Updating assessment ' . $assessment->id . ': officer_in_charge=' . $officerInCharge . ', custom_officer_name=' . $customOfficerName);
         
         $assessment->update([
             'guest_name' => $request->guest_name,
             'address' => $request->address,
             'fees' => $request->fees,
             'remarks' => $request->remarks,
-            'officer_of_day' => $officerOfDay,
+            'officer_in_charge' => $officerInCharge,
             'custom_officer_name' => $customOfficerName,
             'names_detail' => json_encode($namesDetail),
         ]);
 
         // Debug: Log the values after update
         $assessment->refresh();
-        \Log::info('After update - officer_of_day=' . $assessment->officer_of_day . ', custom_officer_name=' . $assessment->custom_officer_name);
+        \Log::info('After update - officer_in_charge=' . $assessment->officer_in_charge . ', custom_officer_name=' . $assessment->custom_officer_name);
 
         return redirect()->route('admin.assessments.show', $assessment)
             ->with('success', 'Assessment updated successfully.');
@@ -350,7 +361,7 @@ class AdminController extends Controller
      */
     public function assessments(Request $request)
     {
-        $query = Assessment::with(['inquiry', 'category', 'processedBy', 'officerOfDay']);
+        $query = Assessment::with(['inquiry', 'category', 'processedBy']);
 
         if ($request->filled('date_from')) {
             $query->whereDate('assessment_date', '>=', $request->date_from);
@@ -366,16 +377,8 @@ class AdminController extends Controller
 
         $assessments = $query->latest()->paginate(20);
         $categories = Category::where('is_active', true)->get();
-        $officers = \App\Models\OfficerOfDay::active()->get();
-        $lotaOfficer = User::where('name', 'Mr. Stanley M. Lota')->first();
-        
-        // Get recent event logs
-        $eventLogs = EventLog::with('user')
-            ->latest()
-            ->limit(20)
-            ->get();
 
-        return view('admin.assessments', compact('assessments', 'categories', 'officers', 'lotaOfficer', 'eventLogs'));
+        return view('admin.assessments', compact('assessments', 'categories'));
     }
 
     /**
@@ -579,7 +582,6 @@ class AdminController extends Controller
             'assessment_date' => 'required|date',
             'guest_name' => 'required|string|max:255',
             'address' => 'required|string|max:255',
-            'legal_basis' => 'required|string|max:50',
             'description_type' => 'required|string|max:100',
             'names' => 'nullable|array',
             'names.*' => 'nullable|string|max:255',
@@ -589,7 +591,7 @@ class AdminController extends Controller
             'amounts.*' => 'nullable|numeric|min:0',
             'fees' => 'required|numeric|min:0',
             'remarks' => 'nullable|string',
-            'officer_of_day' => 'required',
+            'officer_in_charge' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -599,15 +601,11 @@ class AdminController extends Controller
         // Generate unique assessment number on the server side to prevent duplicates
         $assessmentNumber = $this->generateAssessmentNumber();
 
-        // Handle officer of the day selection
-        $officerOfDay = $request->officer_of_day;
+        // Handle officer incharge selection
+        $officerInCharge = $request->officer_in_charge;
         $customOfficerName = null;
-        if ($officerOfDay === 'other') {
-            $customOfficerName = $request->new_officer_name;
-            $officerOfDay = null; // Set to null since we're using custom name
-            
-            // Do not add new custom officer to officers_of_day table
-            // to maintain restricted dropdown with only Mr. Stanley M. Lota and Other
+        if ($officerInCharge === 'lota') {
+            $officerInCharge = 'lota'; // Keep as string identifier for Mr. Stanley M. Lota
         }
 
         // Build names detail JSON
@@ -634,13 +632,12 @@ class AdminController extends Controller
             'address' => $request->address,
             'category_id' => null, // Not required for direct assessment
             'reference' => null,
-            'legal_basis' => $request->legal_basis,
             'request_type' => $request->description_type,
             'names_detail' => json_encode($namesDetail),
             'fees' => $request->fees,
             'remarks' => $request->remarks,
             'processed_by' => Auth::user()->id,
-            'officer_of_day' => $officerOfDay,
+            'officer_in_charge' => $officerInCharge,
             'custom_officer_name' => $customOfficerName,
             'assessment_date' => $request->assessment_date,
         ]);

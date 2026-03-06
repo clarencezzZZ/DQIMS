@@ -52,15 +52,16 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-info text-white">
+            <div class="card bg-info text-white" style="background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%) !important;">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <h6 class="card-title mb-0">Now Serving</h6>
+                            <h6 class="card-title mb-0 fw-bold">Now Serving</h6>
                             <h3 class="mb-0 mt-2" id="servingCount">0</h3>
+                            <small class="mt-1 d-block opacity-75">Currently being served</small>
                         </div>
                         <div class="align-self-center">
-                            <i class="bi bi-person-check" style="font-size: 2.5rem; opacity: 0.5;"></i>
+                            <i class="bi bi-person-video3" style="font-size: 2.5rem; opacity: 0.8;"></i>
                         </div>
                     </div>
                 </div>
@@ -96,7 +97,7 @@
                         
                         <!-- Guest Name -->
                         <div class="mb-3">
-                            <label for="guest_name" class="form-label fw-bold">Guest Name <span class="text-danger">*</span></label>
+                            <label for="guest_name" class="form-label fw-bold">Guest Name<span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-person"></i></span>
                                 <input type="text" class="form-control @error('guest_name') is-invalid @enderror" 
@@ -108,19 +109,16 @@
                             @enderror
                         </div>
 
-                        <!-- Contact Number -->
+                        <!-- Address -->
                         <div class="mb-3">
-                            <label for="contact_number" class="form-label fw-bold">Contact Number</label>
+                            <label for="address" class="form-label fw-bold">Address</label>
                             <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-                                <input type="tel" class="form-control @error('contact_number') is-invalid @enderror" 
-                                       id="contact_number" name="contact_number" placeholder="09XXXXXXXXX" 
-                                       value="{{ old('contact_number') }}" maxlength="11" pattern="09[0-9]{9}">
-                                <div class="invalid-feedback" id="contact_number_error">
-                                    Contact number must be exactly 11 digits starting with 09
-                                </div>
+                                <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
+                                <input type="text" class="form-control @error('address') is-invalid @enderror" 
+                                       id="address" name="address" placeholder="Enter address" 
+                                       value="{{ old('address') }}">
                             </div>
-                            @error('contact_number')
+                            @error('address')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -151,7 +149,7 @@
                         <div class="mb-3">
                             <label class="form-label fw-bold">Section</label>
                             <div class="p-2 rounded" style="background-color: #e9ecef; border: 1px solid #ced4da;">
-                                <span id="section_label" class="text-muted">Select a category to see section details</span>
+                                <span id="section_label" class="fw-bold text-dark">Select a category to see section details</span>
                             </div>
                             <input type="hidden" id="section" name="section">
                         </div>
@@ -181,12 +179,6 @@
                                     <input class="form-check-input" type="radio" name="priority" id="priority_priority" value="priority">
                                     <label class="form-check-label" for="priority_priority">
                                         <span class="badge bg-warning text-dark">Priority</span>
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="priority" id="priority_urgent" value="urgent">
-                                    <label class="form-check-label" for="priority_urgent">
-                                        <span class="badge bg-danger">Urgent</span>
                                     </label>
                                 </div>
                             </div>
@@ -233,38 +225,42 @@
             </div>
 
             <!-- Recent Inquiries -->
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Inquiries (Today)</h5>
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-gradient text-white" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2"></i>Recent Inquiries (Today)</h5>
+                        <span class="badge bg-light text-dark">{{ count($todayInquiries) }} total</span>
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0">
+                        <table class="table table-hover mb-0 align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    <th>Queue #</th>
-                                    <th>Guest Name</th>
-                                    <th>Category</th>
-                                    <th>Status</th>
-                                    <th>Time</th>
-                                    <th>Section</th>
+                                    <th width="8%" class="text-center py-3 fw-bold">#</th>
+                                    <th width="18%" class="py-3 fw-bold"><i class="bi bi-person me-1"></i>GUEST NAME</th>
+                                    <th width="32%" class="py-3 fw-bold"><i class="bi bi-tag me-1"></i>SERVICE TYPE</th>
+                                    <th width="10%" class="text-center py-3 fw-bold"><i class="bi bi-hourglass-split me-1"></i>STATUS</th>
+                                    <th width="10%" class="text-center py-3 fw-bold"><i class="bi bi-clock me-1"></i>TIME</th>
+                                    <th width="22%" class="py-3 fw-bold"><i class="bi bi-geo-alt me-1"></i>SECTION</th>
+                                    <th width="10%" class="text-center py-3 fw-bold"><i class="bi bi-printer me-1"></i>ACTION</th>
                                 </tr>
                             </thead>
                             <tbody id="recentInquiries">
-                                @forelse($todayInquiries as $inquiry)
+                                @forelse($todayInquiries as $index => $inquiry)
                                     <tr>
-                                        <td><span class="badge bg-dark fs-6">{{ $inquiry->queue_number }}</span></td>
+                                        <td><span class="badge bg-dark fs-6">#{{ $index + 1 }}</span></td>
                                         <td>{{ $inquiry->guest_name }}</td>
                                         <td>
                                             @if($inquiry->category)
                                                 <span class="badge" style="background-color: {{ $inquiry->category->color }}">
-                                                    {{ $inquiry->category->code }}
+                                                    {{ $inquiry->category->name }}
                                                 </span>
                                             @else
                                                 <span class="badge bg-secondary">N/A</span>
                                             @endif
                                         </td>
-                                        <td>
+                                        <td class="text-center">
                                             @if($inquiry->status == 'waiting')
                                                 <span class="badge bg-warning text-dark">Waiting</span>
                                             @elseif($inquiry->status == 'serving')
@@ -275,14 +271,32 @@
                                                 <span class="badge bg-danger">Skipped</span>
                                             @endif
                                         </td>
-                                        <td>{{ $inquiry->created_at->format('h:i A') }}</td>
+                                        <td class="text-center">{{ $inquiry->created_at->format('h:i A') }}</td>
                                         <td>
-                                            <span class="badge bg-secondary">{{ $inquiry->category->section ?? 'N/A' }}</span>
+                                            @if($inquiry->category)
+                                                @php
+                                                    $sectionNames = [
+                                                        'ACS' => 'AGGREGATE AND CORRECTION SECTION',
+                                                        'OOSS' => 'ORIGINAL AND OTHER SURVEYS SECTION',
+                                                        'LES' => 'LAND EVALUATION SECTION',
+                                                        'SCS' => 'SURVEYS AND CONTROL SECTION',
+                                                    ];
+                                                    $sectionAcronym = $inquiry->category->section;
+                                                @endphp
+                                                <span class="badge bg-secondary">{{ $sectionNames[$sectionAcronym] ?? $sectionAcronym }}</span>
+                                            @else
+                                                <span class="badge bg-secondary">N/A</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="{{ route('front-desk.ticket', $inquiry) }}" target="_blank" class="btn btn-sm btn-outline-primary" title="Print Ticket">
+                                                <i class="bi bi-printer"></i> Print
+                                            </a>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center py-4 text-muted">
+                                        <td colspan="7" class="text-center py-4 text-muted">
                                             <i class="bi bi-inbox" style="font-size: 2rem;"></i>
                                             <p class="mt-2">No inquiries yet today</p>
                                         </td>
@@ -436,8 +450,16 @@
         const sectionInput = document.getElementById('section');
         
         if (section && code) {
-            // Show full section label: ACS - SECSIME NO.R4A-L_SMD-01. CANCELATION OF PREVIOUSLY APPROVED SURVEY PLANS(DAR)
-            sectionLabel.textContent = section + ' - ' + code + '. ' + name;
+            // Show ONLY the full section name meaning (without acronym, code, or description)
+            const sectionFullNameMap = {
+                'ACS': 'AGGREGATE AND CORRECTION',
+                'OOSS': 'ORIGINAL AND OTHER SURVEYS',
+                'LES': 'LAND EVALUATION',
+                'SCS': 'SURVEYS AND CONTROL'
+            };
+            
+            const sectionFullName = sectionFullNameMap[section] || section;
+            sectionLabel.textContent = sectionFullName;
             sectionLabel.className = 'fw-bold text-dark';
             sectionInput.value = section;
         } else {
@@ -484,7 +506,13 @@
         let html = '<div class="row">';
         for (const [section, info] of Object.entries(data.sections)) {
             const hasWaiting = info.waiting_count > 0;
-            const displayNumber = info.now_serving || info.latest_waiting || '---';
+            // Format queue number to show only #N format
+            let displayNumber = '---';
+            if (info.now_serving) {
+                displayNumber = formatQueueNumber(info.now_serving);
+            } else if (info.latest_waiting) {
+                displayNumber = formatQueueNumber(info.latest_waiting);
+            }
             const statusText = info.now_serving ? 'Now Serving' : (hasWaiting ? 'Next in Queue' : 'No Queue');
             const statusClass = info.now_serving ? 'text-success' : (hasWaiting ? 'text-warning' : 'text-muted');
             
@@ -498,7 +526,7 @@
                         <div class="card-body text-center">
                             <h2 class="${statusClass} mb-0 fw-bold">${displayNumber}</h2>
                             <small class="text-muted">${statusText}</small>
-                            ${info.latest_waiting_category ? `<br><small class="text-muted">${info.latest_waiting_category}</small>` : ''}
+                            ${'' /* Removed category code display */}
                         </div>
                     </div>
                 </div>
@@ -509,24 +537,42 @@
         container.innerHTML = html;
     }
 
-    // Load recent inquiries
-    function loadRecentInquiries() {
-        fetch('{{ route('front-desk.recent-inquiries') }}')
-            .then(response => response.text())
-            .then(html => {
-                document.getElementById('recentInquiries').innerHTML = html;
-            })
-            .catch(error => console.error('Error loading recent inquiries:', error));
+    // Format queue number to show only sequential number as #N
+    function formatQueueNumber(fullQueueNumber) {
+        if (!fullQueueNumber) return '---';
+        
+        // Try to extract the last number after the last hyphen
+        // e.g., "SECSIME NO.R4A-L_SMD-01-009" -> "#9"
+        const parts = fullQueueNumber.split('-');
+        if (parts.length > 0) {
+            const lastPart = parts[parts.length - 1];
+            const num = parseInt(lastPart.replace(/^0+/, '')); // Remove leading zeros
+            if (!isNaN(num)) {
+                return '#' + num;
+            }
+        }
+        // Fallback: if no number found, return the original
+        return fullQueueNumber;
     }
 
-    // Auto-refresh every 10 seconds
+    // Load queue status only (recent inquiries static - no auto-refresh)
+    function loadQueueStatusOnly() {
+        fetch('{{ route('front-desk.queue-status') }}')
+            .then(response => response.json())
+            .then(data => {
+                updateStats(data);
+                updateQueueDisplay(data);
+            })
+            .catch(error => console.error('Error loading queue status:', error));
+    }
+
+    // Auto-refresh queue status only every 10 seconds (recent inquiries remain static)
     setInterval(() => {
-        loadQueueStatus();
-        loadRecentInquiries();
+        loadQueueStatusOnly();
     }, 10000);
 
     // Initial load
-    loadQueueStatus();
+    loadQueueStatusOnly();
     
     // Add notification container
     const notificationContainer = document.createElement('div');
@@ -579,68 +625,15 @@
         }
     }
     
-    // Professional Contact Number Validation for Index Page
-    document.addEventListener('DOMContentLoaded', function() {
-        const contactInput = document.getElementById('contact_number');
-        const contactError = document.getElementById('contact_number_error');
-        
-        if (contactInput) {
-            // Real-time validation
-            contactInput.addEventListener('input', function() {
-                const value = this.value.replace(/\D/g, ''); // Remove non-digits
-                this.value = value;
-                
-                // Validate format
-                if (value.length === 0) {
-                    this.classList.remove('is-invalid');
-                    if (contactError) contactError.style.display = 'none';
-                } else if (value.length === 11 && value.startsWith('09')) {
-                    this.classList.remove('is-invalid');
-                    if (contactError) contactError.style.display = 'none';
-                } else {
-                    this.classList.add('is-invalid');
-                    if (contactError) contactError.style.display = 'block';
-                }
-            });
-            
-            // Prevent non-numeric input
-            contactInput.addEventListener('keypress', function(e) {
-                const char = String.fromCharCode(e.which);
-                if (!/[0-9]/.test(char)) {
-                    e.preventDefault();
-                }
-            });
-            
-            // Validation on blur
-            contactInput.addEventListener('blur', function() {
-                const value = this.value;
-                if (value.length > 0 && (value.length !== 11 || !value.startsWith('09'))) {
-                    this.classList.add('is-invalid');
-                    if (contactError) contactError.style.display = 'block';
-                }
-            });
-        }
-    });
-
-    // AJAX Form Submission for index page with Contact Validation
+    // Professional Contact Validation Debugging - Remove all contact validation
+    // Contact field has been replaced with Address field
+    
+    // AJAX Form Submission for index page
     const form = document.getElementById('inquiryForm');
     const submitBtn = form.querySelector('button[type="submit"]');
     
     if (form && submitBtn) {
         form.addEventListener('submit', function(e) {
-            // Validate contact number before submission
-            const contactInput = document.getElementById('contact_number');
-            if (contactInput && contactInput.value.length > 0) {
-                if (contactInput.value.length !== 11 || !contactInput.value.startsWith('09')) {
-                    e.preventDefault();
-                    contactInput.classList.add('is-invalid');
-                    if (contactError) contactError.style.display = 'block';
-                    alert('Please enter a valid 11-digit contact number starting with 09');
-                    contactInput.focus();
-                    return;
-                }
-            }
-            
             e.preventDefault();
             
             // Show loading state
@@ -678,9 +671,8 @@
                     document.getElementById('section_label').textContent = 'Select a category to see section details';
                     document.getElementById('section_label').className = 'text-muted';
                     
-                    // Reload recent inquiries and queue status
-                    loadRecentInquiries();
-                    loadQueueStatus();
+                    // Reload queue status only (recent inquiries remain static)
+                    loadQueueStatusOnly();
                 } else {
                     // Show error notification
                     showNotification('Please check the form for errors and try again.', 'error', 'Submission Failed');

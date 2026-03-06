@@ -103,7 +103,7 @@
                 $sectionInquiries = $sectionInquiries->filter(function($inquiry) use ($search) {
                     return stripos($inquiry->guest_name, $search) !== false || 
                            stripos($inquiry->queue_number, $search) !== false || 
-                           stripos($inquiry->contact_number, $search) !== false;
+                           stripos($inquiry->address, $search) !== false;
                 });
             }
             
@@ -247,7 +247,7 @@
                                     <i class="bi bi-person me-1"></i>GUEST NAME
                                 </th>
                                 <th width="12%" class="py-3" style="color: {{ $section['color'] }}; font-weight: 700; font-size: 0.95rem;">
-                                    <i class="bi bi-telephone me-1"></i>CONTACT
+                                    <i class="bi bi-geo-alt me-1"></i>ADDRESS
                                 </th>
                                 <th width="20%" class="py-3" style="color: {{ $section['color'] }}; font-weight: 700; font-size: 0.95rem;">
                                     <i class="bi bi-tag me-1"></i>SERVICE TYPE
@@ -267,12 +267,12 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($sectionInquiries as $inquiry)
+                            @forelse($sectionInquiries as $index => $inquiry)
                                 <tr class="border-start border-4" 
                                     style="border-color: {{ $section['color'] }}30 !important; background-color: white; border-bottom: 1px solid #eee;">
                                     <td class="text-center py-3">
                                         <div class="d-flex flex-column align-items-center">
-                                            <span class="badge bg-dark fs-6 px-3 py-2 fw-bold">{{ $inquiry->queue_number }}</span>
+                                            <span class="badge bg-dark fs-6 px-3 py-2 fw-bold">#{{ $index + 1 }}</span>
                                             @if($inquiry->category && isset($nextInquiries[$inquiry->category_id]) && $nextInquiries[$inquiry->category_id] == $inquiry->id && $inquiry->status == 'waiting')
                                                 <span class="badge bg-success mt-2 px-2 py-1">
                                                     <i class="bi bi-arrow-right-circle me-1"></i>NEXT
@@ -291,20 +291,14 @@
                                         @endif
                                     </td>
                                     <td class="py-3">
-                                        <div class="fw-medium">{{ $inquiry->contact_number ?? 'N/A' }}</div>
+                                        <div class="fw-medium">{{ $inquiry->address ?? 'N/A' }}</div>
                                         <div class="small text-muted">
                                             <i class="bi bi-calendar-event me-1"></i>{{ $inquiry->created_at->format('M d, Y') }}
                                         </div>
                                     </td>
                                     <td class="py-3">
                                         @if($inquiry->category)
-                                            <div class="mb-2">
-                                                <span class="badge px-3 py-2" 
-                                                      style="background-color: {{ $inquiry->category->color }}; color: white; font-size: 0.9em; font-weight: 500;">
-                                                    <i class="bi bi-tag-fill me-1"></i>{{ $inquiry->category->code }}
-                                                </span>
-                                            </div>
-                                            <div class="small text-muted" style="line-height: 1.4;">{{ Str::limit($inquiry->category->name, 45) }}</div>
+                                            <div class="small text-muted" style="line-height: 1.4;">{{ $inquiry->category->name }}</div>
                                         @else
                                             <span class="badge bg-secondary">No Category Assigned</span>
                                         @endif

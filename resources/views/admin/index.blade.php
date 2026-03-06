@@ -10,12 +10,18 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h2 class="mb-1"><i class="bi bi-speedometer2 text-primary"></i> Admin Dashboard (3rd Floor)</h2>
+                    @if(auth()->user()->username === 'admin')
                     <p class="text-muted mb-0">Manage inquiries, assessments, reports, and categories - User management for main admin only</p>
+                    @else
+                    <p class="text-muted mb-0">Access assessments and reports</p>
+                    @endif
                 </div>
                 <div class="d-flex gap-2">
+                    @if(auth()->user()->username === 'admin')
                     <a href="{{ route('admin.inquiries') }}" class="btn btn-success">
                         <i class="bi bi-file-earmark-plus"></i> Create Assessment
                     </a>
+                    @endif
                     <a href="{{ route('reports.index') }}" class="btn btn-info text-white">
                         <i class="bi bi-graph-up"></i> Reports
                     </a>
@@ -101,6 +107,7 @@
                 </div>
             </div>
         </div>
+        @if(auth()->user()->username === 'admin')
         <div class="col-md-2">
             <div class="card bg-dark text-white h-100">
                 <div class="card-body">
@@ -116,21 +123,11 @@
                 </div>
             </div>
         </div>
+        @endif
     </div>
 
     <!-- Quick Access Cards -->
     <div class="row mb-4">
-        <div class="col-md-3">
-            <a href="{{ route('admin.inquiries') }}" class="text-decoration-none">
-                <div class="card shadow-sm h-100 hover-card">
-                    <div class="card-body text-center">
-                        <i class="bi bi-list-check text-primary" style="font-size: 3rem;"></i>
-                        <h5 class="mt-3 mb-1">All Inquiries</h5>
-                        <p class="text-muted mb-0">View and manage all inquiries</p>
-                    </div>
-                </div>
-            </a>
-        </div>
         <div class="col-md-3">
             <a href="{{ route('admin.assessments') }}" class="text-decoration-none">
                 <div class="card shadow-sm h-100 hover-card">
@@ -153,6 +150,18 @@
                 </div>
             </a>
         </div>
+        @if(auth()->user()->username === 'admin')
+        <div class="col-md-3">
+            <a href="{{ route('admin.inquiries') }}" class="text-decoration-none">
+                <div class="card shadow-sm h-100 hover-card">
+                    <div class="card-body text-center">
+                        <i class="bi bi-list-check text-primary" style="font-size: 3rem;"></i>
+                        <h5 class="mt-3 mb-1">All Inquiries</h5>
+                        <p class="text-muted mb-0">View and manage all inquiries</p>
+                    </div>
+                </div>
+            </a>
+        </div>
         <div class="col-md-3">
             <a href="{{ route('admin.categories') }}" class="text-decoration-none">
                 <div class="card shadow-sm h-100 hover-card">
@@ -164,7 +173,6 @@
                 </div>
             </a>
         </div>
-        @if(auth()->user()->username === 'admin')
         <div class="col-md-3">
             <a href="{{ route('admin.users') }}" class="text-decoration-none">
                 <div class="card shadow-sm h-100 hover-card">
@@ -179,6 +187,7 @@
         @endif
     </div>
 
+    @if(auth()->user()->username === 'admin')
     <!-- Category Status -->
     <div class="row">
         <div class="col-12">
@@ -231,6 +240,7 @@
             </div>
         </div>
     </div>
+    @endif
 </div>
 @endsection
 
