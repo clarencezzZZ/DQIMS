@@ -146,7 +146,7 @@
                                 <thead>
                                     <tr>
                                         <th>Queue #</th>
-                                        <th>Guest Name</th>
+                                        <th>Client Name</th>
                                         <th>Status</th>
                                         <th>Time</th>
                                         <th>Remarks</th>
@@ -616,10 +616,10 @@
     let currentInquiry = null;
     const categoryId = {{ $category->id ?? 'null' }};
     const isAdmin = {{ auth()->user()->isAdmin() ? 'true' : 'false' }};
-    const isSectionStaff = {{ auth()->user()->isSectionStaff() ? 'true' : 'false' }};
+    const isSectionOfficer = {{ auth()->user()->isSectionOfficer() ? 'true' : 'false' }};
     
     // Show loading state
-    if (categoryId || isAdmin || isSectionStaff) {
+    if (categoryId || isAdmin || isSectionOfficer) {
         if (categoryId) {
             document.getElementById('waiting-count').textContent = '...';
             document.getElementById('serving-count').textContent = '...';
@@ -629,7 +629,7 @@
         
         // Load initial data after a brief delay
         setTimeout(() => {
-            if (!categoryId && isSectionStaff) {
+            if (!categoryId && isSectionOfficer) {
                 // Section staff without category - show message
                 document.getElementById('currently-serving').innerHTML = `
                     <div class="text-center py-5">
@@ -669,7 +669,7 @@
             console.log('🔍 Page initialization check:');
             console.log('  - isAdmin:', isAdmin);
             console.log('  - categoryId:', categoryId);
-            console.log('  - isSectionStaff:', isSectionStaff);
+            console.log('  - isSectionOfficer:', isSectionOfficer);
             console.log('  - Current URL:', window.location.href);
             console.log('  - Has category param:', window.location.href.includes('category='));
             
@@ -1014,7 +1014,7 @@
         callNextBtn.disabled = true;
         callNextBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Calling...';
         
-        if (!categoryId && !isAdmin && isSectionStaff) {
+        if (!categoryId && !isAdmin && isSectionOfficer) {
             // Show category selection modal
             loadCategories().then(() => {
                 const modal = new bootstrap.Modal(document.getElementById('categorySelectionModal'));

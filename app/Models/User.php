@@ -14,6 +14,7 @@ class User extends Authenticatable
 
     const ROLE_FRONT_DESK = 'front_desk';
     const ROLE_SECTION_STAFF = 'section_staff';
+    const ROLE_SECTION_OFFICER = 'section_officer';
     const ROLE_ADMIN = 'admin';
 
     /**
@@ -29,6 +30,7 @@ class User extends Authenticatable
         'role',
         'assigned_category_id',
         'is_active',
+        'profile_picture',
     ];
 
     /**
@@ -89,6 +91,14 @@ class User extends Authenticatable
     public function isSectionStaff(): bool
     {
         return $this->role === self::ROLE_SECTION_STAFF;
+    }
+
+    /**
+     * Check if user is section officer
+     */
+    public function isSectionOfficer(): bool
+    {
+        return $this->role === self::ROLE_SECTION_OFFICER;
     }
 
     /**

@@ -65,7 +65,7 @@ class UserSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        // Create Section Staff users for each category
+        // Create Section Officer users for each category
         $categories = Category::all();
 
         foreach ($categories as $category) {
@@ -74,7 +74,7 @@ class UserSeeder extends Seeder
                 'username' => strtolower($category->code),
                 'email' => strtolower($category->code) . '@denr.gov.ph',
                 'password' => bcrypt('password'),
-                'role' => User::ROLE_SECTION_STAFF,
+                'role' => User::ROLE_SECTION_OFFICER,
                 'assigned_category_id' => $category->id,
                 'is_active' => true,
             ]);

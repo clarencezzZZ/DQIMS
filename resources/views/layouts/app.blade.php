@@ -431,15 +431,46 @@
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-person-circle"></i> {{ auth()->user()->name }}
+                            @if(auth()->user()->profile_picture && file_exists(public_path('uploads/profiles/' . auth()->user()->profile_picture)))
+                                <img src="{{ asset('uploads/profiles/' . auth()->user()->profile_picture) }}" 
+                                     alt="{{ auth()->user()->name }}" 
+                                     class="rounded-circle" 
+                                     style="width: 32px; height: 32px; object-fit: cover; margin-right: 8px;">
+                            @else
+                                <i class="bi bi-person-circle" style="margin-right: 4px;"></i>
+                            @endif
+                            {{ auth()->user()->name }}
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><span class="dropdown-item-text text-muted">{{ ucfirst(str_replace('_', ' ', auth()->user()->role)) }}</span></li>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0" style="min-width: 200px;">
+                            <li>
+                                <div class="dropdown-item d-flex align-items-center">
+                                    @if(auth()->user()->profile_picture && file_exists(public_path('uploads/profiles/' . auth()->user()->profile_picture)))
+                                        <img src="{{ asset('uploads/profiles/' . auth()->user()->profile_picture) }}" 
+                                             alt="{{ auth()->user()->name }}" 
+                                             class="rounded-circle me-2" 
+                                             style="width: 40px; height: 40px; object-fit: cover;">
+                                    @else
+                                        <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-2" 
+                                             style="width: 40px; height: 40px; font-size: 1.2rem;">
+                                            <i class="bi bi-person-circle"></i>
+                                        </div>
+                                    @endif
+                                    <div>
+                                        <span class="fw-bold d-block">{{ auth()->user()->name }}</span>
+                                        <small class="text-muted">{{ ucfirst(str_replace('_', ' ', auth()->user()->role)) }}</small>
+                                    </div>
+                                </div>
+                            </li>
                             <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a href="{{ route('profile.edit') }}" class="dropdown-item">
+                                    <i class="bi bi-person-gear"></i> Edit Profile
+                                </a>
+                            </li>
                             <li>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
-                                    <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right"></i> Logout</button>
+                                    <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right"></i> Logout</button>
                                 </form>
                             </li>
                         </ul>
@@ -467,7 +498,7 @@
                     </a>
                     @endif
                     
-                    @if(auth()->user()->isSectionStaff() && auth()->user()->username !== 'admin')
+                    @if(auth()->user()->isSectionOfficer() && auth()->user()->username !== 'admin')
                     <a href="{{ route('section.index') }}" class="nav-link {{ request()->routeIs('section.*') ? 'active' : '' }}">
                         <i class="bi bi-people"></i> Section Dashboard
                     </a>
@@ -488,14 +519,15 @@
                     <a href="{{ route('admin.categories') }}" class="nav-link {{ request()->routeIs('admin.categories') ? 'active' : '' }}">
                         <i class="bi bi-tags"></i> Categories
                     </a>
+                    @else
+                    <!-- Admin Front Desk Role -->
+                    <a href="{{ route('admin.index') }}" class="nav-link {{ request()->routeIs('admin.index') ? 'active' : '' }}">
+                        <i class="bi bi-speedometer2"></i> Admin Dashboard
+                    </a>
                     @endif
                     <a href="{{ route('admin.assessments') }}" class="nav-link {{ request()->routeIs('admin.assessments*') ? 'active' : '' }}">
                         <i class="bi bi-file-earmark-text"></i> Assessments
                     </a>
-                    @endif
-                    
-                    @if(auth()->user()->isSectionStaff() || auth()->user()->isAdmin())
-                    <div class="sidebar-divider"></div>
                     <a href="{{ route('reports.index') }}" class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
                         <i class="bi bi-graph-up"></i> Reports
                     </a>

@@ -3,6 +3,19 @@
 @section('title', 'All Inquiries')
 
 @section('content')
+<style>
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+    }
+</style>
+
 <div class="container-fluid">
     <!-- Page Header -->
     <div class="row mb-4">
@@ -143,6 +156,32 @@
                                 <span class="badge" style="background-color: {{ $section['color'] }}; color: white; font-size: 0.9rem;">
                                     <i class="bi bi-tags-fill me-1"></i> {{ $section['count'] }} Service Types
                                 </span>
+                                @php
+                                    $nextInquiryId = $nextInquiries[$section['acronym']] ?? null;
+                                    $nextInquiry = null;
+                                    if ($nextInquiryId) {
+                                        $nextInquiry = $sectionInquiries->firstWhere('id', $nextInquiryId);
+                                    }
+                                    
+                                    // Debug: Check if we have data
+                                    $hasNextData = !empty($nextInquiries);
+                                    $sectionHasKey = isset($nextInquiries[$section['acronym']]);
+                                @endphp
+                                @if($nextInquiry)
+                                    <span class="badge bg-success text-white px-3 py-2" style="font-size: 0.9rem; animation: pulse 2s infinite;">
+                                        <i class="bi bi-play-circle-fill me-1"></i>NEXT: {{ $nextInquiry->queue_number }} ({{ ucfirst($nextInquiry->priority) }})
+                                    </span>
+                                @else
+                                    @if(!$hasNextData)
+                                        <span class="badge bg-secondary px-3 py-2" style="font-size: 0.8rem;">
+                                            <i class="bi bi-info-circle me-1"></i>No Next Inquiry Data
+                                        </span>
+                                    @elseif(!$sectionHasKey)
+                                        <span class="badge bg-secondary px-3 py-2" style="font-size: 0.8rem;">
+                                            <i class="bi bi-info-circle me-1"></i>No Next for {{ $section['acronym'] }}
+                                        </span>
+                                    @endif
+                                @endif
                             </div>
                             @if(request('status') || request('search'))
                                 <div class="d-flex flex-wrap gap-2">
@@ -234,6 +273,16 @@
                 </div>
             </div>
 
+            <!-- Debug Info -->
+            @if(isset($debugCounts))
+                <div class="alert alert-info py-2 mb-3 mx-4" style="font-size: 0.85rem;">
+                    <strong>DEBUG:</strong> 
+                    Total Waiting: {{ $debugCounts['total_waiting'] }} | 
+                    Sections with Next: {{ $debugCounts['sections_with_next'] }} |
+                    Next Inquiries Array: {{ json_encode($nextInquiries) }}
+                </div>
+            @endif
+            
             <!-- Enhanced Professional Queue Table -->
             <div class="card-body p-0 pb-4">
                 <div class="table-responsive px-4">
@@ -244,7 +293,7 @@
                                     <i class="bi bi-hash me-1"></i>QUEUE #
                                 </th>
                                 <th width="16%" class="py-3" style="color: {{ $section['color'] }}; font-weight: 700; font-size: 0.95rem;">
-                                    <i class="bi bi-person me-1"></i>GUEST NAME
+                                    <i class="bi bi-person me-1"></i>CLIENT NAME
                                 </th>
                                 <th width="12%" class="py-3" style="color: {{ $section['color'] }}; font-weight: 700; font-size: 0.95rem;">
                                     <i class="bi bi-geo-alt me-1"></i>ADDRESS
@@ -341,16 +390,44 @@
                                         <div class="d-flex justify-content-center gap-1">
                                             @if($inquiry->status == 'waiting')
                                                 @php
-                                                    $isNext = $inquiry->category && isset($nextInquiries[$inquiry->category_id]) && $nextInquiries[$inquiry->category_id] == $inquiry->id;
+                                                    // FIXED: Use flexible matching for section keys
+                                                    $sectionFromCategory = $inquiry->category ? trim($inquiry->category->section) : null;
+                                                    $isNext = false;
+                                                    
+                                                    if ($sectionFromCategory) {
+                                                        // Try exact match first
+                                                        if (isset($nextInquiries[$sectionFromCategory]) && $nextInquiries[$sectionFromCategory] == $inquiry->id) {
+                                                            $isNext = true;
+                                                        } else {
+                                                            // Try case-insensitive match as fallback
+                                                            foreach ($nextInquiries as $key => $nextId) {
+                                                                if (strcasecmp(trim($key), $sectionFromCategory) === 0 && $nextId == $inquiry->id) {
+                                                                    $isNext = true;
+                                                                    break;
+                                                                }
+                                                            }
+                                                        }
+                                                    }
                                                 @endphp
-                                                <button type="button" 
-                                                        class="btn {{ $isNext ? 'btn-success' : 'btn-outline-secondary' }} btn-sm d-flex align-items-center justify-content-center rounded-circle" 
-                                                        style="width: 40px; height: 40px;"
-                                                        onclick="{{ $isNext ? 'updateStatus(' . $inquiry->id . ', \'serving\')' : 'showQueueOrderWarning(\'' . $section['name'] . '\')' }}" 
-                                                        title="{{ $isNext ? 'Start Serving This Case' : 'Not Next in Queue - Click for Queue Order' }}"
-                                                        {{ $isNext ? '' : 'disabled' }}>
-                                                    <i class="bi bi-person-badge"></i>
-                                                </button>
+                                                
+                                                @if($isNext)
+                                                    <button type="button" 
+                                                            class="btn btn-success btn-sm d-flex align-items-center justify-content-center rounded-circle" 
+                                                            style="width: 40px; height: 40px;"
+                                                            onclick="updateStatus({{ $inquiry->id }}, 'serving')" 
+                                                            title="Start Serving This Case (Next in Queue)">
+                                                        <i class="bi bi-person-badge"></i>
+                                                    </button>
+                                                @else
+                                                    <button type="button" 
+                                                            class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center rounded-circle" 
+                                                            style="width: 40px; height: 40px; opacity: 0.5; cursor: not-allowed;"
+                                                            onclick="showQueueOrderWarning('{{ $section['name'] ?? 'Unknown Section' }}')" 
+                                                            title="Not Next in Queue - Priority: {{ $inquiry->priority }}"
+                                                            disabled>
+                                                        <i class="bi bi-person-badge"></i>
+                                                    </button>
+                                                @endif
                                                 <button type="button" 
                                                         class="btn btn-success btn-sm d-flex align-items-center justify-content-center rounded-circle" 
                                                         style="width: 40px; height: 40px;" 
@@ -566,10 +643,10 @@
     }
     
     // Show queue order warning
-    function showQueueOrderWarning(categoryCode) {
-        const message = categoryCode 
-            ? `You can only serve inquiries in ${categoryCode} queue order. The system enforces FIFO with priority rules.`
-            : 'You can only serve inquiries in queue order. The system enforces FIFO with priority rules.';
+    function showQueueOrderWarning(sectionName) {
+        const message = sectionName 
+            ? `You can only serve inquiries in ${sectionName} section queue order. The system enforces First-Come, First-Serve (FIFO) across all service types within this section, with priority alternation (NORMAL → PRIORITY).`
+            : 'You can only serve inquiries in queue order. The system enforces First-Come, First-Serve (FIFO) with priority alternation.';
         showAlert(message, 'warning');
     }
 </script>

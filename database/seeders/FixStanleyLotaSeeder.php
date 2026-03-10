@@ -23,7 +23,7 @@ class FixStanleyLotaSeeder extends Seeder
                 'name' => 'Mr. Stanley M. Lota',
                 'email' => 'stanley.lota@denr.gov.ph',
                 'password' => bcrypt('password'),
-                'role' => 'section_staff',
+                'role' => 'section_officer',
                 'is_active' => true
             ]);
         }

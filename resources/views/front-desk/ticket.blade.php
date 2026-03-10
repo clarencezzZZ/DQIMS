@@ -220,7 +220,7 @@
 
                 <div class="guest-info">
                     <div class="info-row">
-                        <span class="info-label">Guest:</span>
+                        <span class="info-label">Client:</span>
                         <span class="info-value">{{ $inquiry->guest_name }}</span>
                     </div>
                     @if($inquiry->contact_number)

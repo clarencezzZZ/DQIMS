@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table Alignment Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .test-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        .test-table td {
+            border: 1px solid #000;
+            padding: 4px;
+            font-size: 9pt;
+        }
+        .test-table th {
+            border: 2px solid #000;
+            padding: 6px;
+            background-color: #e9ecef;
+        }
+        .method-label {
+            background-color: #ffffcc;
+            padding: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #ffcc00;
+        }
+    </style>
+</head>
+<body>
+    <h1>Table Cell Alignment Debug Test</h1>
+    
+    <div class="method-label">
+        <strong>Testing:</strong> Multiple approaches to align multiline content across table cells
+    </div>
+
+    <!-- METHOD 1: Using BR (Current Method) -->
+    <h3>Method 1: Using &lt;br&gt; tags (CURRENT)</h3>
+    <table class="test-table">
+        <thead>
+            <tr>
+                <th width="12%">LEGAL BASIS</th>
+                <th width="48%">DESCRIPTION</th>
+                <th width="10%">Quantity</th>
+                <th width="15%">AMOUNT</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td rowspan="2" style="text-align: center;">1993-20</td>
+                <td>
+                    <strong>CERTIFICATION: TECHNICAL DESCRIPTION</strong><br><br>
+                    ALDEN<br>
+                    RECHARGE<br>
+                    LOWBAT<br>
+                </td>
+                <td style="text-align: center;">
+                    1<br>
+                    1<br>
+                    1<br>
+                </td>
+                <td style="text-align: right;">
+                    150.00<br>
+                    0.00<br>
+                    0.00<br>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align: right; font-weight: bold;">TOTAL:</td>
+                <td colspan="2" style="text-align: right; font-weight: bold;">₱150.00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- METHOD 2: Using block-level div with min-height -->
+    <h3>Method 2: Using block-level div elements</h3>
+    <table class="test-table">
+        <thead>
+            <tr>
+                <th width="12%">LEGAL BASIS</th>
+                <th width="48%">DESCRIPTION</th>
+                <th width="10%">Quantity</th>
+                <th width="15%">AMOUNT</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td rowspan="2" style="text-align: center;">1993-20</td>
+                <td>
+                    <strong>CERTIFICATION: TECHNICAL DESCRIPTION</strong><br><br>
+                    <div style="display: block; margin: 2px 0;">ALDEN</div>
+                    <div style="display: block; margin: 2px 0;">RECHARGE</div>
+                    <div style="display: block; margin: 2px 0;">LOWBAT</div>
+                </td>
+                <td style="text-align: center;">
+                    <div style="display: block; margin: 2px 0;">1</div>
+                    <div style="display: block; margin: 2px 0;">1</div>
+                    <div style="display: block; margin: 2px 0;">1</div>
+                </td>
+                <td style="text-align: right;">
+                    <div style="display: block; margin: 2px 0;">150.00</div>
+                    <div style="display: block; margin: 2px 0;">0.00</div>
+                    <div style="display: block; margin: 2px 0;">0.00</div>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align: right; font-weight: bold;">TOTAL:</td>
+                <td colspan="2" style="text-align: right; font-weight: bold;">₱150.00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- METHOD 3: Using CSS Grid inside cells -->
+    <h3>Method 3: Using nested table structure</h3>
+    <table class="test-table">
+        <thead>
+            <tr>
+                <th width="12%">LEGAL BASIS</th>
+                <th width="48%">DESCRIPTION</th>
+                <th width="10%">Quantity</th>
+                <th width="15%">AMOUNT</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td rowspan="2" style="text-align: center;">1993-20</td>
+                <td>
+                    <strong>CERTIFICATION: TECHNICAL DESCRIPTION</strong>
+                    <table style="width: 100%; border: none; margin-top: 5px;">
+                        <tr><td style="border: none; padding: 2px 0;">ALDEN</td></tr>
+                        <tr><td style="border: none; padding: 2px 0;">RECHARGE</td></tr>
+                        <tr><td style="border: none; padding: 2px 0;">LOWBAT</td></tr>
+                    </table>
+                </td>
+                <td style="text-align: center;">
+                    <table style="width: 100%; border: none; margin-top: 5px;">
+                        <tr><td style="border: none; padding: 2px 0; text-align: center;">1</td></tr>
+                        <tr><td style="border: none; padding: 2px 0; text-align: center;">1</td></tr>
+                        <tr><td style="border: none; padding: 2px 0; text-align: center;">1</td></tr>
+                    </table>
+                </td>
+                <td style="text-align: right;">
+                    <table style="width: 100%; border: none; margin-top: 5px;">
+                        <tr><td style="border: none; padding: 2px 0; text-align: right;">150.00</td></tr>
+                        <tr><td style="border: none; padding: 2px 0; text-align: right;">0.00</td></tr>
+                        <tr><td style="border: none; padding: 2px 0; text-align: right;">0.00</td></tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align: right; font-weight: bold;">TOTAL:</td>
+                <td colspan="2" style="text-align: right; font-weight: bold;">₱150.00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- METHOD 4: Using line-height and explicit spacing -->
+    <h3>Method 4: Using span with line-height</h3>
+    <table class="test-table">
+        <thead>
+            <tr>
+                <th width="12%">LEGAL BASIS</th>
+                <th width="48%">DESCRIPTION</th>
+                <th width="10%">Quantity</th>
+                <th width="15%">AMOUNT</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td rowspan="2" style="text-align: center;">1993-20</td>
+                <td>
+                    <strong>CERTIFICATION: TECHNICAL DESCRIPTION</strong><br><br>
+                    <span style="display: block; line-height: 1.8;">ALDEN</span>
+                    <span style="display: block; line-height: 1.8;">RECHARGE</span>
+                    <span style="display: block; line-height: 1.8;">LOWBAT</span>
+                </td>
+                <td style="text-align: center;">
+                    <span style="display: block; line-height: 1.8;">1</span>
+                    <span style="display: block; line-height: 1.8;">1</span>
+                    <span style="display: block; line-height: 1.8;">1</span>
+                </td>
+                <td style="text-align: right;">
+                    <span style="display: block; line-height: 1.8;">150.00</span>
+                    <span style="display: block; line-height: 1.8;">0.00</span>
+                    <span style="display: block; line-height: 1.8;">0.00</span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" style="text-align: right; font-weight: bold;">TOTAL:</td>
+                <td colspan="2" style="text-align: right; font-weight: bold;">₱150.00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="method-label">
+        <strong>Instructions:</strong><br>
+        1. Open this file in your browser<br>
+        2. Check which method displays the alignment correctly<br>
+        3. Tell me which method number works best (1, 2, 3, or 4)<br>
+        4. I'll then update your Laravel Blade file with that method
+    </div>
+
+</body>
+</html>

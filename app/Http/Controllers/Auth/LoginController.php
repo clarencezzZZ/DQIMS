@@ -47,6 +47,8 @@ class LoginController extends Controller
             if ($user->isFrontDesk()) {
                 return redirect()->route('front-desk.index');
             } elseif ($user->isSectionStaff()) {
+                return redirect()->route('section-staff.index');
+            } elseif ($user->isSectionOfficer()) {
                 return redirect()->route('section.index');
             } elseif ($user->isAdmin()) {
                 return redirect()->route('admin.index');

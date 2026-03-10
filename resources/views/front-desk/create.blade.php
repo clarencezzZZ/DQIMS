@@ -10,7 +10,7 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h2 class="mb-1"><i class="bi bi-person-plus text-success"></i> Create New Inquiry</h2>
-                    <p class="text-muted mb-0">Enter guest information to generate a queue ticket</p>
+                    <p class="text-muted mb-0">Enter client information to generate a queue ticket</p>
                 </div>
                 <a href="{{ route('front-desk.index') }}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Back to Dashboard
@@ -19,17 +19,17 @@
 
             <div class="card shadow">
                 <div class="card-header bg-success text-white">
-                    <h5 class="mb-0"><i class="bi bi-clipboard-plus"></i> Guest Information</h5>
+                    <h5 class="mb-0"><i class="bi bi-clipboard-plus"></i> Client Information</h5>
                 </div>
                 <div class="card-body p-4">
                     <form action="{{ route('front-desk.store') }}" method="POST" id="inquiryForm">
                         @csrf
                         
                         <div class="row">
-                            <!-- Guest Name -->
+                            <!-- Client Name -->
                             <div class="col-md-6 mb-3">
                                 <label for="guest_name" class="form-label fw-bold">
-                                    <i class="bi bi-person text-success"></i> Guest Name <span class="text-danger">*</span>
+                                    <i class="bi bi-person text-success"></i> Client Name <span class="text-danger">*</span>
                                 </label>
                                 <input type="text" class="form-control form-control-lg @error('guest_name') is-invalid @enderror" 
                                        id="guest_name" name="guest_name" placeholder="Enter full name" 
@@ -93,7 +93,7 @@
                             </label>
                             <textarea class="form-control @error('purpose') is-invalid @enderror" 
                                       id="purpose" name="purpose" rows="4" 
-                                      placeholder="Brief description of the guest's inquiry or purpose of visit...">{{ old('purpose') }}</textarea>
+                                      placeholder="Brief description of the client's inquiry or purpose of visit...">{{ old('purpose') }}</textarea>
                             @error('purpose')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

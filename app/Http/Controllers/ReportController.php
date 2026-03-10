@@ -39,20 +39,28 @@ class ReportController extends Controller
      */
     public function generate(Request $request)
     {
-        $request->validate([
-            'report_type' => 'required|in:daily,weekly,monthly,yearly,custom',
-            'date_from' => 'nullable|date',
-            'date_to' => 'nullable|date',
-            'category' => 'nullable|exists:categories,id',
-            'status' => 'nullable|in:all,waiting,serving,completed,skipped,forwarded',
-            'section' => 'nullable|string',
-        ]);
+        // Handle both GET and POST requests- only validate on POST
+        if ($request->isMethod('post')) {
+            $request->validate([
+                'report_type' => 'required|in:daily,weekly,monthly,yearly,custom',
+                'date_from' => 'nullable|date',
+                'date_to' => 'nullable|date',
+                'category' => 'nullable|exists:categories,id',
+                'status' => 'nullable|in:all,waiting,serving,completed,skipped,forwarded',
+                'section' => 'nullable|string',
+            ]);
+        }
+        
+        // Set default report type if not provided
+        if (!$request->filled('report_type')) {
+            $request->merge(['report_type' => 'daily']);
+        }
 
         $dateRange = $this->getDateRange($request);
         $data = $this->getReportData($dateRange, $request);
 
         // Return the reports view with the data to display the generated report
-        return view('reports.index', array_merge($data, ['categories' => Category::where('is_active', true)->get()]));
+     return view('reports.index', array_merge($data, ['categories' => Category::where('is_active', true)->get()]));
     }
 
     /**
@@ -264,6 +272,16 @@ class ReportController extends Controller
             fputcsv($file, ['Forwarded', $data['overall_stats']['forwarded']]);
             fputcsv($file, ['Average Processing Time (minutes)', $data['average_processing_time']]);
             fputcsv($file, ['Total Fees', $data['total_fees']]);
+            fputcsv($file, []);
+            
+            // Status Distribution Chart (Text-based Bar Chart)
+            fputcsv($file, ['Status Distribution']);
+            $maxVal = max($data['overall_stats']);
+            foreach ($data['overall_stats'] as $status => $count) {
+                $barLength = $maxVal > 0 ? intval(($count / $maxVal) * 20) : 0;
+                $bar = str_repeat('█', $barLength);
+                fputcsv($file, [$status, $bar, $count]);
+            }
             fputcsv($file, []);
 
             // Category Statistics

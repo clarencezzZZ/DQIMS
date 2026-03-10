@@ -50,6 +50,14 @@ class Category extends Model
     }
 
     /**
+     * Scope for active categories
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
      * Get the current queue counter for today
      */
     public function getTodayCounter()

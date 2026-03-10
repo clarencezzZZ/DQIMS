@@ -24,7 +24,7 @@ class OfficerSeeder extends Seeder
             'username' => 's.lota',
             'email' => 'stanly.lota@denr.gov.ph',
             'password' => Hash::make('password'),
-            'role' => User::ROLE_SECTION_STAFF,
+            'role' => User::ROLE_SECTION_OFFICER,
             'is_active' => true,
         ]);
     }

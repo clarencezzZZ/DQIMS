@@ -445,57 +445,79 @@
             padding: 0 15px;
         }
 
-        .demo-accounts {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e8f5e9 100%);
-            border-radius: 12px;
-            padding: 20px;
-            border: 1px solid rgba(46, 125, 50, 0.1);
+        /* System Info Section */
+        .system-info {
+            background: linear-gradient(135deg, rgba(26, 95, 42, 0.03) 0%, rgba(21, 101, 192, 0.03) 100%);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(46, 125, 50, 0.15);
+            margin-top: 20px;
         }
 
-        .demo-accounts h4 {
-            font-size: 0.9rem;
-            color: var(--denr-green-dark);
-            margin-bottom: 15px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .demo-account-item {
+        .info-header {
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 10px 12px;
-            background: var(--white);
-            border-radius: 8px;
-            margin-bottom: 8px;
-            font-size: 0.85rem;
-            cursor: pointer;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(46, 125, 50, 0.1);
+        }
+
+        .info-header i {
+            font-size: 1.4rem;
+            color: var(--denr-green);
+        }
+
+        .info-header span {
+            font-size: 0.95rem;
+            color: var(--denr-green-dark);
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .info-features {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
             transition: all 0.3s ease;
             border: 1px solid transparent;
         }
 
-        .demo-account-item:hover {
-            border-color: var(--denr-green-light);
-            box-shadow: 0 2px 8px rgba(46, 125, 50, 0.1);
+        .info-item:hover {
+            background: rgba(255, 255, 255, 0.9);
+            border-color: rgba(46, 125, 50, 0.2);
+            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.08);
+            transform: translateX(4px);
         }
 
-        .demo-account-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .demo-account-item i {
+        .info-item i {
+            font-size: 1.3rem;
             color: var(--denr-green);
+            flex-shrink: 0;
+            margin-top: 2px;
         }
 
-        .demo-account-item .role-badge {
-            background: var(--denr-green);
-            color: var(--white);
-            padding: 3px 10px;
-            border-radius: 20px;
+        .info-item strong {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--denr-green-dark);
+            margin-bottom: 3px;
+            font-weight: 600;
+        }
+
+        .info-item small {
             font-size: 0.75rem;
-            font-weight: 500;
+            color: #6c757d;
+            line-height: 1.3;
         }
 
         .demo-account-item .role-badge.admin {
@@ -689,29 +711,36 @@
                     </button>
                 </form>
 
-                <div class="divider">
-                    <span>Demo Accounts</span>
-                </div>
-
-                <div class="demo-accounts">
-                    <h4><i class="bi bi-info-circle"></i> Quick Login</h4>
-                    
-                    <div class="demo-account-item" onclick="fillCredentials('groundfloor', 'ground123')">
-                        <i class="bi bi-reception-4"></i>
-                        <span class="flex-grow-1">Ground Floor Front Desk</span>
-                        <span class="role-badge">Front Desk</span>
-                    </div>
-                    
-                    <div class="demo-account-item" onclick="fillCredentials('adminfront', 'adminfront123')">
+                <div class="system-info">
+                    <div class="info-header">
                         <i class="bi bi-shield-check"></i>
-                        <span class="flex-grow-1">Admin Front Desk (Assessment Access)</span>
-                        <span class="role-badge admin">Admin</span>
+                        <span>Secure Login System</span>
                     </div>
                     
-                    <div class="demo-account-item" onclick="fillCredentials('admin', 'admin123')">
-                        <i class="bi bi-person-gear"></i>
-                        <span class="flex-grow-1">Administrator (Full Access)</span>
-                        <span class="role-badge admin">Admin</span>
+                    <div class="info-features">
+                        <div class="info-item">
+                            <i class="bi bi-clock-history"></i>
+                            <div>
+                                <strong>24/7 Access</strong>
+                                <small>Available round the clock</small>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <i class="bi bi-speedometer2"></i>
+                            <div>
+                                <strong>Fast Queue Management</strong>
+                                <small>Efficient service delivery</small>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <i class="bi bi-graph-up-arrow"></i>
+                            <div>
+                                <strong>Real-time Monitoring</strong>
+                                <small>Track your queue status</small>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -720,12 +749,6 @@
 
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
     <script>
-        function fillCredentials(username, password) {
-            document.getElementById('username').value = username;
-            document.getElementById('password').value = password;
-            document.getElementById('loginForm').submit();
-        }
-
         // Add subtle animation on load
         document.addEventListener('DOMContentLoaded', function() {
             const container = document.querySelector('.login-container');

@@ -3,9 +3,11 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FrontDeskController;
 use App\Http\Controllers\SectionController;
+use App\Http\Controllers\SectionStaffController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\MonitorController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -75,8 +77,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/recent-inquiries', [FrontDeskController::class, 'recentInquiries'])->name('recent-inquiries');
     });
 
-    // Section Staff Routes
-    Route::middleware(['role:section_staff,admin'])->prefix('section')->name('section.')->group(function () {
+    // Section Officer Routes (For officers without specific category assignment)
+    Route::middleware(['role:section_officer,admin'])->prefix('section')->name('section.')->group(function () {
         Route::get('/', [SectionController::class, 'index'])->name('index');
         Route::get('/debug', function() {
             return view('debug-section');
@@ -100,6 +102,18 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/statistics', [SectionController::class, 'statistics'])->name('statistics');
     });
 
+    // Section Staff Routes (For staff with specific category assignment)
+    Route::middleware(['role:section_staff'])->prefix('section-staff')->name('section-staff.')->group(function () {
+        Route::get('/', [SectionStaffController::class, 'index'])->name('index');
+        Route::get('/waiting-list', [SectionStaffController::class, 'waitingList'])->name('waiting-list');
+        Route::get('/currently-serving', [SectionStaffController::class, 'currentlyServing'])->name('currently-serving');
+        Route::post('/call-next', [SectionStaffController::class, 'callNext'])->name('call-next');
+        Route::post('/complete', [SectionStaffController::class, 'complete'])->name('complete');
+        Route::post('/skip', [SectionStaffController::class, 'skip'])->name('skip');
+        Route::post('/forward', [SectionStaffController::class, 'forwardToAdmin'])->name('forward');
+        Route::get('/statistics', [SectionStaffController::class, 'statistics'])->name('statistics');
+    });
+
     // Admin Routes - Split for granular access control
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('index');
@@ -110,6 +124,9 @@ Route::middleware(['auth'])->group(function () {
         
         // Assessment Management - Allow adminfront
         Route::get('/assessments', [AdminController::class, 'assessments'])->name('assessments');
+        Route::get('/assessments/create-direct', function() {
+            return view('admin.assessments');
+        })->name('assessments.create-direct');
         Route::get('/assessments/{assessment}', [AdminController::class, 'showAssessment'])->name('assessments.show');
         Route::get('/assessments/{assessment}/edit', [AdminController::class, 'editAssessment'])->name('assessments.edit');
         Route::put('/assessments/{assessment}', [AdminController::class, 'updateAssessment'])->name('assessments.update');
@@ -136,12 +153,18 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Reports Routes (Admin only)
-    Route::middleware(['role:admin'])->prefix('reports')->name('reports.')->group(function () {
+    Route::middleware(['role:admin'])->prefix('reports')->name('reports.')->group(function() {
         Route::get('/', [ReportController::class, 'index'])->name('index');
-        Route::post('/generate', [ReportController::class, 'generate'])->name('generate');
+        Route::match(['get', 'post'], '/generate', [ReportController::class, 'generate'])->name('generate');
         Route::get('/export-pdf', [ReportController::class, 'exportPdf'])->name('export-pdf');
         Route::get('/export-excel', [ReportController::class, 'exportExcel'])->name('export-excel');
         Route::get('/print', [ReportController::class, 'print'])->name('print');
+    });
+    
+    // Profile Routes (All authenticated users)
+    Route::prefix('profile')->name('profile.')->group(function () {
+        Route::get('/edit', [ProfileController::class, 'edit'])->name('edit');
+        Route::put('/update', [ProfileController::class, 'update'])->name('update');
     });
 
     // Dashboard redirect based on role
@@ -151,6 +174,8 @@ Route::middleware(['auth'])->group(function () {
         if ($user->isFrontDesk()) {
             return redirect()->route('front-desk.index');
         } elseif ($user->isSectionStaff()) {
+            return redirect()->route('section-staff.index');
+        } elseif ($user->isSectionOfficer()) {
             return redirect()->route('section.index');
         } elseif ($user->isAdmin()) {
             return redirect()->route('admin.index');

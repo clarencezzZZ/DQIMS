@@ -31,7 +31,7 @@
                                     <td class="fw-bold">{{ $inquiry->queue_number }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="text-muted">Guest Name:</td>
+                                    <td class="text-muted">Client Name:</td>
                                     <td class="fw-bold">{{ $inquiry->guest_name }}</td>
                                 </tr>
                                 <tr>
@@ -111,7 +111,7 @@
                             <h6 class="fw-bold mb-3"><i class="bi bi-receipt"></i> Assessment Summary</h6>
                             <div class="row">
                                 <div class="col-md-6">
-                                    <p class="mb-1"><span class="text-muted">Guest:</span> {{ $inquiry->guest_name }}</p>
+                                    <p class="mb-1"><span class="text-muted">Client:</span> {{ $inquiry->guest_name }}</p>
                                     <p class="mb-1"><span class="text-muted">Queue #:</span> {{ $inquiry->queue_number }}</p>
                                 </div>
                                 <div class="col-md-6 text-md-end">

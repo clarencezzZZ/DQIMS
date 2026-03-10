@@ -81,7 +81,7 @@
                     </select>
                 </div>
                 <div class="col-12">
-                    <button type="submit" class="btn btn-info text-white">
+                    <button type="submit" class="btn btn-info text-white" id="generateReportBtn">
                         <i class="bi bi-search"></i> Generate Report
                     </button>
                     <button type="button" class="btn btn-secondary ms-2" onclick="resetFilters()">
@@ -91,6 +91,14 @@
             </form>
         </div>
     </div>
+    
+    <!-- Add loading indicator -->
+    <div id="loadingIndicator" style="display: none;" class="text-center py-4">
+        <div class="spinner-border text-info" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2 text-muted">Generating report, please wait...</p>
+    </div>
 
     <!-- Report Results Display -->
     @if(isset($overall_stats))
@@ -99,37 +107,129 @@
             <p class="mb-0">Showing data from <strong>{{ $date_range['start'] }}</strong> to <strong>{{ $date_range['end'] }}</strong></p>
         </div>
         
-        <!-- Report Summary Cards -->
+        <!-- Enhanced Report Summary Cards -->
         <div class="row mb-4">
             <div class="col-md-3">
-                <div class="card bg-primary text-white">
-                    <div class="card-body text-center">
-                        <h6 class="text-white-50 mb-1">Total Inquiries</h6>
-                        <h3 class="mb-0">{{ $overall_stats['total'] }}</h3>
+                <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); color: white;">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-1 text-uppercase small fw-bold">Total Inquiries</h6>
+                                <h2 class="mb-0 display-6">{{ $overall_stats['total'] }}</h2>
+                            </div>
+                            <div class="opacity-50">
+                                <i class="bi bi-people" style="font-size: 2.5rem;"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card bg-success text-white">
-                    <div class="card-body text-center">
-                        <h6 class="text-white-50 mb-1">Completed</h6>
-                        <h3 class="mb-0">{{ $overall_stats['completed'] }}</h3>
+                <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #198754 0%, #146c43 100%); color: white;">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-1 text-uppercase small fw-bold">Completed</h6>
+                                <h2 class="mb-0 display-6">{{ $overall_stats['completed'] }}</h2>
+                            </div>
+                            <div class="opacity-50">
+                                <i class="bi bi-check-circle" style="font-size: 2.5rem;"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card bg-danger text-white">
-                    <div class="card-body text-center">
-                        <h6 class="text-white-50 mb-1">Skipped</h6>
-                        <h3 class="mb-0">{{ $overall_stats['skipped'] }}</h3>
+                <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%); color: #000;">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-dark-50 mb-1 text-uppercase small fw-bold">Waiting</h6>
+                                <h2 class="mb-0 display-6">{{ $overall_stats['waiting'] }}</h2>
+                            </div>
+                            <div class="opacity-50">
+                                <i class="bi bi-clock" style="font-size: 2.5rem;"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card bg-secondary text-white">
-                    <div class="card-body text-center">
-                        <h6 class="text-white-50 mb-1">Revenue</h6>
-                        <h3 class="mb-0">₱{{ number_format($total_fees ?? 0, 2) }}</h3>
+                <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%); color: white;">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-1 text-uppercase small fw-bold">Skipped</h6>
+                                <h2 class="mb-0 display-6">{{ $overall_stats['skipped'] }}</h2>
+                            </div>
+                            <div class="opacity-50">
+                                <i class="bi bi-skip-forward" style="font-size: 2.5rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assessment Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%); color: white;">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-1 text-uppercase small fw-bold">Total Assessments</h6>
+                                <h2 class="mb-0 display-6">{{ $assessments_count ?? 0 }}</h2>
+                            </div>
+                            <div class="opacity-50">
+                                <i class="bi bi-file-earmark-text" style="font-size: 2.5rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #fd7e14 0%, #e8590c 100%); color: white;">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-1 text-uppercase small fw-bold">Total Revenue</h6>
+                                <h2 class="mb-0 display-6">₱{{ number_format($total_fees ?? 0, 2) }}</h2>
+                            </div>
+                            <div class="opacity-50">
+                                <i class="bi bi-currency-dollar" style="font-size: 2.5rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #20c997 0%, #17a589 100%); color: white;">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-1 text-uppercase small fw-bold">Avg Processing Time</h6>
+                                <h2 class="mb-0 display-6">{{ round($average_processing_time ?? 0) }}<small class="fs-6">min</small></h2>
+                            </div>
+                            <div class="opacity-50">
+                                <i class="bi bi-hourglass-split" style="font-size: 2.5rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%); color: white;">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 mb-1 text-uppercase small fw-bold">Serving</h6>
+                                <h2 class="mb-0 display-6">{{ $overall_stats['serving'] ?? 0 }}</h2>
+                            </div>
+                            <div class="opacity-50">
+                                <i class="bi bi-person-check" style="font-size: 2.5rem;"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -253,29 +353,73 @@
             <h5 class="mb-0"><i class="bi bi-download"></i> Export Data</h5>
         </div>
         <div class="card-body">
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <a href="#" onclick="exportReport('pdf')" class="btn btn-outline-danger w-100">
-                        <i class="bi bi-file-pdf" style="font-size: 2rem;"></i>
-                        <h5 class="mt-2">Export as PDF</h5>
-                        <small class="text-muted">Download report as PDF</small>
-                    </a>
+            @if(isset($overall_stats))
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <form action="{{ route('reports.export-pdf') }}" method="GET" target="_blank" onsubmit="console.log('Exporting PDF...', new FormData(this));">
+                            <input type="hidden" name="report_type" value="{{ request('report_type', 'daily') }}">
+                            <input type="hidden" name="date_from" value="{{ is_string($date_range['start']) ? $date_range['start'] : \Carbon\Carbon::parse($date_range['start'])->format('Y-m-d') }}">
+                            <input type="hidden" name="date_to" value="{{ is_string($date_range['end']) ? $date_range['end'] : \Carbon\Carbon::parse($date_range['end'])->format('Y-m-d') }}">
+                            <input type="hidden" name="category" value="{{ request('category') }}">
+                            <input type="hidden" name="section" value="{{ request('section') }}">
+                            <input type="hidden" name="status" value="completed">
+                            <button type="submit" class="btn btn-outline-danger w-100" style="cursor: pointer;">
+                                <i class="bi bi-file-pdf" style="font-size: 2rem;"></i>
+                                <h5 class="mt-2">Export as PDF</h5>
+                                <small class="text-muted">Download report as PDF</small>
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <form action="{{ route('reports.export-excel') }}" method="GET">
+                            <input type="hidden" name="report_type" value="{{ request('report_type', 'daily') }}">
+                            <input type="hidden" name="date_from" value="{{ is_string($date_range['start']) ? $date_range['start'] : \Carbon\Carbon::parse($date_range['start'])->format('Y-m-d') }}">
+                            <input type="hidden" name="date_to" value="{{ is_string($date_range['end']) ? $date_range['end'] : \Carbon\Carbon::parse($date_range['end'])->format('Y-m-d') }}">
+                            <input type="hidden" name="category" value="{{ request('category') }}">
+                            <input type="hidden" name="section" value="{{ request('section') }}">
+                            <input type="hidden" name="status" value="completed">
+                            <button type="submit" class="btn btn-outline-success w-100" style="cursor: pointer;">
+                                <i class="bi bi-file-excel" style="font-size: 2rem;"></i>
+                                <h5 class="mt-2">Export as Excel</h5>
+                                <small class="text-muted">Download data as Excel spreadsheet</small>
+                            </button>
+                        </form>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <form action="{{ route('reports.print') }}" method="GET" target="_blank">
+                            <input type="hidden" name="report_type" value="{{ request('report_type', 'daily') }}">
+                            <input type="hidden" name="date_from" value="{{ is_string($date_range['start']) ? $date_range['start'] : \Carbon\Carbon::parse($date_range['start'])->format('Y-m-d') }}">
+                            <input type="hidden" name="date_to" value="{{ is_string($date_range['end']) ? $date_range['end'] : \Carbon\Carbon::parse($date_range['end'])->format('Y-m-d') }}">
+                            <input type="hidden" name="category" value="{{ request('category') }}">
+                            <input type="hidden" name="section" value="{{ request('section') }}">
+                            <input type="hidden" name="status" value="completed">
+                            <button type="submit" class="btn btn-outline-primary w-100" style="cursor: pointer;">
+                                <i class="bi bi-printer" style="font-size: 2rem;"></i>
+                                <h5 class="mt-2">Print Report</h5>
+                                <small class="text-muted">Open print-friendly version</small>
+                            </button>
+                        </form>
+                    </div>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <a href="#" onclick="exportReport('excel')" class="btn btn-outline-success w-100">
-                        <i class="bi bi-file-excel" style="font-size: 2rem;"></i>
-                        <h5 class="mt-2">Export as Excel</h5>
-                        <small class="text-muted">Download data as Excel spreadsheet</small>
-                    </a>
+                
+                <!-- Debug Info (remove in production) -->
+                <div class="alert alert-info mt-3" style="font-size: 9pt;">
+                    <strong>Debug Info:</strong><br>
+                    Report Type: {{ request('report_type', 'daily') }}<br>
+                    Date From: {{ is_string($date_range['start']) ? $date_range['start'] : \Carbon\Carbon::parse($date_range['start'])->format('Y-m-d') }}<br>
+                    Date To: {{ is_string($date_range['end']) ? $date_range['end'] : \Carbon\Carbon::parse($date_range['end'])->format('Y-m-d') }}<br>
+                    Category: {{ request('category') ?? 'All' }}<br>
+                    Section: {{ request('section') ?? 'All' }}
                 </div>
-                <div class="col-md-4 mb-3">
-                    <a href="#" onclick="exportReport('print')" target="_blank" class="btn btn-outline-primary w-100">
-                        <i class="bi bi-printer" style="font-size: 2rem;"></i>
-                        <h5 class="mt-2">Print Report</h5>
-                        <small class="text-muted">Open print-friendly version</small>
-                    </a>
+            @else
+                <div class="text-center py-4">
+                    <i class="bi bi-download text-muted" style="font-size: 3rem;"></i>
+                    <p class="text-muted mt-3">Please generate a report first to enable export options</p>
+                    <button class="btn btn-info text-white mt-2" onclick="document.querySelector('button[type=\'submit\']').click();">
+                        <i class="bi bi-search"></i> Generate Report First
+                    </button>
                 </div>
-            </div>
+            @endif
         </div>
     </div>
 </div>

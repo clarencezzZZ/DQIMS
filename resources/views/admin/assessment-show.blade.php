@@ -38,29 +38,27 @@
                     </div>
 
                     <!-- BILL NUMBER Section - Right -->
-                    <div class="row mb-3">
-                        <div class="col-6"></div>
-                        <div class="col-6">
-                            <table class="table table-borderless table-sm">
-                                <tr>
-                                    <td width="50%" class="fw-bold"><span style="display: inline-block; min-width: 200px;">BILL NUMBER:</span></td>
-                                    <td style="text-decoration: underline; text-transform: uppercase;">{{ $assessment->bill_number ?? $assessment->assessment_number }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold"><span style="display: inline-block; min-width: 200px;">RESPONSIBILITY CENTER:</span></td>
-                                    <td style="text-decoration: underline; text-transform: uppercase;">{{ $assessment->responsibility_center ?? 'SMD' }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="fw-bold"><span style="display: inline-block; min-width: 200px;">DATE:</span></td>
-                                    <td style="text-decoration: underline; text-transform: uppercase;">{{ $assessment->assessment_date->format('F d, Y') }}</td>
-                                </tr>
-                            </table>
+                    <div class="mb-3 d-flex">
+                        <div class="flex-fill"></div>
+                        <div class="print-meta">
+                            <div class="meta-row">
+                                <div class="label">BILL NUMBER:</div>
+                                <div class="value">{{ $assessment->bill_number ?? $assessment->assessment_number }}</div>
+                            </div>
+                            <div class="meta-row">
+                                <div class="label">RESPONSIBILITY CENTER:</div>
+                                <div class="value">{{ $assessment->responsibility_center ?? 'SMD' }}</div>
+                            </div>
+                            <div class="meta-row">
+                                <div class="label">DATE:</div>
+                                <div class="value">{{ $assessment->assessment_date->format('F d, Y') }}</div>
+                            </div>
                         </div>
                     </div>
 
                     <!-- ASSESSMENT FORM - Center -->
-                    <div class="text-center mb-3">
-                        <h4 class="fw-bold" style="font-size: 12pt; text-decoration: underline;">ASSESSMENT FORM</h4>
+                    <div class="text-center mb-3" style="margin-top: 10px; margin-bottom: 10px;">
+                        <h4 class="fw-bold" style="font-size: 12pt;">ASSESSMENT FORM</h4><br>
                     </div>
 
                     <!-- Name/Payee and Address - Left aligned -->
@@ -69,11 +67,20 @@
                             <table class="table table-borderless table-sm">
                                 <tr>
                                     <td width="15%" class="fw-bold"><span style="display: inline-block; min-width: 120px;">NAME/PAYEE:</span></td>
-                                    <td style="text-decoration: underline; text-transform: uppercase;">{{ $assessment->guest_name }}</td>
+                                    <td style="text-align: center; text-transform: uppercase; text-align: left;">
+                                    <div style="display: inline-block; width: 500px; border-bottom: 1px solid black; text-align: center;">
+        {{ $assessment->name_payee ?? $assessment->guest_name }}
+    </div>
+</td>
+                                    
                                 </tr>
                                 <tr>
                                     <td class="fw-bold"><span style="display: inline-block; min-width: 120px;">ADDRESS:</span></td>
-                                    <td style="text-decoration: underline; text-transform: uppercase;">{{ $assessment->address ?? 'N/A' }}</td>
+                                     <td style="text-align: center; text-transform: uppercase; text-align: left;">
+    <div style="display: inline-block; width: 500px; border-bottom: 1px solid black; text-align: center;">
+        {{ $assessment->address }}
+    </div>
+</td>
                                 </tr>
                             </table>
                         </div>
@@ -81,90 +88,99 @@
 
                     <!-- Main Table -->
                     <div class="mb-4">
-                        <table class="table table-bordered" style="border: 2px solid #000; border-collapse: collapse;">
-                            <thead class="table-light">
-                                <tr style="background-color: #e9ecef !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
-                                    <th width="12%" class="text-center align-middle fw-bold" style="font-size: 9pt; border: 2px solid #000; padding: 6px;">LEGAL BASIS<br>(DAO/SBC)</th>
-                                    <th width="48%" class="text-center align-middle fw-bold" style="font-size: 9pt; border: 2px solid #000; padding: 6px;">DESCRIPTION AND COMPUTATION of Fees<br>and/or Charges Assessed</th>
-                                    <th width="10%" class="text-center align-middle fw-bold" style="font-size: 9pt; border: 2px solid #000; padding: 6px;">Quantity</th>
-                                    <th width="15%" class="text-center align-middle fw-bold" style="font-size: 9pt; border: 2px solid #000; padding: 6px;">AMOUNT</th>
+                        <table class="table" style="width:100%; border:2px solid #000; border-collapse:collapse;">
+                            <thead>
+                                <tr style="background-color:#e9ecef;">
+                                    <th width="12%" style="border:2px solid #000; font-size:9pt; padding:6px; text-align:center;">
+                                        LEGAL BASIS<br>(DAO/SBC)
+                                    </th>
+                                    <th width="48%" style="border:2px solid #000; font-size:9pt; padding:6px; text-align:center;">
+                                        DESCRIPTION AND COMPUTATION of Fees<br>and/or Charges Assessed
+                                    </th>
+                                    <th width="10%" style="border:2px solid #000; font-size:9pt; padding:6px; text-align:center;">
+                                        Quantity
+                                    </th>
+                                    <th width="15%" style="border:2px solid #000; font-size:9pt; padding:6px; text-align:center;">
+                                        AMOUNT
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @php
                                     $namesData = json_decode($assessment->names_detail, true);
-                                    $hasNames = is_array($namesData) && count($namesData) > 0;
-                                    $categoryName = $assessment->category ? strtoupper($assessment->category->name) : strtoupper($assessment->request_type ?? 'Verification Fee');
+                                    $validItems = [];
+                                    
+                                    if(is_array($namesData)){
+                                        foreach($namesData as $item){
+                                            if(isset($item['name']) && $item['name'] !== '${name}' && !empty($item['name'])){
+                                                $validItems[] = $item;
+                                            }
+                                        }
+                                    }
                                 @endphp
-                                
-                                @if($hasNames)
-                                    <tr>
-                                        <td rowspan="{{ count($namesData) + 2 }}" class="align-middle text-center" style="font-size: 9pt; border: 1px solid #000; padding: 4px;">{{ $assessment->legal_basis ?? '1993-20' }}</td>
-                                        <td style="font-size: 9pt; border: 1px solid #000; padding: 4px; font-weight: bold;">{{ $categoryName }}</td>
-                                        <td class="text-center" style="font-size: 9pt; border: 1px solid #000; padding: 4px;"></td>
-                                        <td class="text-end" style="font-size: 9pt; border: 1px solid #000; padding: 4px;">-</td>
-                                    </tr>
-                                    @foreach($namesData as $index => $item)
-                                        @if(isset($item['name']) && $item['name'] !== '${name}' && !empty($item['name']))
-                                            <tr>
-                                                <td style="font-size: 9pt; border: 1px solid #000; padding: 4px;">{{ $item['name'] }}</td>
-                                                <td class="text-center" style="font-size: 9pt; border: 1px solid #000; padding: 4px;">{{ $item['quantity'] ?? 1 }}</td>
-                                                <td class="text-end" style="font-size: 9pt; border: 1px solid #000; padding: 4px;">{{ number_format($item['amount'] ?? 0, 2) }}</td>
-                                            </tr>
-                                        @endif
-                                    @endforeach
-                                @else
-                                    <tr>
-                                        <td rowspan="2" class="align-middle text-center" style="font-size: 9pt; border: 1px solid #000; padding: 4px;">{{ $assessment->legal_basis ?? '1993-20' }}</td>
-                                        <td style="font-size: 9pt; border: 1px solid #000; padding: 4px; font-weight: bold;">{{ $categoryName }}</td>
-                                        <td class="text-center" style="font-size: 9pt; border: 1px solid #000; padding: 4px;"></td>
-                                        <td class="text-end" style="font-size: 9pt; border: 1px solid #000; padding: 4px;">₱{{ number_format($assessment->fees, 2) }}</td>
-                                    </tr>
-                                @endif
-                                
-                                <!-- Total Row -->
-                                <tr class="table-light" style="background-color: #e9ecef !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
-                                    <td colspan="2" class="text-end fw-bold" style="font-size: 9pt; border: 2px solid #000; padding: 6px;">TOTAL:</td>
-                                    <td colspan="2" class="text-end fw-bold" style="font-size: 9pt; border: 2px solid #000; padding: 6px;">₱{{ number_format($assessment->fees, 2) }}</td>
+
+                                <tr>
+                                    <td style="border-right:2px solid #000; font-size:9pt; padding:6px; text-align:center; vertical-align:top;">
+                                        {{ $assessment->legal_basis ?? '1993-20' }}
+                                    </td>
+                                    <td style="border-right:2px solid #000; font-size:9pt; padding:6px; vertical-align:top;">
+                                        <strong>CERTIFICATION: TECHNICAL DESCRIPTION</strong><br><br>
+                                        @foreach($validItems as $item)
+                                            <div style="min-height: 20px;">{{ $item['name'] }}</div>
+                                        @endforeach
+                                    </td>
+                                    <td style="border-right:2px solid #000; font-size:9pt; padding:6px; text-align:center; vertical-align:top;">
+                                        @foreach($validItems as $item)
+                                            <div style="min-height: 20px; text-align: center; padding-top: 8px;">{{ $item['quantity'] ?? 1 }}</div>
+                                        @endforeach
+                                    </td>
+                                    <td style="font-size:9pt; padding:6px; text-align:right; vertical-align:top;">
+                                        @foreach($validItems as $item)
+                                            <div style="min-height: 20px; text-align: right; padding-top: 8px;">{{ number_format($item['amount'] ?? 0,2) }}</div>
+                                        @endforeach
+                                    </td>
+                                </tr>
+
+                                <tr style="background:#e9ecef;">
+                                    <td colspan="3" style="border-top:2px solid #000; border-right:2px solid #000; font-size:9pt; padding:6px; text-align:right; font-weight:bold;">
+                                        TOTAL:
+                                    </td>
+                                    <td style="border-top:2px solid #000; font-size:9pt; padding:6px; text-align:right; font-weight:bold;">
+                                        ₱{{ number_format($assessment->fees,2) }}
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
 
                     <!-- Remarks/Notes -->
-                    @if($assessment->remarks)
-                        <div class="mb-3">
-                            <strong style="font-size: 9pt;">Remarks:</strong>
-                            <p style="font-size: 9pt;">{{ $assessment->remarks }}</p>
-                        </div>
-                    @endif
-
+            
                     <!-- Signature Section -->
-                    <div class="row mt-4 pt-3">
-                        <div class="col-md-6">
-                            <div class="text-center" style="min-height: 100px;">
-                                <p class="fw-bold mb-4" style="font-size: 9pt;">PREPARED BY:</p>
-                                <div style="margin-top: 40px;">
-                                    <p class="fw-bold mb-0" style="font-size: 9pt;">STANLEY M. LOTA</p>
-                                    <p class="mb-0" style="font-size: 9pt;">SIGNATURE OVER PRINTED NAME</p>
-                                    <p class="mb-0" style="font-size: 9pt; margin-top: 10px;">ACCEPTANCE</p>
-                                    <p style="font-size: 9pt;">Position/Designation</p>
+                    <table class="table table-borderless mt-4 pt-3" style="width:100%;">
+                        <tr>
+                            <td style="width:70%; vertical-align:top;">
+                                <div style="min-height: 120px;">
+                                    <p class="fw-bold mb-4" style="font-size: 9pt;">PREPARED BY:</p>
+                                    <div style="margin-top: 70px;">
+                                        <p class="fw-bold mb-0" style="font-size: 9pt;">STANLEY M. LOTA</p>
+                                        <p class="mb-0" style="font-size: 9pt;">SIGNATURE OVER PRINTED NAME</p>
+                                        <p class="mb-0" style="font-size: 9pt; margin-top: 10px;">ACCEPTANCE</p>
+                                        <p style="font-size: 9pt;">Position/Designation</p>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="text-center" style="min-height: 100px;">
-                                <p class="fw-bold mb-4" style="font-size: 9pt;">REVIEWED BY:</p>
-                                <div style="margin-top: 40px;">
-                                    <p class="mb-0 text-center" style="font-size: 9pt; min-height: 18px;">FOR</p>
-                                    <p class="fw-bold mb-0" style="font-size: 9pt; margin-top: 5px;">ENGR. ERITHA R. LUMAOANG</p>
+                            </td>
+                            <td style="width:50%; vertical-align:top; text-align:left;">
+                                <div style="min-height: 120px;">
+                                    <p class="fw-bold mb-4" style="font-size: 9pt;">REVIEWED BY:</p>
+                                    <p class="mb-0" style="font-size: 9pt;">FOR</p>
+                                    <p class="fw-bold mb-0" style="font-size: 9pt; margin-top: 35px;">ENGR. ERITHA R. LUMAOANG</p>
                                     <p style="font-size: 9pt;">SIGNATURE OVER PRINTED NAME</p>
                                     <p class="mb-0" style="font-size: 9pt; margin-top: 10px;">ASST. DIVISION CHIEF</p>
                                     <p style="font-size: 9pt;">Position/Designation</p>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
+                            </td>
+                        </tr>
+                    </table>
 
                     <!-- Footer - Bottom Left -->
                     <div class="mt-4 pt-2 border-top text-start">
@@ -180,16 +196,24 @@
 @section('styles')
 <style>
     @media print {
+        @page {
+            size: A4;
+            margin: 10mm;
+        }
+        
         body {
             background: white;
             margin: 0;
             padding: 0;
             font-size: 10pt;
             line-height: 1.3;
-            width: 210mm; /* A4 width */
+            width: 210mm;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
         
-        .navbar, .sidebar, .btn, .no-print {
+        /* Hide non-printable elements */
+        .navbar, .sidebar, .btn, .no-print, header, footer, nav {
             display: none !important;
         }
         
@@ -197,6 +221,7 @@
             max-width: 100%;
             margin: 0;
             padding: 0;
+            width: 100%;
         }
         
         .row {
@@ -210,26 +235,26 @@
         
         #assessment-print {
             page-break-inside: avoid;
-            page-break-after: auto;
             border: none;
             box-shadow: none !important;
             margin: 0;
-            padding: 10px;
-            min-height: 297mm; /* A4 height */
-            display: flex;
-            flex-direction: column;
+            padding: 0;
+            min-height: auto;
+            display: block;
         }
         
         .card {
             border: none;
             box-shadow: none !important;
+            background: white;
         }
         
         .card-body {
-            padding: 10px;
+            padding: 0;
             page-break-inside: avoid;
         }
         
+        /* Typography for print */
         h4, h5, h6 {
             margin-top: 2px;
             margin-bottom: 2px;
@@ -238,32 +263,97 @@
         
         h5 {
             font-size: 11pt !important;
+            font-weight: bold;
         }
         
         h6 {
             font-size: 10pt !important;
+            font-weight: bold;
         }
         
+        h4 {
+            font-size: 12pt !important;
+            font-weight: bold;
+        }
+        
+        /* Table styling for print */
         .table {
             page-break-inside: avoid;
             font-size: 9pt !important;
+            width: 100%;
+            border-collapse: collapse;
         }
         
         .table th, .table td {
-            padding: 4px;
+            padding: 4px 6px;
             font-size: 9pt !important;
+            page-break-inside: avoid;
+            vertical-align: top;
+        }
+        
+        .table-bordered, .table-bordered th, .table-bordered td {
+            border: 2px solid #000 !important;
+        }
+        
+        .table-borderless {
+            border: none !important;
+        }
+        
+        .table-borderless td, .table-borderless th {
+            border: none !important;
+        }
+        
+        /* Preserve background colors in print */
+        thead th {
+            background-color: #e9ecef !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            font-weight: bold !important;
+        }
+        
+        tr.table-light, tr[style*="background:#e9ecef"] {
+            background-color: #e9ecef !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        
+        /* Prevent row breaking */
+        tr {
             page-break-inside: avoid;
         }
         
-        /* Preserve exact layout */
+        /* Spacing utilities for print */
         .mb-3 {
             margin-bottom: 0.75rem !important;
         }
         
-        /* Ensure single page */
+        .mb-4 {
+            margin-bottom: 1rem !important;
+        }
+        
+        .mt-4 {
+            margin-top: 1.5rem !important;
+        }
+        
+        .pt-3 {
+            padding-top: 1rem !important;
+        }
+        
+        p {
+            margin: 0;
+            font-size: 9pt !important;
+            line-height: 1.4;
+        }
+        
+        /* Signature area */
+        [style*="min-height: 100px"] {
+            min-height: 80px !important;
+        }
+        
+        /* Ensure document fits on one page */
         html, body {
-            height: 297mm;
-            overflow: hidden;
+            height: auto;
+            overflow: visible;
         }
     }
     
@@ -272,6 +362,32 @@
         min-height: 297mm;
         display: flex;
         flex-direction: column;
+    }
+    
+    .print-meta {
+        width: 320px;
+        margin-left: auto;
+    }
+    .print-meta .meta-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+    .print-meta .label {
+        width: 180px;
+        text-align: right;
+        font-weight: bold;
+        font-size: 9pt;
+    }
+    .print-meta .value {
+        flex: 1;
+        border-bottom: 1px solid #000;
+        text-align: center;
+        text-transform: uppercase;
+        font-size: 9pt;
+        padding: 2px 4px;
+        min-height: 18px;
+        line-height: 18px;
     }
     
     .table-bordered {
@@ -294,45 +410,14 @@
         text-align: right !important;
     }
     
-    /* Signature area */
-    [style*="min-height: 120px"] {
-        min-height: 100px !important;
-    }
-    
-    [style*="margin-top: 50px"] {
-        margin-top: 40px !important;
-    }
-    
-    /* Ensure table headers are bold */
     thead th {
         font-weight: bold !important;
-    }
-    
-    /* Preserve spacing */
-    .mt-4 {
-        margin-top: 1.5rem !important;
-    }
-    
-    .pt-3 {
-        padding-top: 1rem !important;
-    }
-    
-    thead th {
-        background-color: #f8f9fa !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+        background-color: #e9ecef !important;
     }
     
     /* Total row styling */
     tr.table-light {
         background-color: #f8f9fa !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-    
-    /* Prevent breaking within rows */
-    tr {
-        page-break-inside: avoid;
     }
     
     /* Adjust spacing */
@@ -345,27 +430,23 @@
     }
     
     .mt-4 {
-        margin-top: 1rem !important;
+        margin-top: 1.5rem !important;
     }
     
     .pt-3 {
-        padding-top: 0.75rem !important;
+        padding-top: 1rem !important;
     }
     
     p {
         margin: 0;
-        font-size: 9pt !important;
+        font-size: 9pt;
     }
     
-    /* Page setup */
+    /* Page setup for screen */
     @page {
         size: A4;
         margin: 10mm;
     }
     
-    /* Screen-only styles */
-    .no-print {
-        display: block;
-    }
 </style>
 @endsection

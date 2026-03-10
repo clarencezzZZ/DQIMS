@@ -10,7 +10,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h2 class="mb-1"><i class="bi bi-reception-4 text-success"></i> Front Desk (Ground Floor)</h2>
-                    <p class="text-muted mb-0">Manage guest inquiries and queue system</p>
+                    <p class="text-muted mb-0">Manage client inquiries and queue system</p>
                 </div>
                 <a href="{{ route('front-desk.create') }}" class="btn btn-success btn-lg">
                     <i class="bi bi-plus-circle"></i> New Inquiry
@@ -37,7 +37,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-warning text-dark">
+            <div class="card bg-warning text-dark" style="min-height: 94.98px;">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <div>
@@ -52,13 +52,12 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-info text-white" style="background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%) !important;">
+            <div class="card bg-info text-white" style="background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%) !important; min-height: 94.98px;">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <div>
                             <h6 class="card-title mb-0 fw-bold">Now Serving</h6>
                             <h3 class="mb-0 mt-2" id="servingCount">0</h3>
-                            <small class="mt-1 d-block opacity-75">Currently being served</small>
                         </div>
                         <div class="align-self-center">
                             <i class="bi bi-person-video3" style="font-size: 2.5rem; opacity: 0.8;"></i>
@@ -68,7 +67,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card bg-primary text-white">
+            <div class="card bg-primary text-white" style="min-height: 94.98px;">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <div>
@@ -95,13 +94,13 @@
                     <form action="{{ route('front-desk.store') }}" method="POST" id="inquiryForm">
                         @csrf
                         
-                        <!-- Guest Name -->
+                        <!-- Client Name -->
                         <div class="mb-3">
-                            <label for="guest_name" class="form-label fw-bold">Guest Name<span class="text-danger">*</span></label>
+                            <label for="guest_name" class="form-label fw-bold">Client Name<span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-person"></i></span>
                                 <input type="text" class="form-control @error('guest_name') is-invalid @enderror" 
-                                       id="guest_name" name="guest_name" placeholder="Enter guest full name" 
+                                       id="guest_name" name="guest_name" placeholder="Enter client full name"
                                        value="{{ old('guest_name') }}" required>
                             </div>
                             @error('guest_name')
@@ -238,7 +237,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th width="8%" class="text-center py-3 fw-bold">#</th>
-                                    <th width="18%" class="py-3 fw-bold"><i class="bi bi-person me-1"></i>GUEST NAME</th>
+                                    <th width="18%" class="py-3 fw-bold"><i class="bi bi-person me-1"></i>CLIENT NAME</th>
                                     <th width="32%" class="py-3 fw-bold"><i class="bi bi-tag me-1"></i>SERVICE TYPE</th>
                                     <th width="10%" class="text-center py-3 fw-bold"><i class="bi bi-hourglass-split me-1"></i>STATUS</th>
                                     <th width="10%" class="text-center py-3 fw-bold"><i class="bi bi-clock me-1"></i>TIME</th>
@@ -661,7 +660,7 @@
                 if (data.success) {
                     // Show success notification
                     showNotification(
-                        `Queue Number: <strong>${data.queue_number}</strong><br>Guest: ${data.guest_name}<br>Category: ${data.category}`,
+                        `Queue Number: <strong>${data.queue_number}</strong><br>Client: ${data.guest_name}<br>Category: ${data.category}`,
                         'success',
                         'Generated Ticket Submitted!'
                     );

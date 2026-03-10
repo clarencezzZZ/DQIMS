@@ -8,10 +8,24 @@
     <link rel="stylesheet" href="{{ asset('css/bootstrap-icons.css') }}">
     <style>
         body {
-            background: linear-gradient(135deg, #1a5f2a 0%, #0d3d16 100%);
+            background: url('{{ asset('images/greenery_forest_nature_path_with_sunbeam_4k_hd_nature.jpg') }}') no-repeat center center fixed;
+            background-size: cover;
             min-height: 100vh;
             color: white;
             overflow-x: hidden;
+        }
+        
+        /* Dark overlay for better card visibility */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(15, 76, 26, 0.85) 0%, rgba(10, 47, 18, 0.9) 50%, rgba(5, 25, 9, 0.95) 100%);
+            pointer-events: none;
+            z-index: 0;
         }
         .monitor-header {
             background: rgba(255, 255, 255, 0.1);
@@ -19,39 +33,57 @@
             border-bottom: 3px solid rgba(255, 255, 255, 0.2);
         }
         .section-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 40px;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(250, 252, 250, 0.92) 100%);
+            border-radius: 35px;
             overflow: hidden;
-            box-shadow: 0 35px 90px rgba(0, 0, 0, 0.6);
-            transition: transform 0.3s ease;
-            height: 800px;
-            min-height: 800px;
-            min-width: 800px;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.2) inset,
+                0 0 80px rgba(26, 95, 42, 0.15);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            height: 100%;
+            min-height: 600px;
             width: 100%;
-            max-width: 100%;
             display: flex;
             flex-direction: column;
-            box-sizing: border-box;
             position: relative;
+            z-index: 1;
         }
         
+        .section-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(26, 95, 42, 0.03) 0%, transparent 50%, rgba(26, 95, 42, 0.02) 100%);
+            pointer-events: none;
+            border-radius: 35px;
+        }
+        
+        .section-card:hover {
+            transform: translateY(-8px) scale(1.015);
+            box-shadow: 
+                0 30px 80px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.3) inset,
+                0 0 120px rgba(26, 95, 42, 0.25);
+        }
         /* Smooth card visibility transitions */
         [data-section] {
             transition: all 0.4s ease-in-out;
         }
-        .section-card:hover {
-            transform: scale(1.02);
-        }
         .section-header {
-            padding: 45px;
+            padding: 25px 20px;
             color: white;
             font-weight: bold;
-            font-size: 3.5rem;
+            font-size: 1.8rem;
+            min-height: 100px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            text-align: left;
-            box-sizing: border-box;
+            text-align: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(26, 95, 42, 0.85) 0%, rgba(20, 80, 35, 0.9) 100%);
         }
         
         /* Fixed height content areas */
@@ -236,10 +268,31 @@
             @foreach($sectionData as $section => $data)
             @php 
                 $positionClass = 'card-position-' . ($loop->index + 1);
+                // Assign colors based on section name/keywords
+                $headerColor = '#6c757d'; // Default gray
+                $sectionNameUpper = strtoupper($section);
+                
+                if (strpos($sectionNameUpper, 'AGGREGATE') !== false || strpos($sectionNameUpper, 'CORRECTION') !== false || $sectionNameUpper === 'ACS') {
+                    $headerColor = '#dc3545'; // Red
+                } elseif (strpos($sectionNameUpper, 'ORIGINAL') !== false || strpos($sectionNameUpper, 'OTHER SURVEY') !== false || $sectionNameUpper === 'OOSS') {
+                    $headerColor = '#17a2b8'; // Light Blue
+                } elseif (strpos($sectionNameUpper, 'SURVEY') !== false && strpos($sectionNameUpper, 'CONTROL') !== false || $sectionNameUpper === 'SCS') {
+                    $headerColor = '#28a745'; // Yellow Green
+                } elseif (strpos($sectionNameUpper, 'LAND EVALUATION') !== false || $sectionNameUpper === 'LES') {
+                    $headerColor = '#6f42c1'; // Purple
+                } elseif (strpos($sectionNameUpper, 'ADMIN') !== false) {
+                    $headerColor = '#fd7e14'; // Orange
+                } elseif (strpos($sectionNameUpper, 'TECHNICAL') !== false) {
+                    $headerColor = '#e83e8c'; // Pink
+                } elseif (strpos($sectionNameUpper, 'FOREST') !== false) {
+                    $headerColor = '#20c997'; // Teal
+                } elseif (strpos($sectionNameUpper, 'WATER') !== false) {
+                    $headerColor = '#007bff'; // Blue
+                }
             @endphp
             <div class="{{ $positionClass }}" data-section="{{ $section }}">
                 <div class="section-card h-100">
-                    <div class="section-header d-flex justify-content-between align-items-center" style="background-color: {{ $data['color'] }}">
+                    <div class="section-header d-flex justify-content-between align-items-center" style="background-color: {{ $headerColor }}">
                         <h2 class="mb-0 fw-bold">{{ $data['name'] }}</h2>
                         <span class="badge bg-dark waiting-badge" id="waiting_{{ $section }}">Waiting: 0</span>
                     </div>

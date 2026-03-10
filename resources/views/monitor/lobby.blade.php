@@ -8,72 +8,190 @@
     <link rel="stylesheet" href="{{ asset('css/bootstrap-icons.css') }}">
     <style>
         body {
-            background: linear-gradient(135deg, #1a5f2a 0%, #0d3d16 100%);
+            background: url('{{ asset('images/greenery_forest_nature_path_with_sunbeam_4k_hd_nature.jpg') }}') no-repeat center center fixed;
+            background-size: cover;
             min-height: 100vh;
             color: white;
             overflow-x: hidden;
         }
-        .monitor-header {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-bottom: 3px solid rgba(255, 255, 255, 0.2);
-        }
-        .section-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 40px;
-            overflow: hidden;
-            box-shadow: 0 35px 90px rgba(0, 0, 0, 0.6);
-            transition: transform 0.3s ease;
-            height: 600px;
-            min-width: 380px;
+        
+        /* Dark overlay for better card visibility */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(15, 76, 26, 0.85) 0%, rgba(10, 47, 18, 0.9) 50%, rgba(5, 25, 9, 0.95) 100%);
+            pointer-events: none;
+            z-index: 0;
         }
+        
+        /* Animated background pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(26, 95, 42, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(26, 95, 42, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(40, 167, 69, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+            animation: pulse 15s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        
+        /* Subtle grid pattern overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .monitor-header {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(15px) saturate(180%);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 10;
+        }
+        
+        .section-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(250, 252, 250, 0.92) 100%);
+            border-radius: 35px;
+            overflow: hidden;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.2) inset,
+                0 0 80px rgba(26, 95, 42, 0.15);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            height: 100%;
+            min-height: 600px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .section-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(26, 95, 42, 0.03) 0%, transparent 50%, rgba(26, 95, 42, 0.02) 100%);
+            pointer-events: none;
+            border-radius: 35px;
+        }
+        
         .section-card:hover {
-            transform: scale(1.02);
+            transform: translateY(-8px) scale(1.015);
+            box-shadow: 
+                0 30px 80px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.3) inset,
+                0 0 120px rgba(26, 95, 42, 0.25);
         }
         .section-header {
-            padding: 40px;
+            padding: 25px 20px;
             color: white;
             font-weight: bold;
-            font-size: 3.2rem;
+            font-size: 1.8rem;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            text-align: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(26, 95, 42, 0.85) 0%, rgba(20, 80, 35, 0.9) 100%);
         }
         
-        /* Grid container for 3x3 layout */
+        /* Grid container for 1x4 layout (1 row, 4 columns) */
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: auto;
             gap: 25px;
-            padding: 20px;
-            min-height: 80vh;
+            padding: 30px;
+            min-height: 85vh;
+            justify-content: center;
+            align-items: stretch;
+            max-width: 100%;
+            margin: 0 auto;
+            transition: all 0.5s ease;
         }
         
-        /* Card positions in the grid */
+        /* Dynamic column adjustments based on active cards */
+        .grid-container[data-active-cards="1"] {
+            grid-template-columns: 1fr;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .grid-container[data-active-cards="2"] {
+            grid-template-columns: repeat(2, 1fr);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .grid-container[data-active-cards="3"] {
+            grid-template-columns: repeat(3, 1fr);
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        .grid-container[data-active-cards="4"] {
+            grid-template-columns: repeat(4, 1fr);
+            max-width: calc(100% - 100px);
+            margin: 0 auto;
+        }
+        
+        /* Card positions in the grid - all in first row */
         .card-position-acs { grid-column: 1; grid-row: 1; }
         .card-position-ooss { grid-column: 2; grid-row: 1; }
         .card-position-scs { grid-column: 3; grid-row: 1; }
-        .card-position-les { grid-column: 1; grid-row: 2; }
-        .card-position-additional-1 { grid-column: 2; grid-row: 2; }
-        .card-position-additional-2 { grid-column: 3; grid-row: 2; }
-        .card-position-additional-3 { grid-column: 1; grid-row: 3; }
-        .card-position-additional-4 { grid-column: 2; grid-row: 3; }
-        .card-position-additional-5 { grid-column: 3; grid-row: 3; }
+        .card-position-les { grid-column: 4; grid-row: 1; }
+        .card-position-additional-1 { grid-column: 5; grid-row: 1; }
+        .card-position-additional-2 { grid-column: 6; grid-row: 1; }
+        .card-position-additional-3 { grid-column: 7; grid-row: 1; }
+        .card-position-additional-4 { grid-column: 8; grid-row: 1; }
+        .card-position-additional-5 { grid-column: 9; grid-row: 1; }
         .queue-number {
-            font-size: 7.5rem;
+            font-size: 4.5rem;
             font-weight: bold;
             color: #1a5f2a;
-            text-shadow: 5px 5px 10px rgba(0,0,0,0.4);
+            text-shadow: 0 2px 8px rgba(26, 95, 42, 0.2);
+            line-height: 1.1;
         }
         .waiting-badge {
-            font-size: 2.5rem;
-            padding: 25px 35px;
+            font-size: 1.4rem;
+            padding: 15px 25px;
             border-radius: 50px;
         }
         .status-text {
-            font-size: 2.8rem;
+            font-size: 1.6rem;
         }
         .category-text {
-            font-size: 2.3rem;
+            font-size: 1.3rem;
         }
         .fullscreen-btn {
             position: fixed;
@@ -142,15 +260,15 @@
         <div class="grid-container" id="queueDisplay">
             <!-- Fixed positions: ACS (col 1), OOSS (col 2), SCS (col 3) in first row, LES (col 1 of second row), others follow -->
             
-            <!-- Grid Position 1: ACS (Top Left) -->
+            <!-- Grid Position 1: ACS (Red - Aggregate and Correction Section) -->
             @if(isset($sectionData['ACS']))
-            <div class="card-position-acs">
+            <div class="card-position-acs" id="card_ACS">
                 <div class="section-card h-100">
-                    <div class="section-header d-flex justify-content-between align-items-center" style="background-color: {{ $sectionData['ACS']['color'] }}">
+                    <div class="section-header d-flex justify-content-between align-items-center" style="background-color: {{ $headerColor }}">
                         <h2 class="mb-0 fw-bold">{{ $sectionData['ACS']['name'] }}</h2>
                         <span class="badge bg-dark waiting-badge" id="waiting_ACS">Waiting: 0</span>
                     </div>
-                    <div class="p-5 text-center">
+                    <div class="p-4 text-center" style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
                         <div class="queue-number mb-3" id="serving_ACS">---</div>
                         <div class="text-muted status-text" id="status_ACS">No Queue</div>
                         <div class="mt-2 text-muted status-text" style="font-size: 2.0rem;" id="next_queue_ACS"></div>
@@ -160,15 +278,15 @@
             </div>
             @endif
             
-            <!-- Grid Position 2: OOSS (Top Center) -->
+            <!-- Grid Position 2: OOSS (Light Blue - Original and Other Surveys Section) -->
             @if(isset($sectionData['OOSS']))
-            <div class="card-position-ooss">
+            <div class="card-position-ooss" id="card_OOSS">
                 <div class="section-card h-100">
-                    <div class="section-header d-flex justify-content-between align-items-center" style="background-color: {{ $sectionData['OOSS']['color'] }}">
+                    <div class="section-header d-flex justify-content-between align-items-center" style="background-color: {{ $headerColor }}">
                         <h2 class="mb-0 fw-bold">{{ $sectionData['OOSS']['name'] }}</h2>
                         <span class="badge bg-dark waiting-badge" id="waiting_OOSS">Waiting: 0</span>
                     </div>
-                    <div class="p-5 text-center">
+                    <div class="p-4 text-center" style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
                         <div class="queue-number mb-3" id="serving_OOSS">---</div>
                         <div class="text-muted status-text" id="status_OOSS">No Queue</div>
                         <div class="mt-2 text-muted status-text" style="font-size: 2.0rem;" id="next_queue_OOSS"></div>
@@ -178,15 +296,15 @@
             </div>
             @endif
             
-            <!-- Grid Position 3: SCS (Top Right) -->
+            <!-- Grid Position 3: SCS (Yellow Green - Surveys and Control Section) -->
             @if(isset($sectionData['SCS']))
-            <div class="card-position-scs">
+            <div class="card-position-scs" id="card_SCS">
                 <div class="section-card h-100">
-                    <div class="section-header d-flex justify-content-between align-items-center" style="background-color: {{ $sectionData['SCS']['color'] }}">
+                    <div class="section-header d-flex justify-content-between align-items-center" style="background-color: {{ $headerColor }}">
                         <h2 class="mb-0 fw-bold">{{ $sectionData['SCS']['name'] }}</h2>
                         <span class="badge bg-dark waiting-badge" id="waiting_SCS">Waiting: 0</span>
                     </div>
-                    <div class="p-5 text-center">
+                    <div class="p-4 text-center" style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
                         <div class="queue-number mb-3" id="serving_SCS">---</div>
                         <div class="text-muted status-text" id="status_SCS">No Queue</div>
                         <div class="mt-2 text-muted status-text" style="font-size: 2.0rem;" id="next_queue_SCS"></div>
@@ -196,15 +314,15 @@
             </div>
             @endif
             
-            <!-- Grid Position 4: LES (Middle Left) -->
+            <!-- Grid Position 4: LES (Purple - Land Evaluation Section) -->
             @if(isset($sectionData['LES']))
-            <div class="card-position-les">
+            <div class="card-position-les" id="card_LES">
                 <div class="section-card h-100">
-                    <div class="section-header d-flex justify-content-between align-items-center" style="background-color: {{ $sectionData['LES']['color'] }}">
+                    <div class="section-header d-flex justify-content-between align-items-center" style="background-color: {{ $headerColor }}">
                         <h2 class="mb-0 fw-bold">{{ $sectionData['LES']['name'] }}</h2>
                         <span class="badge bg-dark waiting-badge" id="waiting_LES">Waiting: 0</span>
                     </div>
-                    <div class="p-5 text-center">
+                    <div class="p-4 text-center" style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
                         <div class="queue-number mb-3" id="serving_LES">---</div>
                         <div class="text-muted status-text" id="status_LES">No Queue</div>
                         <div class="mt-2 text-muted status-text" style="font-size: 2.0rem;" id="next_queue_LES"></div>
@@ -226,17 +344,19 @@
             @endphp
             
             @foreach($dynamicSections as $index => $section)
-            @php 
+            @php
                 $data = $sectionData[$section]; 
                 $positionClass = 'card-position-additional-' . ($index + 1);
+                // Use uniform DENR green color for all sections
+                $headerColor = 'rgba(26, 95, 42, 0.85)';
             @endphp
-            <div class="{{ $positionClass }}">
+            <div class="{{ $positionClass }}" id="card_{{ $section }}">
                 <div class="section-card h-100">
-                    <div class="section-header d-flex justify-content-between align-items-center" style="background-color: {{ $data['color'] }}">
+                    <div class="section-header d-flex justify-content-between align-items-center" style="background-color: {{ $headerColor }}">
                         <h2 class="mb-0 fw-bold">{{ $data['name'] }}</h2>
                         <span class="badge bg-dark waiting-badge" id="waiting_{{ $section }}">Waiting: 0</span>
                     </div>
-                    <div class="p-5 text-center">
+                    <div class="p-4 text-center" style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
                         <div class="queue-number mb-3" id="serving_{{ $section }}">---</div>
                         <div class="text-muted status-text" id="status_{{ $section }}">No Queue</div>
                         <div class="mt-2 text-muted status-text" style="font-size: 2.0rem;" id="next_queue_{{ $section }}"></div>
@@ -250,83 +370,109 @@
     
     <!-- Responsive adjustments for different screen sizes -->
     <style>
-        @media (max-width: 1200px) {
+        @media (max-width: 1400px) {
             .grid-container {
                 grid-template-columns: repeat(2, 1fr);
-                grid-template-rows: repeat(4, 1fr);
+                grid-template-rows: auto;
                 gap: 20px;
+                padding: 25px;
                 margin: 0 auto;
-                padding: 20px;
             }
-            .card-position-acs { grid-column: 1; grid-row: 1; }
-            .card-position-ooss { grid-column: 2; grid-row: 1; }
-            .card-position-scs { grid-column: 1; grid-row: 2; }
-            .card-position-les { grid-column: 2; grid-row: 2; }
-            .card-position-additional-1 { grid-column: 1; grid-row: 3; }
-            .card-position-additional-2 { grid-column: 2; grid-row: 3; }
-            .card-position-additional-3 { grid-column: 1; grid-row: 4; }
-            .card-position-additional-4 { grid-column: 2; grid-row: 4; }
-            .card-position-additional-5 { grid-column: 1; grid-row: 5; }
+            .section-card {
+                min-height: 500px;
+            }
+            .section-header {
+                font-size: 1.5rem;
+                padding: 20px 15px;
+                min-height: 90px;
+            }
+            .queue-number {
+                font-size: 3.5rem;
+            }
+            .status-text {
+                font-size: 1.4rem;
+            }
+            .category-text {
+                font-size: 1.1rem;
+            }
+            .waiting-badge {
+                font-size: 1.2rem;
+                padding: 12px 20px;
+            }
         }
         
         @media (max-width: 768px) {
             .grid-container {
                 grid-template-columns: 1fr;
-                grid-template-rows: repeat(6, 1fr);
+                grid-template-rows: auto;
                 gap: 15px;
                 padding: 15px;
                 margin: 0 auto;
             }
-            .card-position-acs { grid-column: 1; grid-row: 1; }
-            .card-position-ooss { grid-column: 1; grid-row: 2; }
-            .card-position-scs { grid-column: 1; grid-row: 3; }
-            .card-position-les { grid-column: 1; grid-row: 4; }
-            .card-position-additional-1 { grid-column: 1; grid-row: 5; }
-            .card-position-additional-2 { grid-column: 1; grid-row: 6; }
-            .card-position-additional-3 { grid-column: 1; grid-row: 7; }
-            .card-position-additional-4 { grid-column: 1; grid-row: 8; }
-            .card-position-additional-5 { grid-column: 1; grid-row: 9; }
-            
             .section-card {
-                min-width: auto;
-                height: auto;
-                min-height: 300px;
+                min-height: 350px;
             }
-            
             .section-header {
-                font-size: 2.2rem;
-                padding: 25px;
+                font-size: 1.8rem;
+                padding: 20px;
+                min-height: 80px;
             }
-            
             .queue-number {
-                font-size: 5rem;
+                font-size: 4.0rem;
             }
-            
             .status-text {
-                font-size: 2rem;
+                font-size: 1.5rem;
             }
-            
             .category-text {
-                font-size: 1.6rem;
+                font-size: 1.2rem;
+            }
+            .waiting-badge {
+                font-size: 1.3rem;
+                padding: 12px 20px;
             }
         }
         
         @media (min-width: 1920px) {
             .section-card {
-                min-width: 450px;
+                min-height: 650px;
             }
             
             .section-header {
-                font-size: 3.5rem;
+                font-size: 2.2rem;
+                min-height: 110px;
             }
             
             .queue-number {
-                font-size: 8.5rem;
+                font-size: 5.5rem;
             }
             
             .grid-container {
+                max-width: 98%;
                 margin: 0 auto;
-                padding: 30px;
+                padding: 40px;
+                gap: 35px;
+            }
+        }
+        
+        @media (min-width: 2560px) {
+            .grid-container {
+                max-width: 95%;
+                margin: 0 auto;
+                padding: 50px;
+                gap: 45px;
+            }
+            
+            .section-card {
+                min-height: 750px;
+            }
+            
+            .section-header {
+                font-size: 2.8rem;
+                min-height: 130px;
+            }
+            
+            .queue-number {
+                font-size: 6.5rem;
             }
         }
     </style>
@@ -384,21 +530,39 @@
 
     // Update queue display
     function updateQueueDisplay(data) {
-        if (!data.sections) return;
+       if (!data.sections) return;
+            
+        let activeCardCount= 0;
         
         for (const [section, info] of Object.entries(data.sections)) {
+            // Get card element
+            const cardEl = document.getElementById('card_' + section);
+           if (!cardEl) continue;
+                
+            // Check if section has any activity (someone being served OR people waiting)
+            const hasActivity = info.now_serving || info.waiting_count > 0;
+                
+            // Show/hide card based on activity
+           if (hasActivity) {
+               cardEl.style.display = '';
+                activeCardCount++;
+            } else {
+               cardEl.style.display = 'none';
+                continue; // Skip updating this card
+            }
+                
             // Update waiting count
             const waitingEl = document.getElementById('waiting_' + section);
             if (waitingEl) {
                 waitingEl.textContent = 'Waiting: ' + info.waiting_count;
             }
-            
+                
             // Update queue number and status
             const servingEl = document.getElementById('serving_' + section);
             const statusEl = document.getElementById('status_' + section);
             const categoryEl = document.getElementById('category_' + section);
             const nextQueueEl = document.getElementById('next_queue_' + section);
-            
+                
             if (servingEl && statusEl) {
                 if (info.now_serving) {
                     // Someone is being served
@@ -406,7 +570,7 @@
                     servingEl.textContent = queueNum;
                     servingEl.style.color = '#1a5f2a';
                     statusEl.textContent = 'Now Serving';
-                    
+                        
                     // Show next in queue if available
                     if (nextQueueEl) {
                         if (info.second_in_queue) {
@@ -416,19 +580,19 @@
                             const nextNum = formatQueueNumber(info.first_in_queue);
                             nextQueueEl.innerHTML = '<div style="font-size: 1.8rem; margin-top: 10px;">Next in Queue</div><div style="font-weight: bold; color: #f39c12;">' + nextNum + '</div>';
                         } else {
-                            nextQueueEl.textContent = '';
+                            nextQueueEl.textContent= '';
                         }
                     }
-                    
+                        
                     // Hide category text - we don't want to display it
-                    if (categoryEl) categoryEl.textContent = '';
+                    if (categoryEl) categoryEl.textContent= '';
                 } else if (info.first_in_queue) {
                     // No one being served, show first in queue
                     const queueNum = formatQueueNumber(info.first_in_queue);
                     servingEl.textContent = queueNum;
                     servingEl.style.color = '#f39c12';
                     statusEl.textContent = 'Now Serving';
-                    
+                        
                     // Show next in queue if available
                     if (nextQueueEl) {
                         if (info.second_in_queue) {
@@ -438,7 +602,7 @@
                             nextQueueEl.textContent = '';
                         }
                     }
-                    
+                        
                     // Hide category text - we don't want to display it
                     if (categoryEl) categoryEl.textContent = '';
                 } else {
@@ -446,9 +610,15 @@
                     servingEl.style.color = '#6c757d';
                     statusEl.textContent = 'No Queue';
                     if (nextQueueEl) nextQueueEl.textContent = '';
-                    if (categoryEl) categoryEl.textContent = '';
+                    if (categoryEl) categoryEl.textContent= '';
                 }
             }
+        }
+        
+        // Update grid layout based on number of active cards
+        const gridContainer= document.getElementById('queueDisplay');
+       if (gridContainer) {
+            gridContainer.setAttribute('data-active-cards', activeCardCount);
         }
     }
 

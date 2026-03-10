@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->enum('role', ['front_desk', 'section_staff', 'admin'])->default('section_staff');
+            $table->enum('role', ['front_desk', 'section_officer', 'admin'])->default('section_staff');
             $table->foreignId('assigned_category_id')->nullable()->constrained('categories');
             $table->boolean('is_active')->default(true);
         });

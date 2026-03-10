@@ -131,7 +131,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th width="8%" class="text-center fw-bold">#</th>
-                                    <th width="18%" class="fw-bold"><i class="bi bi-person me-1"></i>GUEST NAME</th>
+                                    <th width="18%" class="fw-bold"><i class="bi bi-person me-1"></i>CLIENT NAME</th>
                                     <th width="32%" class="fw-bold"><i class="bi bi-tag me-1"></i>SERVICE TYPE</th>
                                     <th width="10%" class="text-center fw-bold"><i class="bi bi-hourglass-split me-1"></i>STATUS</th>
                                     <th width="10%" class="text-center fw-bold"><i class="bi bi-clock me-1"></i>TIME</th>

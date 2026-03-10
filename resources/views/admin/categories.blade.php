@@ -16,9 +16,6 @@
                     <a href="{{ route('admin.index') }}" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left"></i> Back
                     </a>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
-                        <i class="bi bi-plus-circle"></i> Add Category
-                    </button>
                 </div>
             </div>
         </div>
@@ -31,7 +28,7 @@
                 <div class="card shadow-sm h-100">
                     <div class="card-header" style="background-color: {{ $category->color }}; color: white;">
                         <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0"><i class="bi bi-tag"></i> {{ $category->name }}</h5>
+                            <h5 class="mb-0"><i class="bi bi-tag"></i> {{ $category->section_name ?? 'No Section' }}</h5>
                             <div class="form-check form-switch">
                                 <input type="checkbox" class="form-check-input" {{ $category->is_active ? 'checked' : '' }} disabled>
                             </div>
@@ -39,9 +36,9 @@
                     </div>
                     <div class="card-body">
                         <div class="mb-2">
-                            <span class="badge bg-secondary">{{ $category->section }}</span>
-                            <span class="badge bg-light text-dark ms-2">{{ $category->code }}</span>
+                            
                         </div>
+                        <h6 class="card-subtitle mb-2 text-muted"><strong>Category:</strong> {{ $category->name }}</h6>
                         <p class="card-text text-muted">{{ $category->description ?? 'No description' }}</p>
                         
                         <hr>
@@ -77,92 +74,6 @@
     </div>
 </div>
 
-<!-- Add Category Modal -->
-<div class="modal fade" id="addCategoryModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Add New Category</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ route('admin.categories.store') }}" method="POST">
-                @csrf
-                @if ($errors->any())
-                <div class="alert alert-danger m-3">
-                    <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-                @endif
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Section Code <span class="text-danger">*</span></label>
-                        <input type="text" name="section" class="form-control @error('section') is-invalid @enderror" placeholder="e.g., ACS, OOSS" required maxlength="20" value="{{ old('section') }}">
-                        <div class="form-text">Short section identifier</div>
-                        @error('section')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Section <span class="text-danger">*</span></label>
-                        <input type="text" name="section_name" class="form-control @error('section_name') is-invalid @enderror" placeholder="e.g., Administrative and Client Services" required value="{{ old('section_name') }}">
-                        <div class="form-text">Full section name</div>
-                        @error('section_name')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Category Name <span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" placeholder="e.g., CANCELATION OF PREVIOUSLY APPROVED SURVEY PLANS(DAR)" required value="{{ old('name') }}">
-                        @error('name')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Category Code <span class="text-danger">*</span></label>
-                        <input type="text" name="code" class="form-control @error('code') is-invalid @enderror" placeholder="e.g., SECSIME NO.R4A-L_SMD-03" required maxlength="50" value="{{ old('code') }}">
-                        <div class="form-text">Full category identifier code</div>
-                        @error('code')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Lobby</label>
-                        <select name="lobby" class="form-select @error('lobby') is-invalid @enderror">
-                            <option value="">Select Lobby</option>
-                            <option value="lobby1" {{ old('lobby') == 'lobby1' ? 'selected' : '' }}>Lobby 1</option>
-                            <option value="lobby2" {{ old('lobby') == 'lobby2' ? 'selected' : '' }}>Lobby 2</option>
-                        </select>
-                        @error('lobby')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Description</label>
-                        <textarea name="description" class="form-control @error('description') is-invalid @enderror" rows="3" placeholder="Brief description of the category...">{{ old('description') }}</textarea>
-                        @error('description')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Color <span class="text-danger">*</span></label>
-                        <input type="color" name="color" class="form-control form-control-color @error('color') is-invalid @enderror" value="{{ old('color', '#28a745') }}" required>
-                        @error('color')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Add Category</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 <!-- Edit Category Modals -->
 @foreach($categories as $category)
 <div class="modal fade" id="editCategoryModal{{ $category->id }}" tabindex="-1">
@@ -177,23 +88,13 @@
                 @method('PUT')
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Section Code <span class="text-danger">*</span></label>
-                        <input type="text" name="section" class="form-control" value="{{ $category->section }}" required maxlength="20">
-                        <div class="form-text">Short section identifier</div>
-                    </div>
-                    <div class="mb-3">
                         <label class="form-label">Section <span class="text-danger">*</span></label>
-                        <input type="text" name="section_name" class="form-control" placeholder="e.g., Administrative and Client Services" required>
-                        <div class="form-text">Full section name</div>
+                        <input type="text" name="section_name" class="form-control" value="{{ $category->section_name }}" placeholder="e.g., Administrative and Client Services" required maxlength="100">
+                        <div class="form-text">Full section name (this will be displayed in the card header)</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Category Name <span class="text-danger">*</span></label>
                         <input type="text" name="name" class="form-control" value="{{ $category->name }}" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Category Code <span class="text-danger">*</span></label>
-                        <input type="text" name="code" class="form-control" value="{{ $category->code }}" required maxlength="50">
-                        <div class="form-text">Full category identifier code</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Lobby</label>
@@ -219,7 +120,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel </button>
                     <button type="submit" class="btn btn-primary">Update Category</button>
                 </div>
             </form>

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Section-Wide FIFO Test Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .header h1 {
+            margin: 0 0 10px 0;
+        }
+        .test-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section h2 {
+            color: #667eea;
+            margin-top: 0;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #38a169;
+        }
+        .btn-warning {
+            background: #ed8936;
+            color: white;
+        }
+        .results {
+            background: #f7fafc;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+        }
+        .result-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #e2e8f0;
+        }
+        .badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        .badge-normal {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        .badge-priority {
+            background: #feebc8;
+            color: #744210;
+        }
+        .queue-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s;
+        }
+        .queue-item.next {
+            border-color: #48bb78;
+            background: #f0fff4;
+        }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .status-waiting { background: #ecc94b; }
+        .status-serving { background: #48bb78; }
+        .status-completed { background: #4299e1; }
+        .info-box {
+            background: #ebf8ff;
+            border: 1px solid #bee3f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .success-box {
+            background: #f0fff4;
+            border: 1px solid #c6f6d5;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        code {
+            background: #edf2f7;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #e53e3e;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎯 Section-Wide FIFO Queue System Test</h1>
+        <p>Interactive testing dashboard for First-Come, First-Serve with priority alternation</p>
+    </div>
+
+    <div class="test-section">
+        <h2>📋 Test Overview</h2>
+        <div class="info-box">
+            <strong>Test Objective:</strong> Verify that the queue management system implements section-wide FIFO with priority alternation.<br><br>
+            <strong>Rules:</strong>
+            <ul>
+                <li>Only the earliest waiting queue in the section can be served (FIFO)</li>
+                <li>Serving order alternates: NORMAL → PRIORITY → NORMAL → PRIORITY</li>
+                <li>All service types (categories) within the same section share one unified queue</li>
+                <li>If no priority exists, serve in pure FIFO order</li>
+                <li>Backend validation enforces queue order even if UI is bypassed</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔧 Step 1: Prepare Test Data</h2>
+        <p>Create test inquiries in your database with the following characteristics:</p>
+        
+        <div style="margin: 20px 0;">
+            <h3>Example Setup for "AGGREGATE AND CORRECTION" Section:</h3>
+            
+            <div class="queue-item">
+                <div>
+                    <strong>Inquiry #1</strong> - ACS-001<br>
+                    <small>Guest: Juan Dela Cruz | Service: CANCELATION OF SURVEY PLANS (DAR)</small>
+                </div>
+                <div>
+                    <span class="badge badge-normal">NORMAL</span>
+                    <span class="status-indicator status-waiting"></span>Waiting
+                </div>
+            </div>
+            
+            <div class="queue-item next">
+                <div>
+                    <strong>Inquiry #2</strong> - ACS-002 ← <strong>NEXT TO SERVE</strong><br>
+                    <small>Guest: Maria Santos | Service: AMENDMENT OF SURVEY PLANS</small>
+                </div>
+                <div>
+                    <span class="badge badge-priority">PRIORITY</span>
+                    <span class="status-indicator status-waiting"></span>Waiting
+                </div>
+            </div>
+            
+            <div class="queue-item">
+                <div>
+                    <strong>Inquiry #3</strong> - ACS-003<br>
+                    <small>Guest: Pedro Reyes | Service: CANCELATION OF SURVEY PLANS (DAR)</small>
+                </div>
+                <div>
+                    <span class="badge badge-normal">NORMAL</span>
+                    <span class="status-indicator status-waiting"></span>Waiting
+                </div>
+            </div>
+        </div>
+
+        <div class="results">
+            <strong>Expected Behavior:</strong><br>
+            If Inquiry #1 (NORMAL) was just served, then Inquiry #2 (PRIORITY) should be next.<br>
+            After serving Inquiry #2, Inquiry #3 (NORMAL) should be next.<br>
+            <strong>All Serve buttons except the next one should be disabled!</strong>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>✅ Step 2: Manual Testing Steps</h2>
+        
+        <ol>
+            <li>
+                <strong>Navigate to Admin Inquiries Page</strong><br>
+                Go to: <code>/admin/inquiries</code>
+            </li>
+            
+            <li>
+                <strong>Observe the Queue Display</strong>
+                <ul>
+                    <li>All inquiries in the same section should be visible together</li>
+                    <li>Only ONE inquiry should have an enabled "Serve" button (green)</li>
+                    <li>All other waiting inquiries should have disabled buttons (gray)</li>
+                </ul>
+            </li>
+            
+            <li>
+                <strong>Test Serving Order</strong>
+                <ul>
+                    <li>Click the enabled "Serve" button for the first inquiry (NORMAL priority)</li>
+                    <li>Mark it as "Completed"</li>
+                    <li>Observe: The next enabled button should now be for a PRIORITY inquiry (if available)</li>
+                </ul>
+            </li>
+            
+            <li>
+                <strong>Test Backend Validation</strong>
+                <ul>
+                    <li>Try to click a disabled "Serve" button on a non-next inquiry</li>
+                    <li>You should see a warning message about queue order</li>
+                    <li>Even if you use browser dev tools to enable the button, the backend should reject it</li>
+                </ul>
+            </li>
+            
+            <li>
+                <strong>Test Priority Alternation</strong>
+                <ul>
+                    <li>Serve a NORMAL inquiry → Next should be PRIORITY (if available)</li>
+                    <li>Serve a PRIORITY inquiry → Next should be NORMAL (if available)</li>
+                    <li>If only one type exists, serve in FIFO order</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>🧪 Step 3: Automated Test (CLI)</h2>
+        <p>Run the automated test script to verify the implementation:</p>
+        
+        <div class="results">
+            <code>php test_section_fifo.php</code>
+        </div>
+        
+        <p>This script will:</p>
+        <ul>
+            <li>Create test categories and inquiries</li>
+            <li>Simulate the serving process</li>
+            <li>Verify the FIFO order with priority alternation</li>
+            <li>Test backend validation</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Expected Results</h2>
+        
+        <div class="success-box">
+            <strong>✅ Success Criteria:</strong>
+            <ul>
+                <li>✓ Only one "Serve" button is enabled per section at any time</li>
+                <li>✓ The enabled button belongs to the earliest waiting inquiry (adjusted for priority alternation)</li>
+                <li>✓ After serving NORMAL, next is PRIORITY (if available)</li>
+                <li>✓ After serving PRIORITY, next is NORMAL (if available)</li>
+                <li>✓ Backend rejects attempts to serve out-of-order inquiries</li>
+                <li>✓ Error messages clearly explain section-wide FIFO rules</li>
+            </ul>
+        </div>
+        
+        <div class="results">
+            <strong>Example Serving Sequence:</strong><br><br>
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr style="background: #667eea; color: white;">
+                    <th style="padding: 10px; text-align: left;">Order</th>
+                    <th style="padding: 10px;">Queue #</th>
+                    <th style="padding: 10px; text-align: left;">Priority</th>
+                    <th style="padding: 10px; text-align: left;">Service Type</th>
+                    <th style="padding: 10px; text-align: left;">Notes</th>
+                </tr>
+                <tr>
+                    <td style="padding: 10px;">1</td>
+                    <td style="padding: 10px;">ACS-001</td>
+                    <td style="padding: 10px;"><span class="badge badge-normal">NORMAL</span></td>
+                    <td style="padding: 10px;">CANCELATION (DAR)</td>
+                    <td style="padding: 10px;">First in queue (oldest)</td>
+                </tr>
+                <tr style="background: #f0fff4;">
+                    <td style="padding: 10px;">2</td>
+                    <td style="padding: 10px;">ACS-002</td>
+                    <td style="padding: 10px;"><span class="badge badge-priority">PRIORITY</span></td>
+                    <td style="padding: 10px;">AMENDMENT</td>
+                    <td style="padding: 10px;">Next after NORMAL</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px;">3</td>
+                    <td style="padding: 10px;">ACS-003</td>
+                    <td style="padding: 10px;"><span class="badge badge-normal">NORMAL</span></td>
+                    <td style="padding: 10px;">CANCELATION (DAR)</td>
+                    <td style="padding: 10px;">Next after PRIORITY</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px;">4</td>
+                    <td style="padding: 10px;">ACS-004</td>
+                    <td style="padding: 10px;"><span class="badge badge-normal">NORMAL</span></td>
+                    <td style="padding: 10px;">AMENDMENT</td>
+                    <td style="padding: 10px;">No more PRIORITY, continue FIFO</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🐛 Troubleshooting</h2>
+        
+        <details>
+            <summary style="cursor: pointer; font-weight: 600; color: #667eea;">
+                Issue: Multiple "Serve" buttons are enabled
+            </summary>
+            <div style="margin-top: 10px; padding: 15px; background: #fff5f5; border-left: 3px solid #fc8181;">
+                <strong>Possible Causes:</strong>
+                <ul>
+                    <li>The view is still checking by category instead of section</li>
+                    <li>The <code>$nextInquiries</code> array is not properly populated</li>
+                    <li>Cache needs to be cleared</li>
+                </ul>
+                <strong>Solution:</strong> Run <code>php artisan cache:clear</code> and <code>php artisan view:clear</code>
+            </div>
+        </details>
+        
+        <details>
+            <summary style="cursor: pointer; font-weight: 600; color: #667eea;">
+                Issue: Backend validation allows out-of-order serving
+            </summary>
+            <div style="margin-top: 10px; padding: 15px; background: #fff5f5; border-left: 3px solid #fc8181;">
+                <strong>Possible Causes:</strong>
+                <li>The <code>updateInquiryStatus</code> method is not calling the section-wide check</li>
+                <li>The section lookup is failing</li>
+                <strong>Solution:</strong> Check Laravel logs for errors and verify the section field is populated
+            </div>
+        </details>
+        
+        <details>
+            <summary style="cursor: pointer; font-weight: 600; color: #667eea;">
+                Issue: Priority alternation not working
+            </summary>
+            <div style="margin-top: 10px; padding: 15px; background: #fff5f5; border-left: 3px solid #fc8181;">
+                <strong>Possible Causes:</strong>
+                <ul>
+                    <li>The <code>lastServedType</code> logic is incorrect</li>
+                    <li>No completed/serving inquiries to determine last type</li>
+                </ul>
+                <strong>Solution:</strong> Ensure there are completed inquiries with different priority types
+            </div>
+        </details>
+    </div>
+
+    <div class="test-section">
+        <h2>📝 Test Checklist</h2>
+        
+        <div style="margin: 15px 0;">
+            <label style="display: block; padding: 10px; background: white; border: 1px solid #e2e8f0; margin: 5px 0; border-radius: 5px;">
+                <input type="checkbox"> All inquiries in same section visible together
+            </label>
+            <label style="display: block; padding: 10px; background: white; border: 1px solid #e2e8f0; margin: 5px 0; border-radius: 5px;">
+                <input type="checkbox"> Only one "Serve" button enabled per section
+            </label>
+            <label style="display: block; padding: 10px; background: white; border: 1px solid #e2e8f0; margin: 5px 0; border-radius: 5px;">
+                <input type="checkbox"> Enabled button follows FIFO order
+            </label>
+            <label style="display: block; padding: 10px; background: white; border: 1px solid #e2e8f0; margin: 5px 0; border-radius: 5px;">
+                <input type="checkbox"> Priority alternation works (NORMAL → PRIORITY)
+            </label>
+            <label style="display: block; padding: 10px; background: white; border: 1px solid #e2e8f0; margin: 5px 0; border-radius: 5px;">
+                <input type="checkbox"> Disabled buttons show warning on click
+            </label>
+            <label style="display: block; padding: 10px; background: white; border: 1px solid #e2e8f0; margin: 5px 0; border-radius: 5px;">
+                <input type="checkbox"> Backend rejects out-of-order API requests
+            </label>
+            <label style="display: block; padding: 10px; background: white; border: 1px solid #e2e8f0; margin: 5px 0; border-radius: 5px;">
+                <input type="checkbox"> Different sections operate independently
+            </label>
+        </div>
+    </div>
+</body>
+</html>

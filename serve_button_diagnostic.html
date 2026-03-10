@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serve Button Diagnostic Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #007bff; border-bottom: 3px solid #007bff; padding-bottom: 10px; }
+        h2 { color: #28a745; margin-top: 30px; }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .warning { color: #ffc107; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #007bff; color: white; }
+        tr:nth-child(even) { background: #f9f9f9; }
+        .info-box { background: #e7f3ff; border-left: 4px solid #007bff; padding: 15px; margin: 20px 0; }
+        .code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+        .step { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Serve Button Diagnostic Test</h1>
+        
+        <div class="info-box">
+            <strong>Purpose:</strong> This page helps diagnose why Joshua (Queue #1) has a disabled serve button even though he's first in queue.
+        </div>
+
+        <h2>📋 Step-by-Step Diagnosis</h2>
+
+        <div class="step">
+            <h3>Step 1: Access Admin Inquiries Page</h3>
+            <p><strong>URL:</strong> <code class="code">https://including-obj-pleased-effective.trycloudflare.com/admin/inquiries?status=waiting</code></p>
+            
+            <p><strong>What to check:</strong></p>
+            <ul>
+                <li>Is Joshua showing as <strong>#1</strong> in the queue?</li>
+                <li>Is the serve button <strong>disabled (gray)</strong> or <strong>enabled (green)</strong>?</li>
+                <li>Look for the "NEXT" badge - does it show Joshua's queue number?</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Open Browser Developer Tools</h3>
+            <p><strong>Press F12</strong> to open Developer Tools, then:</p>
+            <ol>
+                <li>Go to the <strong>Console</strong> tab</li>
+                <li>Refresh the page (F5)</li>
+                <li>Look for any JavaScript errors</li>
+                <li>Check if there are console.log messages about the inquiry status</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>Step 3: Inspect the Serve Button</h3>
+            <p><strong>Right-click on Joshua's serve button</strong> and select "Inspect Element"</p>
+            
+            <p><strong>Look for this in the HTML:</strong></p>
+            <pre style="background: #f4f4f4; padding: 10px; overflow-x: auto;">
+&lt;button 
+    type="button" 
+    class="btn btn-outline-secondary ..." 
+    onclick="showQueueOrderWarning('...')" 
+    title="Not Next in Queue - Priority: normal"
+    disabled&gt;
+    &lt;i class="bi bi-person-badge"&gt;&lt;/i&gt;
+&lt;/button&gt;</pre>
+
+            <p><strong>Key things to verify:</strong></p>
+            <ul>
+                <li>Does it have the <code class="code">disabled</code> attribute?</li>
+                <li>What is the <code class="code">onclick</code> function?</li>
+                <li>What is the <code class="code">title</code> attribute saying?</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>Step 4: Check Laravel Logs</h3>
+            <p>The view logs debug information. Check the logs at:</p>
+            <p><code class="code">storage/logs/laravel.log</code></p>
+            
+            <p><strong>Look for lines containing:</strong></p>
+            <pre style="background: #f4f4f4; padding: 10px;">
+Inquiry #A001: Section=ACS, InquiryID=123, NextInquiryID=123, IsNext=YES
+Inquiry #A002: Section=ACS, InquiryID=124, NextInquiryID=123, IsNext=NO</pre>
+
+            <p><strong>What to look for:</strong></p>
+            <ul>
+                <li>Find the line for Joshua's inquiry</li>
+                <li>Check if <code class="code">IsNext=YES</code> or <code class="code">IsNext=NO</code></li>
+                <li>Compare <code class="code">InquiryID</code> with <code class="code">NextInquiryID</code></li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>Step 5: Run Database Query</h3>
+            <p>Create a test PHP file or use tinker to run:</p>
+            <pre style="background: #f4f4f4; padding: 10px;">
+php artisan tinker
+
+// Check waiting inquiries
+$inquiries = App\Models\Inquiry::whereDate('date', now()->toDateString())
+    ->where('status', 'waiting')
+    ->orderBy('created_at')
+    ->get();
+
+echo "Total waiting: " . $inquiries->count() . "\n\n";
+
+foreach ($inquiries as $inq) {
+    echo "ID: " . $inq->id . "\n";
+    echo "Queue #: " . $inq->queue_number . "\n";
+    echo "Name: " . $inq->guest_name . "\n";
+    echo "Category ID: " . $inq->category_id . "\n";
+    if ($inq->category) {
+        echo "Section: " . $inq->category->section . "\n";
+    } else {
+        echo "Section: NO CATEGORY\n";
+    }
+    echo "---\n";
+}</pre>
+        </div>
+
+        <h2>🎯 Common Issues & Solutions</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Issue</th>
+                    <th>Symptom</th>
+                    <th>Solution</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>No Category</strong></td>
+                    <td>Section shows as empty or null</td>
+                    <td>Ensure inquiry has a valid category_id assigned</td>
+                </tr>
+                <tr>
+                    <td><strong>Wrong Date</strong></td>
+                    <td>Inquiry not appearing in today's queue</td>
+                    <td>Check that inquiry date field matches today (Mar 09, 2026)</td>
+                </tr>
+                <tr>
+                    <td><strong>Section Mismatch</strong></td>
+                    <td>nextInquiries array key doesn't match section</td>
+                    <td>Verify categories.section field uses correct acronyms (ACS, OOSS, LES, SCS)</td>
+                </tr>
+                <tr>
+                    <td><strong>Someone Being Served</strong></td>
+                    <td>Button disabled but no one in "Serving" status</td>
+                    <td>Check database for any inquiry with status='serving'</td>
+                </tr>
+                <tr>
+                    <td><strong>Priority Algorithm</strong></td>
+                    <td>Wrong person marked as next</td>
+                    <td>Review priority alternation logic (NORMAL → PRIORITY)</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>🛠️ Quick Fix Commands</h2>
+
+        <div class="info-box">
+            <p><strong>Clear all caches:</strong></p>
+            <pre style="background: #f4f4f4; padding: 10px;">cd d:\xampp\htdocs\dqims-laravel1\DQIMS
+php artisan cache:clear
+php artisan view:clear
+php artisan config:clear</pre>
+        </div>
+
+        <div class="info-box">
+            <p><strong>Check who's currently being served:</strong></p>
+            <pre style="background: #f4f4f4; padding: 10px;">SELECT id, queue_number, guest_name, status, category_id 
+FROM inquiries 
+WHERE DATE(date) = CURDATE() 
+AND status IN ('serving', 'waiting')
+ORDER BY created_at;</pre>
+        </div>
+
+        <h2>📊 Expected Behavior</h2>
+
+        <div class="info-box">
+            <p><strong>For Joshua's case (first in queue):</strong></p>
+            <ul>
+                <li class="success">✅ Serve button should be ENABLED (green)</li>
+                <li class="success">✅ Button should have onclick="updateStatus(X, 'serving')"</li>
+                <li class="success">✅ "NEXT" badge should appear next to his queue number</li>
+                <li class="success">✅ Laravel log should show "IsNext=YES"</li>
+            </ul>
+        </div>
+
+        <h2>🐛 Report Your Findings</h2>
+
+        <p>After running these diagnostics, please provide:</p>
+        <ol>
+            <li>Screenshot of the admin inquiries page showing Joshua's row</li>
+            <li>Copy of the relevant Laravel log entries</li>
+            <li>Output from the database query showing:
+                <ul>
+                    <li>Joshua's inquiry ID</li>
+                    <li>Category ID</li>
+                    <li>Section name</li>
+                </ul>
+            </li>
+            <li>What you see when you inspect the serve button element</li>
+        </ol>
+
+        <div class="info-box" style="margin-top: 30px;">
+            <p><strong>💡 Pro Tip:</strong> The most common cause is that the inquiry doesn't have a proper category association, or the section field in the categories table is empty/null.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -35,10 +35,10 @@
                             <input type="text" class="form-control bg-light" id="assessment_number" value="{{ $assessment->assessment_number }}" readonly>
                         </div>
 
-                        <!-- Guest Name -->
+                        <!-- Client Name -->
                         <div class="mb-4">
                             <label for="guest_name" class="form-label fw-bold">
-                                <i class="bi bi-person text-warning"></i> Guest Name
+                                <i class="bi bi-person text-warning"></i> Client Name
                             </label>
                             <input type="text" class="form-control" id="guest_name" name="guest_name" value="{{ old('guest_name', $assessment->guest_name) }}">
                         </div>
