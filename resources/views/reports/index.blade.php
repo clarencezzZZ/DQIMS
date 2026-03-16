@@ -40,7 +40,7 @@
                 <div class="col-md-3">
                     <label class="form-label">Date From</label>
                     @if(isset($date_range))
-                        <input type="date" name="date_from" class="form-control" value="{{ old('date_from', $date_range['start']) }}" id="dateFromField" disabled>
+                        <input type="date" name="date_from" class="form-control" value="{{ old('date_from', isset($date_range['start']) ? \Carbon\Carbon::parse($date_range['start'])->format('Y-m-d') : '') }}" id="dateFromField" disabled>
                     @else
                         <input type="date" name="date_from" class="form-control" value="{{ old('date_from', request('date_from', date('Y-m-d'))) }}" id="dateFromField" disabled>
                     @endif
@@ -48,7 +48,7 @@
                 <div class="col-md-3">
                     <label class="form-label">Date To</label>
                     @if(isset($date_range))
-                        <input type="date" name="date_to" class="form-control" value="{{ old('date_to', $date_range['end']) }}" id="dateToField" disabled>
+                        <input type="date" name="date_to" class="form-control" value="{{ old('date_to', isset($date_range['end']) ? \Carbon\Carbon::parse($date_range['end'])->format('Y-m-d') : '') }}" id="dateToField" disabled>
                     @else
                         <input type="date" name="date_to" class="form-control" value="{{ old('date_to', request('date_to', date('Y-m-d'))) }}" id="dateToField" disabled>
                     @endif
@@ -140,40 +140,6 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%); color: #000;">
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-dark-50 mb-1 text-uppercase small fw-bold">Waiting</h6>
-                                <h2 class="mb-0 display-6">{{ $overall_stats['waiting'] }}</h2>
-                            </div>
-                            <div class="opacity-50">
-                                <i class="bi bi-clock" style="font-size: 2.5rem;"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%); color: white;">
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-white-50 mb-1 text-uppercase small fw-bold">Skipped</h6>
-                                <h2 class="mb-0 display-6">{{ $overall_stats['skipped'] }}</h2>
-                            </div>
-                            <div class="opacity-50">
-                                <i class="bi bi-skip-forward" style="font-size: 2.5rem;"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Assessment Statistics Cards -->
-        <div class="row mb-4">
-            <div class="col-md-3">
                 <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%); color: white;">
                     <div class="card-body p-3">
                         <div class="d-flex justify-content-between align-items-center">
@@ -198,36 +164,6 @@
                             </div>
                             <div class="opacity-50">
                                 <i class="bi bi-currency-dollar" style="font-size: 2.5rem;"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #20c997 0%, #17a589 100%); color: white;">
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-white-50 mb-1 text-uppercase small fw-bold">Avg Processing Time</h6>
-                                <h2 class="mb-0 display-6">{{ round($average_processing_time ?? 0) }}<small class="fs-6">min</small></h2>
-                            </div>
-                            <div class="opacity-50">
-                                <i class="bi bi-hourglass-split" style="font-size: 2.5rem;"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #0dcaf0 0%, #0aa2c0 100%); color: white;">
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-white-50 mb-1 text-uppercase small fw-bold">Serving</h6>
-                                <h2 class="mb-0 display-6">{{ $overall_stats['serving'] ?? 0 }}</h2>
-                            </div>
-                            <div class="opacity-50">
-                                <i class="bi bi-person-check" style="font-size: 2.5rem;"></i>
                             </div>
                         </div>
                     </div>
@@ -371,7 +307,8 @@
                         </form>
                     </div>
                     <div class="col-md-4 mb-3">
-                        <form action="{{ route('reports.export-excel') }}" method="GET">
+                        <form action="{{ route('reports.export-excel') }}" method="POST">
+                            @csrf
                             <input type="hidden" name="report_type" value="{{ request('report_type', 'daily') }}">
                             <input type="hidden" name="date_from" value="{{ is_string($date_range['start']) ? $date_range['start'] : \Carbon\Carbon::parse($date_range['start'])->format('Y-m-d') }}">
                             <input type="hidden" name="date_to" value="{{ is_string($date_range['end']) ? $date_range['end'] : \Carbon\Carbon::parse($date_range['end'])->format('Y-m-d') }}">
@@ -415,7 +352,7 @@
                 <div class="text-center py-4">
                     <i class="bi bi-download text-muted" style="font-size: 3rem;"></i>
                     <p class="text-muted mt-3">Please generate a report first to enable export options</p>
-                    <button class="btn btn-info text-white mt-2" onclick="document.querySelector('button[type=\'submit\']').click();">
+                    <button class="btn btn-info text-white mt-2" onclick="document.getElementById('generateReportBtn').click(); return false;">
                         <i class="bi bi-search"></i> Generate Report First
                     </button>
                 </div>
@@ -753,7 +690,7 @@ class BarElevator {
     createRevenueChart() {
         const ctx = document.getElementById('revenueChart');
         if (!ctx) {
-            if (this.debug) console.error('BarElevator: revenueChart canvas not found');
+            if (this.debug) console.log('BarElevator: revenueChart canvas not found, skipping creation.');
             return;
         }
         

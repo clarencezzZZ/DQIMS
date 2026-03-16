@@ -29,9 +29,6 @@
                     <div class="card-header" style="background-color: {{ $category->color }}; color: white;">
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="mb-0"><i class="bi bi-tag"></i> {{ $category->section_name ?? 'No Section' }}</h5>
-                            <div class="form-check form-switch">
-                                <input type="checkbox" class="form-check-input" {{ $category->is_active ? 'checked' : '' }} disabled>
-                            </div>
                         </div>
                     </div>
                     <div class="card-body">

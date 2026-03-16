@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use Closure;
 use Illuminate\Http\Request;
 
 class CheckRole
@@ -15,7 +14,7 @@ class CheckRole
      * @param  string  ...$roles
      * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
      */
-    public function handle(Request $request, Closure $next, ...$roles)
+    public function handle(Request $request, \Closure $next, ...$roles)
     {
         $user = $request->user();
 

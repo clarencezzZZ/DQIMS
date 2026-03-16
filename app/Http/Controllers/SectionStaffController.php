@@ -69,10 +69,12 @@ class SectionStaffController extends Controller
         $waiting = Inquiry::today()
             ->whereIn('category_id', $categoryIds)
             ->waiting()
-            ->orderBy('created_at')
             ->get();
+            
+        // Sort using priority rules
+        $sortedWaiting = Inquiry::sortInquiriesByPriority($waiting, $section);
 
-        return response()->json($waiting);
+        return response()->json($sortedWaiting->where('status', 'waiting')->values());
     }
 
     /**
@@ -126,13 +128,8 @@ class SectionStaffController extends Controller
             ->where('is_active', true)
             ->pluck('id');
 
-        // Get next waiting inquiry for this section (any category)
-        $nextInquiry = Inquiry::today()
-            ->whereIn('category_id', $categoryIds)
-            ->waiting()
-            ->orderBy('priority', 'desc') // High priority first
-            ->orderBy('created_at', 'asc') // Then FIFO
-            ->first();
+        // Get next waiting inquiry for this section (any category) using priority rules
+        $nextInquiry = Inquiry::getNextInquiryInSection($section);
 
         if (!$nextInquiry) {
             return response()->json(['error' => 'No one in queue'], 404);

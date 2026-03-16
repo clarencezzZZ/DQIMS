@@ -10,21 +10,32 @@
         @media print {
             body {
                 width: 80mm;
-                margin: 0;
+                margin: 0 auto;
                 padding: 0;
+                background-color: white;
             }
-            .no-print {
-                display: none !important;
+            .ticket-wrapper {
+                padding: 0;
+                min-height: auto;
+                display: block;
             }
             .ticket-container {
                 box-shadow: none !important;
                 border: none !important;
+                margin: 0 auto !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .no-print {
+                display: none !important;
             }
         }
 
         body {
             background-color: #f5f5f5;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
         }
 
         .ticket-wrapper {
@@ -33,6 +44,7 @@
             align-items: center;
             justify-content: center;
             padding: 20px;
+            width: 100%;
         }
 
         .ticket-container {
@@ -42,6 +54,7 @@
             border-radius: 15px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
             overflow: hidden;
+            margin: 0 auto;
         }
 
         .ticket-header {
@@ -97,23 +110,29 @@
             margin-top: 25px;
             padding-top: 20px;
             border-top: 2px dashed #dee2e6;
-            text-align: left;
+            text-align: center;
         }
 
         .info-row {
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-size: 0.9rem;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
         }
 
         .info-label {
-            color: #666;
+            color: #888;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
         }
 
         .info-value {
-            font-weight: 600;
-            color: #333;
+            font-weight: 700;
+            color: #1a5f2a;
+            font-size: 1.1rem;
         }
 
         .ticket-footer {
@@ -203,39 +222,41 @@
             <!-- Body -->
             <div class="ticket-body">
                 <div class="queue-label">Queue Number</div>
-                <div class="queue-number">{{ $inquiry->queue_number }}</div>
+                <div class="queue-number">{{ $inquiry->short_queue_number }}</div>
                 
                 @if($inquiry->category)
-                    <div class="category-badge" style="background-color: {{ $inquiry->category->color }}20; color: {{ $inquiry->category->color }}; border: 2px solid {{ $inquiry->category->color }}">
+                    <div class="category-badge" style="background-color: {{ $inquiry->category->color }}20; color: {{ $inquiry->category->color }}; border: 2px solid {{ $inquiry->category->color }}; border-radius: 8px;">
                         {{ $inquiry->category->name }}
                     </div>
                 @endif
 
                 @if($inquiry->priority != 'normal')
-                    <div class="priority-indicator priority-{{ $inquiry->priority }}">
+                    <div class="priority-indicator priority-{{ $inquiry->priority }}" style="margin: 10px auto; display: inline-flex;">
                         <i class="bi bi-exclamation-circle"></i>
-                        {{ ucfirst($inquiry->priority) }}
+                        {{ strtoupper($inquiry->priority) }}
                     </div>
                 @endif
 
                 <div class="guest-info">
                     <div class="info-row">
-                        <span class="info-label">Client:</span>
+                        <span class="info-label">Client Name</span>
                         <span class="info-value">{{ $inquiry->guest_name }}</span>
                     </div>
                     @if($inquiry->contact_number)
                     <div class="info-row">
-                        <span class="info-label">Contact:</span>
+                        <span class="info-label">Contact Number</span>
                         <span class="info-value">{{ $inquiry->contact_number }}</span>
                     </div>
                     @endif
-                    <div class="info-row">
-                        <span class="info-label">Date:</span>
-                        <span class="info-value">{{ $inquiry->created_at->format('M d, Y') }}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Time:</span>
-                        <span class="info-value">{{ $inquiry->created_at->format('h:i A') }}</span>
+                    <div class="info-row" style="flex-direction: row; justify-content: space-around; width: 100%; border-top: 1px solid #eee; padding-top: 15px; margin-top: 5px;">
+                        <div style="display: flex; flex-direction: column;">
+                            <span class="info-label">Date</span>
+                            <span class="info-value" style="font-size: 0.9rem;">{{ $inquiry->created_at->format('M d, Y') }}</span>
+                        </div>
+                        <div style="display: flex; flex-direction: column;">
+                            <span class="info-label">Time</span>
+                            <span class="info-value" style="font-size: 0.9rem;">{{ $inquiry->created_at->format('h:i A') }}</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -243,7 +264,8 @@
             <!-- Footer -->
             <div class="ticket-footer">
                 <div class="barcode">
-                    <div class="barcode-text">{{ $inquiry->queue_number }}</div>
+                    <div class="barcode-text">{{ $inquiry->short_queue_number }}</div>
+                    <small class="text-muted" style="font-size: 0.65rem; opacity: 0.7;">{{ $inquiry->queue_number }}</small>
                 </div>
                 
                 <div class="instructions">

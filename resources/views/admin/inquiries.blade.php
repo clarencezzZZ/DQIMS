@@ -169,7 +169,7 @@
                                 @endphp
                                 @if($nextInquiry)
                                     <span class="badge bg-success text-white px-3 py-2" style="font-size: 0.9rem; animation: pulse 2s infinite;">
-                                        <i class="bi bi-play-circle-fill me-1"></i>NEXT: {{ $nextInquiry->queue_number }} ({{ ucfirst($nextInquiry->priority) }})
+                                        <i class="bi bi-play-circle-fill me-1"></i>NEXT: {{ $nextInquiry->short_queue_number }} ({{ ucfirst($nextInquiry->priority) }})
                                     </span>
                                 @else
                                     @if(!$hasNextData)
@@ -321,7 +321,7 @@
                                     style="border-color: {{ $section['color'] }}30 !important; background-color: white; border-bottom: 1px solid #eee;">
                                     <td class="text-center py-3">
                                         <div class="d-flex flex-column align-items-center">
-                                            <span class="badge bg-dark fs-6 px-3 py-2 fw-bold">#{{ $index + 1 }}</span>
+                                            <span class="badge bg-dark fs-6 px-3 py-2 fw-bold">{{ $inquiry->short_queue_number }}</span>
                                             @if($inquiry->category && isset($nextInquiries[$inquiry->category_id]) && $nextInquiries[$inquiry->category_id] == $inquiry->id && $inquiry->status == 'waiting')
                                                 <span class="badge bg-success mt-2 px-2 py-1">
                                                     <i class="bi bi-arrow-right-circle me-1"></i>NEXT

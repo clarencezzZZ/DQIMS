@@ -70,39 +70,40 @@ class Category extends Model
     }
 
     /**
-     * Generate next queue number
+     * Generate next queue number (Section-specific)
      */
     public function generateQueueNumber(): string
     {
-        // Use database transaction to ensure atomicity
         return DB::transaction(function () {
+            // Get all category IDs within the same section
+            $categoryIdsInSection = Category::where('section', $this->section)->pluck('id');
+
+            // Find the maximum last_number for today across all categories in this section
+            $maxLastNumber = QueueCounter::whereIn('category_id', $categoryIdsInSection)
+                                        ->whereDate('date', now()->toDateString())
+                                        ->max('last_number') ?? 0;
+
+            $newNumber = $maxLastNumber + 1;
+
+            // Update the counter for the current category
             $counter = $this->getTodayCounter();
-            $counter->increment('last_number');
-            
-            $queueNumber = sprintf('%s-%03d', $this->code, $counter->last_number);
-            
-            // Check if this queue number already exists for today
-            $existing = Inquiry::where('queue_number', $queueNumber)
-                             ->whereDate('date', now()->toDateString())
-                             ->exists();
-            
-            // If it exists, increment again and try a new one
-            if ($existing) {
-                $counter->increment('last_number');
-                $queueNumber = sprintf('%s-%03d', $this->code, $counter->last_number);
-                
-                // Double check
-                $existing = Inquiry::where('queue_number', $queueNumber)
-                                 ->whereDate('date', now()->toDateString())
-                                 ->exists();
-                
-                if ($existing) {
-                    // Use timestamp as fallback to ensure uniqueness
-                    $timestamp = now()->format('His'); // HHMMSS
-                    $queueNumber = sprintf('%s-%03d-%s', $this->code, $counter->last_number, $timestamp);
-                }
+            $counter->last_number = $newNumber;
+            $counter->save();
+
+            $queueNumber = sprintf('%s-%03d', $this->code, $newNumber);
+
+            // Fallback loop to ensure uniqueness in case of race conditions or legacy data
+            while (Inquiry::where('queue_number', $queueNumber)->whereDate('date', now()->toDateString())->exists()) {
+                $newNumber++;
+                $queueNumber = sprintf('%s-%03d', $this->code, $newNumber);
             }
-            
+
+            // If the number was incremented in the loop, re-sync the counter
+            if ($newNumber > $counter->last_number) {
+                $counter->last_number = $newNumber;
+                $counter->save();
+            }
+
             return $queueNumber;
         });
     }

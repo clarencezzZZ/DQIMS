@@ -373,7 +373,6 @@
                                 <tr>
                                     <th>Category</th>
                                     <th>Section</th>
-                                    <th>Code</th>
                                     <th>Waiting</th>
                                     <th>Serving</th>
                                     <th>Completed</th>
@@ -392,7 +391,6 @@
                                     <tr>
                                         <td>{{ $category->name }}</td>
                                         <td><span class="badge" style="background-color: {{ $category->color }}; color: {{ $category->contrast_color }};">{{ $category->section }}</span></td>
-                                        <td><code>{{ $category->code }}</code></td>
                                         <td><span class="badge bg-warning">{{ $waiting }}</span></td>
                                         <td><span class="badge bg-info">{{ $serving }}</span></td>
                                         <td><span class="badge bg-success">{{ $completed }}</span></td>
@@ -536,7 +534,7 @@
 @endsection
 
 @section('scripts')
-<script src="{{ asset('js/chart.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Get this month's data - last 7 days

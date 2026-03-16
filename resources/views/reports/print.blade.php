@@ -388,19 +388,22 @@
         <thead>
             <tr>
                 <th width="5%">#</th>
-                <th width="12%">Queue Number</th>
+                <th width="15%">Queue Number</th>
                 <th width="20%">Name</th>
                 <th width="20%">Category</th>
-                <th width="13%">Request Type</th>
+                <th width="12%">Request Type</th>
                 <th width="10%">Status</th>
-                <th width="20%">Date</th>
+                <th width="18%">Date</th>
             </tr>
         </thead>
         <tbody>
             @foreach($inquiries as $index => $inquiry)
                 <tr>
                     <td>{{ $index +1 }}</td>
-                    <td>{{ $inquiry->queue_number }}</td>
+                    <td>
+                        <strong>{{ $inquiry->short_queue_number }}</strong><br>
+                        <small class="text-muted" style="font-size: 7pt;">{{ $inquiry->queue_number }}</small>
+                    </td>
                     <td>{{ $inquiry->name }}</td>
                     <td>{{ $inquiry->category->name ?? 'N/A' }}</td>
                     <td>{{ $inquiry->request_type }}</td>

@@ -196,6 +196,21 @@ let currentInquiryId = null;
 // Auto-refresh every 10 seconds
 let refreshInterval;
 
+// Format queue number to show only sequential number (e.g. "06")
+function formatQueueNumber(fullQueueNumber) {
+    if (!fullQueueNumber) return '---';
+    const parts = fullQueueNumber.split('-');
+    if (parts.length > 0) {
+        const lastPart = parts[parts.length - 1];
+        const numberPart = lastPart.replace(/[^0-9]/g, '');
+        const num = parseInt(numberPart);
+        if (!isNaN(num)) {
+            return num < 10 ? '0' + num : num.toString();
+        }
+    }
+    return fullQueueNumber;
+}
+
 function startAutoRefresh() {
     refreshInterval = setInterval(() => {
         loadWaitingList();
@@ -258,7 +273,7 @@ async function loadWaitingList() {
                 <div class="list-group-item ${priorityClass}" style="cursor: pointer;" onclick="selectInquiry(${inquiry.id})">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="mb-1">${escapeHtml(inquiry.queue_number)}</h6>
+                            <h6 class="mb-1">${escapeHtml(formatQueueNumber(inquiry.queue_number))}</h6>
                             <small class="text-muted">${escapeHtml(inquiry.name)}</small>
                             ${categoryInfo}
                             ${priorityBadge}
@@ -305,11 +320,11 @@ async function loadCurrentlyServing() {
         
         currentInquiry = data;
         currentInquiryId = data.id;
-        badge.textContent = data.queue_number;
+        badge.textContent = formatQueueNumber(data.queue_number);
         
         container.innerHTML = `
             <div class="text-center">
-                <h3 class="mb-2">${escapeHtml(data.queue_number)}</h3>
+                <h3 class="mb-2">${escapeHtml(formatQueueNumber(data.queue_number))}</h3>
                 <h5 class="text-success mb-3">${escapeHtml(data.name)}</h5>
                 ${data.category ? `<p class="text-muted mb-2"><small>Category: ${escapeHtml(data.category.name)}</small></p>` : ''}
                 <div class="bg-light rounded p-3 text-start">

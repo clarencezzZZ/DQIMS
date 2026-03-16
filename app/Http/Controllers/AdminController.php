@@ -132,6 +132,16 @@ class AdminController extends Controller
             $sectionAcronym = $inquiry->category ? $inquiry->category->section : 'Uncategorized';
             return $sectionNames[$sectionAcronym] ?? $sectionAcronym;
         });
+
+        $inquiryDate = $request->get('date', now()->toDateString());
+
+        // Sort inquiries within each section using the priority algorithm
+        foreach ($inquiriesBySection as $sectionName => $sectionInquiries) {
+            $sectionAcronym = $sectionInquiries->first()->category->section ?? null;
+            if ($sectionAcronym) {
+                $inquiriesBySection[$sectionName] = Inquiry::sortInquiriesByPriority($sectionInquiries, $sectionAcronym, $inquiryDate);
+            }
+        }
         
         // Get section information for display
         $sections = $categories->groupBy('section')->map(function($sectionCategories, $sectionName) use ($sectionNames) {
@@ -169,11 +179,11 @@ class AdminController extends Controller
         
         // Enhanced debug: count waiting inquiries with details
         $todayStr = now()->toDateString();
-        $totalWaiting = Inquiry::whereDate('date', $todayStr)->where('status', 'waiting')->count();
-        \Log::info("=== TOTAL WAITING INQUIRIES TODAY: {$totalWaiting} ===");
+        $totalWaiting = Inquiry::whereDate('date', $inquiryDate)->where('status', 'waiting')->count();
+        \Log::info("=== TOTAL WAITING INQUIRIES ON {$inquiryDate}: {$totalWaiting} ===");
         
         // Log first 5 waiting inquiries for detailed inspection
-        $firstFewWaiting = Inquiry::whereDate('date', $todayStr)
+        $firstFewWaiting = Inquiry::whereDate('date', $inquiryDate)
             ->where('status', 'waiting')
             ->orderBy('created_at')
             ->limit(5)
@@ -200,7 +210,7 @@ class AdminController extends Controller
                 \Log::info("  Category ID: {$category->id}, Code: {$category->code}, Name: {$category->name}");
                 
                 // Direct query to check waiting inquiries in this section with full details
-                $sectionWaiting = Inquiry::today()
+                $sectionWaiting = Inquiry::whereDate('date', $inquiryDate)
                     ->join('categories', 'inquiries.category_id', '=', 'categories.id')
                     ->where('categories.section', $section)
                     ->where('inquiries.status', 'waiting')
@@ -220,7 +230,7 @@ class AdminController extends Controller
                     ])->toArray());
                 }
                 
-                $nextInquiry = $this->getNextInquiryByPriorityForAdmin($category->id);
+                $nextInquiry = $this->getNextInquiryByPriorityForAdmin($category->id, $inquiryDate);
                 if ($nextInquiry) {
                     // Store by section, not category
                     $nextInquiries[$section] = $nextInquiry->id;
@@ -824,7 +834,7 @@ class AdminController extends Controller
      * - All categories within the same section share one unified queue
      * - Each section operates independently
      */
-    public function getNextInquiryByPriorityForAdmin($categoryId)
+    public function getNextInquiryByPriorityForAdmin($categoryId, $date = null)
     {
         // Get the category to determine which section we're working with
         $category = Category::find($categoryId);
@@ -833,94 +843,6 @@ class AdminController extends Controller
             return null;
         }
         
-        $section = $category->section;
-        \Log::info("  [getNextInquiry] Processing section: {$section}");
-        
-        // Get ALL waiting inquiries in this SECTION (across all categories), ordered by creation time (FIFO)
-        $waitingInquiries = Inquiry::today()
-            ->join('categories', 'inquiries.category_id', '=', 'categories.id')
-            ->where('categories.section', $section)
-            ->where('inquiries.status', 'waiting')
-            ->select('inquiries.*')
-            ->orderBy('inquiries.created_at')
-            ->get();
-
-        if ($waitingInquiries->isEmpty()) {
-            \Log::info("  [getNextInquiry] No waiting inquiries in section: {$section}");
-            return null;
-        }
-        
-        \Log::info("  [getNextInquiry] Found {$waitingInquiries->count()} waiting inquiries in {$section}");
-
-        // Get the currently serving inquiry in this section (if any) and last completed inquiry in this section
-        $currentlyServing = Inquiry::today()
-            ->join('categories', 'inquiries.category_id', '=', 'categories.id')
-            ->where('categories.section', $section)
-            ->where('inquiries.status', 'serving')
-            ->select('inquiries.*')
-            ->first();
-            
-        $lastServedInquiry = Inquiry::today()
-            ->join('categories', 'inquiries.category_id', '=', 'categories.id')
-            ->where('categories.section', $section)
-            ->where('inquiries.status', 'completed')
-            ->select('inquiries.*')
-            ->orderBy('inquiries.completed_at', 'desc')
-            ->first();
-
-        // Determine the last served priority type
-        if ($currentlyServing) {
-            $lastServedType = $currentlyServing->priority;
-        } else {
-            $lastServedType = $lastServedInquiry ? $lastServedInquiry->priority : null;
-        }
-
-        // Separate priority and normal inquiries across the entire section
-        $priorityInquiries = $waitingInquiries->filter(function ($inquiry) {
-            return $inquiry->priority === 'priority';
-        });
-
-        $normalInquiries = $waitingInquiries->filter(function ($inquiry) {
-            return $inquiry->priority === 'normal';
-        });
-
-        \Log::info("  [getNextInquiry] Priority count: {$priorityInquiries->count()}, Normal count: {$normalInquiries->count()}");
-        \Log::info("  [getNextInquiry] Last served type: " . ($lastServedType ?? 'none'));
-        \Log::info("  [getNextInquiry] Currently serving: " . ($currentlyServing ? "#{$currentlyServing->queue_number} ({$currentlyServing->priority})" : 'none'));
-
-        // If there are no priority inquiries, return the oldest normal inquiry (first in section queue)
-        if ($priorityInquiries->isEmpty()) {
-            $result = $normalInquiries->first();
-            \Log::info("  [getNextInquiry] Returning oldest NORMAL: #{$result->queue_number} (ID: {$result->id})");
-            return $result;
-        }
-
-        // If there are no normal inquiries, return the oldest priority inquiry (first in section queue)
-        if ($normalInquiries->isEmpty()) {
-            $result = $priorityInquiries->first();
-            \Log::info("  [getNextInquiry] Returning oldest PRIORITY: #{$result->queue_number} (ID: {$result->id})");
-            return $result;
-        }
-
-        // If starting fresh (no one currently serving and no last served), 
-        // serve the oldest normal inquiry first to establish fairness
-        if ($lastServedType === null) {
-            $result = $normalInquiries->first();
-            \Log::info("  [getNextInquiry] Starting fresh - returning NORMAL: #{$result->queue_number} (ID: {$result->id})");
-            return $result;
-        }
-        
-        // If last served was priority and there are normal inquiries available,
-        // return the oldest normal inquiry to avoid serving two priority in a row
-        if ($lastServedType === 'priority') {
-            $result = $normalInquiries->first();
-            \Log::info("  [getNextInquiry] Last was PRIORITY - returning NORMAL: #{$result->queue_number} (ID: {$result->id})");
-            return $result;
-        }
-
-        // Otherwise (last served was normal), return the oldest priority inquiry (priority first rule)
-        $result = $priorityInquiries->first();
-        \Log::info("  [getNextInquiry] Last was NORMAL - returning PRIORITY: #{$result->queue_number} (ID: {$result->id})");
-        return $result;
+        return Inquiry::getNextInquiryInSection($category->section, $date);
     }
 }

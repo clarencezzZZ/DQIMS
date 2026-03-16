@@ -622,20 +622,20 @@
         }
     }
 
-    // Format queue number to show only sequential number
+    // Format queue number to show only sequential number (e.g. "06")
     function formatQueueNumber(fullQueueNumber) {
         console.log('Formatting queue number:', fullQueueNumber);
         
         // Try to extract the last number after the last hyphen
-        // e.g., "SECSIME NO.R4A-L_SMD-01-009" -> "#9"
-        // e.g., "dsds-001" -> "#1"
         const parts = fullQueueNumber.split('-');
         if (parts.length > 0) {
             const lastPart = parts[parts.length - 1];
-            const num = parseInt(lastPart.replace(/^0+/, '')); // Remove leading zeros
-            console.log('Extracted number:', num);
+            const numberPart = lastPart.replace(/[^0-9]/g, '');
+            const num = parseInt(numberPart);
+            
             if (!isNaN(num)) {
-                const formatted = '#' + num;
+                // Pad to at least 2 digits as requested in "example 06"
+                const formatted = num < 10 ? '0' + num : num.toString();
                 console.log('Formatted as:', formatted);
                 return formatted;
             }

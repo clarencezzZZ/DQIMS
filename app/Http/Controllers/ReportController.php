@@ -5,9 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Assessment;
 use App\Models\Category;
 use App\Models\Inquiry;
+use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Log;
 use PDF;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ReportExport;
+use App\Exports\ComprehensiveExcelExport;
 
 class ReportController extends Controller
 {
@@ -105,6 +110,18 @@ class ReportController extends Controller
     }
 
     /**
+     * Format date for HTML input (Y-m-d only, no time)
+     */
+    private function formatDateForInput($date)
+    {
+        if (!$date) return '';
+        if (is_string($date)) {
+            return \Carbon\Carbon::parse($date)->format('Y-m-d');
+        }
+        return $date->format('Y-m-d');
+    }
+
+    /**
      * Get report data
      */
     private function getReportData($dateRange, Request $request)
@@ -194,8 +211,8 @@ class ReportController extends Controller
 
         return [
             'date_range' => [
-                'start' => $dateRange['start']->toDateString(),
-                'end' => $dateRange['end']->toDateString(),
+                'start' => $dateRange['start'],
+                'end' => $dateRange['end'],
             ],
             'overall_stats' => $totalStats,
             'category_stats' => $categoryStats,
@@ -233,92 +250,87 @@ class ReportController extends Controller
     }
 
     /**
-     * Export report to Excel
+     * Export report to Excel (Comprehensive format with all data)
      */
     public function exportExcel(Request $request)
     {
-        $request->validate([
-            'report_type' => 'sometimes|in:daily,weekly,monthly,yearly,custom',
-            'date_from' => 'nullable|date',
-            'date_to' => 'nullable|date',
-            'category' => 'nullable|exists:categories,id',
-            'status' => 'nullable|in:all,waiting,serving,completed,skipped,forwarded',
-            'section' => 'nullable|string',
-        ]);
+        try {
+            $dateRange = $this->getDateRange($request);
+            $data = $this->getReportData($dateRange, $request);
 
-        $dateRange = $this->getDateRange($request);
-        $data = $this->getReportData($dateRange, $request);
+            // Prepare comprehensive data for export
+            $exportData = [
+                'date_range' => [
+                    'start' => $dateRange['start'],
+                    'end' => $dateRange['end']
+                ],
+                'overall_stats' => [
+                    'total' => $data['inquiries']->count(),
+                    'completed' => $data['inquiries']->where('status', 'completed')->count()
+                ],
+                'assessments_count' => ($data['assessments'] ?? collect())->count(),
+                'total_fees' => ($data['assessments'] ?? collect())->sum('fee') ?? 0,
+                'category_stats' => $data['category_stats'] ?? [],
+                'revenue_by_date' => $this->getRevenueChartData($data['assessments'] ?? []),
+                'section_stats' => $this->getSectionChartData($data['category_stats'] ?? []),
+                'inquiries' => $data['inquiries'] ?? collect()
+            ];
+            
+            $filename = 'report_' . $dateRange['start']->format('Y-m-d') . '_' . $dateRange['end']->format('Y-m-d') . '.xls';
+            
+            $export = new ComprehensiveExcelExport($exportData);
+            return $export->download($filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Excel Export Failed: ' . $e->getMessage());
+            Log::error($e->getTraceAsString());
+            return response()->json(['error' => 'Failed to generate report.', 'message' => $e->getMessage()], 500);
+        }
+    }
 
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="report_' . $dateRange['start']->format('Y-m-d') . '.csv"',
+    private function getRevenueChartData($assessments)
+    {
+        $revenueByDate = [];
+        foreach(($assessments ?? []) as $assessment) {
+            if (!$assessment || !$assessment->assessment_date) continue;
+            
+            try {
+                $date = \Carbon\Carbon::parse($assessment->assessment_date)->format('M j');
+                if(!isset($revenueByDate[$date])) {
+                    $revenueByDate[$date] = 0;
+                }
+                $revenueByDate[$date] += (float)($assessment->fees ?? 0);
+            } catch (\Exception $e) {
+                Log::warning('Failed to parse assessment date: ' . $assessment->assessment_date);
+                continue;
+            }
+        }
+        return $revenueByDate;
+    }
+
+    private function getDailyChartData($data)
+    {
+        return [
+            'Total Inquiries' => $data['overall_stats']['total'] ?? 0,
+            'Completed' => $data['overall_stats']['completed'] ?? 0,
+            'Total Assessments' => $data['assessments_count'] ?? 0,
+            'Total Revenue' => $data['total_fees'] ?? 0,
         ];
+    }
 
-        $callback = function () use ($data) {
-            $file = fopen('php://output', 'w');
-            
-            // Headers
-            fputcsv($file, ['DENR Queueing & Inquiry Management System - Report']);
-            fputcsv($file, ['Date Range:', $data['date_range']['start'] . ' to ' . $data['date_range']['end']]);
-            fputcsv($file, []);
-            
-            // Overall Statistics
-            fputcsv($file, ['Overall Statistics']);
-            fputcsv($file, ['Total Inquiries', $data['overall_stats']['total']]);
-            fputcsv($file, ['Waiting', $data['overall_stats']['waiting']]);
-            fputcsv($file, ['Serving', $data['overall_stats']['serving']]);
-            fputcsv($file, ['Completed', $data['overall_stats']['completed']]);
-            fputcsv($file, ['Skipped', $data['overall_stats']['skipped']]);
-            fputcsv($file, ['Forwarded', $data['overall_stats']['forwarded']]);
-            fputcsv($file, ['Average Processing Time (minutes)', $data['average_processing_time']]);
-            fputcsv($file, ['Total Fees', $data['total_fees']]);
-            fputcsv($file, []);
-            
-            // Status Distribution Chart (Text-based Bar Chart)
-            fputcsv($file, ['Status Distribution']);
-            $maxVal = max($data['overall_stats']);
-            foreach ($data['overall_stats'] as $status => $count) {
-                $barLength = $maxVal > 0 ? intval(($count / $maxVal) * 20) : 0;
-                $bar = str_repeat('█', $barLength);
-                fputcsv($file, [$status, $bar, $count]);
+    private function getSectionChartData($category_stats)
+    {
+        $sectionTotals = [];
+        foreach($category_stats as $code => $stats) {
+            if($stats['total'] > 0) {
+                $sectionName = $stats['section'];
+                if(!isset($sectionTotals[$sectionName])) {
+                    $sectionTotals[$sectionName] = 0;
+                }
+                $sectionTotals[$sectionName] += $stats['total'];
             }
-            fputcsv($file, []);
-
-            // Category Statistics
-            fputcsv($file, ['Category Statistics']);
-            fputcsv($file, ['Category', 'Total', 'Waiting', 'Serving', 'Completed', 'Skipped', 'Forwarded']);
-            foreach ($data['category_stats'] as $code => $stats) {
-                fputcsv($file, [
-                    $stats['name'],
-                    $stats['total'],
-                    $stats['waiting'],
-                    $stats['serving'],
-                    $stats['completed'],
-                    $stats['skipped'],
-                    $stats['forwarded'],
-                ]);
-            }
-            fputcsv($file, []);
-
-            // Inquiry Details
-            fputcsv($file, ['Inquiry Details']);
-            fputcsv($file, ['Queue Number', 'Name', 'Category', 'Request Type', 'Status', 'Date', 'Processing Time']);
-            foreach ($data['inquiries'] as $inquiry) {
-                fputcsv($file, [
-                    $inquiry->queue_number,
-                    $inquiry->name,
-                    $inquiry->category->name,
-                    $inquiry->request_type,
-                    $inquiry->status,
-                    $inquiry->date,
-                    $inquiry->processing_time ?? 'N/A',
-                ]);
-            }
-
-            fclose($file);
-        };
-
-        return Response::stream($callback, 200, $headers);
+        }
+        return $sectionTotals;
     }
 
     /**

@@ -236,7 +236,7 @@
                         <table class="table table-hover mb-0 align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    <th width="8%" class="text-center py-3 fw-bold">#</th>
+                                    <th width="8%" class="text-center py-3 fw-bold">QUEUE #</th>
                                     <th width="18%" class="py-3 fw-bold"><i class="bi bi-person me-1"></i>CLIENT NAME</th>
                                     <th width="32%" class="py-3 fw-bold"><i class="bi bi-tag me-1"></i>SERVICE TYPE</th>
                                     <th width="10%" class="text-center py-3 fw-bold"><i class="bi bi-hourglass-split me-1"></i>STATUS</th>
@@ -248,7 +248,7 @@
                             <tbody id="recentInquiries">
                                 @forelse($todayInquiries as $index => $inquiry)
                                     <tr>
-                                        <td><span class="badge bg-dark fs-6">#{{ $index + 1 }}</span></td>
+                                        <td><span class="badge bg-dark fs-6">{{ $inquiry->short_queue_number }}</span></td>
                                         <td>{{ $inquiry->guest_name }}</td>
                                         <td>
                                             @if($inquiry->category)

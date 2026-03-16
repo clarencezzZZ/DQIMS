@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'View Assessment')
+@section('title', 'Assessment')
 
 @section('content')
 <div class="container print-container">
@@ -91,16 +91,16 @@
                         <table class="table" style="width:100%; border:2px solid #000; border-collapse:collapse;">
                             <thead>
                                 <tr style="background-color:#e9ecef;">
-                                    <th width="12%" style="border:2px solid #000; font-size:9pt; padding:6px; text-align:center;">
+                                    <th width="15%" style="border:2px solid #000; font-size:12pt; padding:6px; text-align:center;">
                                         LEGAL BASIS<br>(DAO/SBC)
                                     </th>
-                                    <th width="48%" style="border:2px solid #000; font-size:9pt; padding:6px; text-align:center;">
+                                    <th width="45%" style="border:2px solid #000; font-size:12pt; padding:6px; text-align:center;">
                                         DESCRIPTION AND COMPUTATION of Fees<br>and/or Charges Assessed
                                     </th>
-                                    <th width="10%" style="border:2px solid #000; font-size:9pt; padding:6px; text-align:center;">
+                                    <th width="10%" style="border:2px solid #000; font-size:12pt; padding:6px; text-align:center;">
                                         Quantity
                                     </th>
-                                    <th width="15%" style="border:2px solid #000; font-size:9pt; padding:6px; text-align:center;">
+                                    <th width="15%" style="border:2px solid #000; font-size:12pt; padding:6px; text-align:center;">
                                         AMOUNT
                                     </th>
                                 </tr>
@@ -120,32 +120,43 @@
                                 @endphp
 
                                 <tr>
-                                    <td style="border-right:2px solid #000; font-size:9pt; padding:6px; text-align:center; vertical-align:top;">
+                                    <td rowspan="{{ count($validItems) + 1 }}" style="border-right:2px solid #000; font-size:12pt; padding:40px; text-align:center; vertical-align:top; white-space: nowrap;">
                                         {{ $assessment->legal_basis ?? '1993-20' }}
                                     </td>
-                                    <td style="border-right:2px solid #000; font-size:9pt; padding:6px; vertical-align:top;">
-                                        <strong>CERTIFICATION: TECHNICAL DESCRIPTION</strong><br><br>
-                                        @foreach($validItems as $item)
-                                            <div style="min-height: 20px;">{{ $item['name'] }}</div>
-                                        @endforeach
+                                    <td style="border-right:2px solid #000; font-size:12pt; padding:6px; vertical-align:top; border-bottom: none !important;">
+                                        <strong>CERTIFICATION: TECHNICAL DESCRIPTION</strong>
                                     </td>
-                                    <td style="border-right:2px solid #000; font-size:9pt; padding:6px; text-align:center; vertical-align:top;">
-                                        @foreach($validItems as $item)
-                                            <div style="min-height: 20px; text-align: center; padding-top: 8px;">{{ $item['quantity'] ?? 1 }}</div>
-                                        @endforeach
+                                    <td style="border-right:2px solid #000; font-size:12pt; padding:6px; text-align:center; vertical-align:top; border-bottom: none !important;">
+                                        &nbsp;
                                     </td>
-                                    <td style="font-size:9pt; padding:6px; text-align:right; vertical-align:top;">
-                                        @foreach($validItems as $item)
-                                            <div style="min-height: 20px; text-align: right; padding-top: 8px;">{{ number_format($item['amount'] ?? 0,2) }}</div>
-                                        @endforeach
+                                    <td style="font-size:12pt; padding:6px; text-align:right; vertical-align:top; border-bottom: none !important;">
+                                        &nbsp;
                                     </td>
                                 </tr>
 
+                                @foreach($validItems as $item)
+                                    <tr>
+                                        <td style="border-right:2px solid #000; font-size:12pt; padding:6px; vertical-align:top; border-top: none !important; border-bottom: none !important;">
+                                            {{ $item['name'] }}
+                                        </td>
+                                        <td style="border-right:2px solid #000; font-size:12pt; padding:6px; text-align:center; vertical-align:top; border-top: none !important; border-bottom: none !important;">
+                                            {{ $item['quantity'] ?? 1 }}
+                                        </td>
+                                        <td style="font-size:12pt; padding:6px; text-align:right; vertical-align:top; border-top: none !important; border-bottom: none !important;">
+                                            @if(isset($item['amount']) && $item['amount'] > 0)
+                                                {{ number_format($item['amount'], 2) }}
+                                            @else
+                                                &nbsp;
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+
                                 <tr style="background:#e9ecef;">
-                                    <td colspan="3" style="border-top:2px solid #000; border-right:2px solid #000; font-size:9pt; padding:6px; text-align:right; font-weight:bold;">
+                                    <td colspan="3" style="border-top:2px solid #000; border-right:2px solid #000; font-size:12pt; padding:6px; text-align:right; font-weight:bold;">
                                         TOTAL:
                                     </td>
-                                    <td style="border-top:2px solid #000; font-size:9pt; padding:6px; text-align:right; font-weight:bold;">
+                                    <td style="border-top:2px solid #000; font-size:12pt; padding:6px; text-align:right; font-weight:bold;">
                                         ₱{{ number_format($assessment->fees,2) }}
                                     </td>
                                 </tr>
@@ -184,7 +195,7 @@
 
                     <!-- Footer - Bottom Left -->
                     <div class="mt-4 pt-2 border-top text-start">
-                        <small style="font-size: 8pt;">R4A.FD.042.0001</small>
+                        <small style="font-size: 7pt;">R4A.FD.042.0001</small>
                     </div>
                 </div>
             </div>
@@ -198,7 +209,7 @@
     @media print {
         @page {
             size: A4;
-            margin: 10mm;
+            margin: 5mm;
         }
         
         body {
@@ -207,7 +218,7 @@
             padding: 0;
             font-size: 10pt;
             line-height: 1.3;
-            width: 210mm;
+            width: 100%;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
         }
@@ -218,39 +229,54 @@
         }
         
         .container, .print-container {
-            max-width: 100%;
-            margin: 0;
-            padding: 0;
-            width: 100%;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
         }
         
         .row {
-            margin: 0;
+            margin: 0 !important;
+            display: block !important;
         }
         
         .col-lg-10 {
-            max-width: 100%;
-            flex: 0 0 100%;
+            max-width: 100% !important;
+            flex: 0 0 100% !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        div {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
         }
         
         #assessment-print {
             page-break-inside: avoid;
             border: none;
             box-shadow: none !important;
-            margin: 0;
-            padding: 0;
+            margin: 0 !important;
+            padding: 0 !important;
             min-height: auto;
             display: block;
+            width: 100% !important;
         }
         
         .card {
             border: none;
             box-shadow: none !important;
             background: white;
+            margin: 0 !important;
+            padding: 0 !important;
         }
         
         .card-body {
-            padding: 0;
+            padding: 0 !important;
+            margin: 0 !important;
             page-break-inside: avoid;
         }
         
@@ -280,8 +306,9 @@
         .table {
             page-break-inside: avoid;
             font-size: 9pt !important;
-            width: 100%;
+            width: 100% !important;
             border-collapse: collapse;
+            margin: 0 !important;
         }
         
         .table th, .table td {

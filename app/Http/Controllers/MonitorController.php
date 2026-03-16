@@ -14,11 +14,7 @@ class MonitorController extends Controller
     public function lobby()
     {
         // Get unique sections with their categories (exclude RECORDS)
-        $sections = Category::where('is_active', true)
-            ->where('section', '!=', 'RECORDS')
-            ->select('section')
-            ->distinct()
-            ->pluck('section');
+        $sections = Category::select('section')->distinct()->pluck('section');
         
         $sectionData = [];
         foreach ($sections as $section) {
@@ -112,6 +108,8 @@ class MonitorController extends Controller
         return $sectionNames[$section] ?? $section;
     }
 
+
+
     /**
      * Display third floor monitor
      */
@@ -150,19 +148,22 @@ class MonitorController extends Controller
                 ->where('status', 'waiting')
                 ->count();
 
-            // Get all waiting inquiries ordered by created_at
+            // Get all waiting inquiries in this section
             $waitingInquiries = Inquiry::today()
                 ->whereIn('category_id', $categories)
                 ->where('status', 'waiting')
                 ->with('category')
-                ->oldest('created_at')
                 ->get();
+                
+            // Sort according to priority rules
+            $sortedWaiting = Inquiry::sortInquiriesByPriority($waitingInquiries, $section);
+            $waitingInquiriesOnly = $sortedWaiting->where('status', 'waiting')->values();
 
             // First in queue (next to be served)
-            $firstInQueue = $waitingInquiries->first();
+            $firstInQueue = $waitingInquiriesOnly->first();
             
             // Second in queue (next after first)
-            $secondInQueue = $waitingInquiries->skip(1)->first();
+            $secondInQueue = $waitingInquiriesOnly->skip(1)->first();
 
             $data['sections'][$section] = [
                 'section' => $this->getSectionFullName($section),
@@ -178,7 +179,7 @@ class MonitorController extends Controller
             ];
         }
 
-        return response()->json($data);
+        return response()->json($data, 200, [], JSON_PRETTY_PRINT);
     }
     
     /**

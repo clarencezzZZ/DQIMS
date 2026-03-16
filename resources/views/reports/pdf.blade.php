@@ -5,7 +5,7 @@
     <title>DENR Report- {{ $date_range['start'] }} to {{ $date_range['end'] }}</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'DejaVu Sans', Arial, sans-serif;
             font-size: 10pt;
             margin: 20px;
         }
@@ -237,30 +237,12 @@
                 <div class="stat-value" style="color: #198754;">{{ $overall_stats['completed'] }}</div>
             </div>
             <div class="stat-box">
-                <div class="stat-label">Waiting</div>
-                <div class="stat-value" style="color: #ffc107;">{{ $overall_stats['waiting'] }}</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-label">Skipped</div>
-                <div class="stat-value" style="color: #dc3545;">{{ $overall_stats['skipped'] }}</div>
-            </div>
-        </div>
-        <div class="stats-row">
-            <div class="stat-box">
-                <div class="stat-label">Serving</div>
-                <div class="stat-value" style="color: #0dcaf0;">{{ $overall_stats['serving'] ?? 0 }}</div>
-            </div>
-            <div class="stat-box">
                 <div class="stat-label">Total Assessments</div>
                 <div class="stat-value" style="color: #6f42c1;">{{ $assessments_count ?? 0 }}</div>
             </div>
             <div class="stat-box">
                 <div class="stat-label">Total Revenue</div>
-                <div class="stat-value" style="color: #fd7e14;">₱{{ number_format($total_fees ?? 0, 2) }}</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-label">Avg Processing Time</div>
-                <div class="stat-value" style="color: #20c997; font-size: 14pt;">{{ round($average_processing_time ?? 0) }}<span style="font-size: 9pt;">min</span></div>
+                <div class="stat-value" style="color: #fd7e14;">&#8369;{{ number_format($total_fees ?? 0, 2) }}</div>
             </div>
         </div>
     </div>
@@ -303,6 +285,7 @@
                 <div class="bar-value">{{ $overall_stats['completed'] }}</div>
             </div>
             
+            @if($overall_stats['waiting'] > 0)
             <div class="bar-row">
                 <div class="bar-label">Waiting</div>
                 <div class="bar-wrapper">
@@ -314,7 +297,9 @@
                 </div>
                 <div class="bar-value">{{ $overall_stats['waiting'] }}</div>
             </div>
+            @endif
             
+            @if(($overall_stats['serving'] ?? 0) > 0)
             <div class="bar-row">
                 <div class="bar-label">Serving</div>
                 <div class="bar-wrapper">
@@ -326,7 +311,9 @@
                 </div>
                 <div class="bar-value">{{ $overall_stats['serving'] ?? 0 }}</div>
             </div>
+            @endif
             
+            @if($overall_stats['skipped'] > 0)
             <div class="bar-row">
                 <div class="bar-label">Skipped</div>
                 <div class="bar-wrapper">
@@ -338,6 +325,7 @@
                 </div>
                 <div class="bar-value">{{ $overall_stats['skipped'] }}</div>
             </div>
+            @endif
         </div>
     </div>
     
@@ -376,6 +364,95 @@
             @endforeach
         </tbody>
     </table>
+
+    <!-- Revenue Statistics -->
+    <div class="section-title no-break">Revenue Statistics</div>
+    <table class="no-break">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Revenue</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php
+                $revenueByDate = [];
+                foreach($assessments as $assessment) {
+                    $date = \Carbon\Carbon::parse($assessment->assessment_date)->format('M j');
+                    if(!isset($revenueByDate[$date])) {
+                        $revenueByDate[$date] = 0;
+                    }
+                    $revenueByDate[$date] += $assessment->fees;
+                }
+            @endphp
+            @foreach($revenueByDate as $date => $revenue)
+                <tr>
+                    <td>{{ $date }}</td>
+                    <td>&#8369;{{ number_format($revenue, 2) }}</td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+
+    <!-- Report Statistics Overview -->
+    <div class="section-title no-break">Report Statistics Overview</div>
+    <table class="no-break">
+        <thead>
+            <tr>
+                <th>Metric</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Total Inquiries</td>
+                <td>{{ $overall_stats['total'] ?? 0 }}</td>
+            </tr>
+            <tr>
+                <td>Completed</td>
+                <td>{{ $overall_stats['completed'] ?? 0 }}</td>
+            </tr>
+            <tr>
+                <td>Total Assessments</td>
+                <td>{{ $assessments_count ?? 0 }}</td>
+            </tr>
+            <tr>
+                <td>Total Revenue</td>
+                <td>&#8369;{{ number_format($total_fees ?? 0, 2) }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Section Statistics -->
+    <div class="section-title no-break">Section Statistics</div>
+    <table class="no-break">
+        <thead>
+            <tr>
+                <th>Section</th>
+                <th>Inquiries</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php
+                $sectionTotals = [];
+                foreach($category_stats as $code => $stats) {
+                    if($stats['total'] > 0) {
+                        $sectionName = $stats['section'];
+                        if(!isset($sectionTotals[$sectionName])) {
+                            $sectionTotals[$sectionName] = 0;
+                        }
+                        $sectionTotals[$sectionName] += $stats['total'];
+                    }
+                }
+            @endphp
+            @foreach($sectionTotals as $sectionName => $total)
+                <tr>
+                    <td>{{ $sectionName }}</td>
+                    <td>{{ $total }}</td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
     
     <!-- Inquiry Details -->
     <div class="section-title no-break">Inquiry Details</div>
@@ -395,7 +472,10 @@
             @foreach($inquiries as $index => $inquiry)
                 <tr>
                     <td>{{ $index +1 }}</td>
-                    <td>{{ $inquiry->queue_number }}</td>
+                    <td>
+                        <strong>{{ $inquiry->short_queue_number }}</strong><br>
+                        <small style="font-size: 7pt; color: #666;">{{ $inquiry->queue_number }}</small>
+                    </td>
                     <td>{{ $inquiry->name }}</td>
                     <td>{{ $inquiry->category->name ?? 'N/A' }}</td>
                     <td>{{ $inquiry->request_type }}</td>

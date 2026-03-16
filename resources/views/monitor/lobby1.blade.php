@@ -23,7 +23,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, rgba(15, 76, 26, 0.85) 0%, rgba(10, 47, 18, 0.9) 50%, rgba(5, 25, 9, 0.95) 100%);
+ background: linear-gradient(130deg, rgba(15, 76, 26, 0.85) 0%, rgba(10, 47, 18, 0.9) 50%, rgba(5, 25, 9, 0.95) 100%);
             pointer-events: none;
             z-index: 0;
         }

@@ -130,7 +130,7 @@
                         <table class="table table-hover mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th width="8%" class="text-center fw-bold">#</th>
+                                    <th width="8%" class="text-center fw-bold">QUEUE #</th>
                                     <th width="18%" class="fw-bold"><i class="bi bi-person me-1"></i>CLIENT NAME</th>
                                     <th width="32%" class="fw-bold"><i class="bi bi-tag me-1"></i>SERVICE TYPE</th>
                                     <th width="10%" class="text-center fw-bold"><i class="bi bi-hourglass-split me-1"></i>STATUS</th>
@@ -160,19 +160,19 @@
 
 @section('scripts')
 <script>
-    // Format queue number to show only sequential number
+    // Format queue number to show only sequential number (e.g. "06")
     function formatQueueNumber(fullQueueNumber) {
         if (!fullQueueNumber) return '---';
         
         // Try to extract the last number after the last hyphen
-        // e.g., "SECSIME NO.R4A-L_SMD-01-009" -> "#9"
-        // e.g., "dsds-001" -> "#1"
         const parts = fullQueueNumber.split('-');
         if (parts.length > 0) {
             const lastPart = parts[parts.length - 1];
-            const num = parseInt(lastPart.replace(/^0+/, '')); // Remove leading zeros
+            const numberPart = lastPart.replace(/[^0-9]/g, '');
+            const num = parseInt(numberPart);
             if (!isNaN(num)) {
-                return '#' + num;
+                // Pad to at least 2 digits
+                return num < 10 ? '0' + num : num.toString();
             }
         }
         // Fallback: if no number found, return the original

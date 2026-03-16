@@ -157,7 +157,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [ReportController::class, 'index'])->name('index');
         Route::match(['get', 'post'], '/generate', [ReportController::class, 'generate'])->name('generate');
         Route::get('/export-pdf', [ReportController::class, 'exportPdf'])->name('export-pdf');
-        Route::get('/export-excel', [ReportController::class, 'exportExcel'])->name('export-excel');
+        Route::post('/export-excel', [ReportController::class, 'exportExcel'])->name('export-excel');
         Route::get('/print', [ReportController::class, 'print'])->name('print');
     });
     
