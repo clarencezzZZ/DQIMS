@@ -12,18 +12,18 @@
             --denr-green: #2e7d32;
             --denr-dark: #1b5e20;
             --denr-light: #4caf50;
-            /* Dark mode colors */
-            --dark-bg: #121212;
-            --dark-surface: #1e1e1e;
-            --dark-on-surface: #e0e0e0;
-            --dark-border: #444;
-            --dark-card-bg: #1e1e1e;
+            /* Dark mode colors - Professional Palette */
+            --dark-bg: #0f1114;
+            --dark-surface: #1a1d21;
+            --dark-surface-secondary: #22262b;
+            --dark-on-surface: #f1f3f5;
+            --dark-border: #2d3238;
+            --dark-card-bg: #1a1d21;
             --dark-navbar-bg: linear-gradient(135deg, #1b5e20 0%, #0d3a12 100%);
-            /* Enhanced dark mode colors */
+            /* Enhanced dark mode accent colors */
             --dark-accent: #4caf50;
-            --dark-card-elevation: #2a2a2a;
-            --dark-surface-secondary: #252525;
-            --dark-overlay: rgba(0, 0, 0, 0.4);
+            --dark-card-elevation: #1e2227;
+            --dark-overlay: rgba(0, 0, 0, 0.6);
         }
         
         /* Dark mode theme */
@@ -33,7 +33,8 @@
             --color-text: var(--dark-on-surface);
             --color-border: var(--dark-border);
             --card-bg: var(--dark-card-elevation);
-            --bs-body-color: #e9ecef;
+            --bs-body-color: #f1f3f5;
+            --bs-body-bg: var(--dark-bg);
         }
         body {
             background-color: var(--bg-body, #f5f5f5);
@@ -252,6 +253,16 @@
             box-shadow: 3px 0 10px var(--dark-overlay);
         }
         
+        /* Pagination SVG fix */
+        nav svg {
+            max-height: 1.25rem;
+            display: inline;
+        }
+        
+        .pagination {
+            margin-bottom: 0;
+        }
+
         [data-theme="dark"] .sidebar .nav-link {
             color: var(--color-text, #adb5bd);
             border-left: 3px solid transparent;
@@ -408,12 +419,184 @@
         [data-theme="dark"] #darkModeToggle:hover {
             background-color: rgba(255, 255, 255, 0.2) !important;
         }
+        /* Logout Overlay Animation */
+        #logoutOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            color: white;
+            backdrop-filter: blur(8px);
+            transition: all 0.5s ease;
+        }
+        
+        .logout-spinner {
+            width: 80px;
+            height: 80px;
+            border: 6px solid rgba(255, 255, 255, 0.1);
+            border-top: 6px solid var(--denr-light);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        .logout-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+
+        /* Welcome Animation Overlay */
+        #welcomeOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(46, 125, 50, 1) 0%, rgba(10, 47, 18, 1) 100%);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            color: white;
+            backdrop-filter: blur(15px);
+            opacity: 0;
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .main-app-content {
+            transition: opacity 0.8s ease;
+        }
+
+        .welcome-loading .main-app-content {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+
+        .welcome-content {
+            text-align: center;
+            transform: translateY(30px);
+            transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .welcome-icon {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: bounceIn 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .welcome-icon i {
+            font-size: 4rem;
+            color: var(--denr-green);
+        }
+
+        .welcome-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            letter-spacing: -1px;
+        }
+
+        .welcome-name {
+            font-size: 2rem;
+            font-weight: 400;
+            opacity: 0.9;
+            margin-bottom: 40px;
+        }
+
+        .welcome-loader {
+            width: 200px;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            margin: 0 auto;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .welcome-progress {
+            width: 0%;
+            height: 100%;
+            background: white;
+            position: absolute;
+            left: 0;
+            top: 0;
+            box-shadow: 0 0 15px white;
+            transition: width 2.5s cubic-bezier(0.1, 0.5, 0.5, 1);
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); opacity: 1; }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); }
+        }
+
+        /* Restricted Module Styling */
+        .nav-link.disabled-link {
+            color: #adb5bd !important;
+            opacity: 0.6;
+            cursor: not-allowed !important;
+            pointer-events: none !important;
+            background-color: transparent !important;
+            border-left-color: transparent !important;
+        }
+        
+        .nav-link.disabled-link i {
+            color: #adb5bd !important;
+        }
+
+        [data-theme="dark"] .nav-link.disabled-link {
+            color: #495057 !important;
+            opacity: 0.4;
+        }
+
+        /* Modal styling for dark mode */
+        [data-theme="dark"] .modal-content {
+            background-color: var(--dark-card-elevation);
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+        }
+        [data-theme="dark"] .modal-header {
+            border-bottom: 1px solid var(--color-border);
+        }
+        [data-theme="dark"] .modal-footer {
+            border-top: 1px solid var(--color-border);
+        }
     </style>
     @yield('styles')
 </head>
-<body>
+<body class="{{ session('login_welcome') ? 'welcome-loading' : '' }}">
     @auth
-    <nav class="navbar navbar-expand-lg navbar-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark main-app-content">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">
                 <img src="{{ asset('images/denrlogo.webp') }}" alt="DENR Logo" class="navbar-logo"> DENR DQIMS
@@ -468,10 +651,12 @@
                                 </a>
                             </li>
                             <li>
-                                <form method="POST" action="{{ route('logout') }}">
+                                <form id="logout-form" method="POST" action="{{ route('logout') }}" style="display: none;">
                                     @csrf
-                                    <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right"></i> Logout</button>
                                 </form>
+                                <a href="javascript:void(0)" class="dropdown-item text-danger" id="logout-btn">
+                                    <i class="bi bi-box-arrow-right"></i> Logout
+                                </a>
                             </li>
                         </ul>
                     </li>
@@ -481,19 +666,23 @@
     </nav>
     @endauth
 
-    <div class="container-fluid">
+    <div class="container-fluid main-app-content">
         <div class="row">
             @auth
-            <div class="col-md-2 d-none d-md-block sidebar p-0">
+            <div class="col-md-2 d-none d-md-block sidebar p-0 main-app-content">
                 <div class="d-flex flex-column">
+                    @php 
+                        $restrictedEnabled = \App\Models\ModuleSetting::where('module_key', 'restricted_access')->value('is_enabled') ?? false;
+                    @endphp
+
                     @if(auth()->user()->isFrontDesk() && auth()->user()->username !== 'admin')
-                    <a href="{{ route('front-desk.index') }}" class="nav-link {{ request()->routeIs('front-desk.index') ? 'active' : '' }}">
+                    <a href="{{ $restrictedEnabled ? route('front-desk.index') : 'javascript:void(0)' }}" id="sidebar-fd-home" class="nav-link {{ request()->routeIs('front-desk.index') ? 'active' : '' }} {{ !$restrictedEnabled ? 'disabled-link' : '' }}">
                         <i class="bi bi-reception-4"></i> Front Desk
                     </a>
-                    <a href="{{ route('front-desk.create') }}" class="nav-link {{ request()->routeIs('front-desk.create') ? 'active' : '' }}">
+                    <a href="{{ $restrictedEnabled ? route('front-desk.create') : 'javascript:void(0)' }}" id="sidebar-fd-create" class="nav-link {{ request()->routeIs('front-desk.create') ? 'active' : '' }} {{ !$restrictedEnabled ? 'disabled-link' : '' }}">
                         <i class="bi bi-plus-circle"></i> New Inquiry
                     </a>
-                    <a href="{{ route('front-desk.live-status') }}" class="nav-link {{ request()->routeIs('front-desk.live-status') ? 'active' : '' }}">
+                    <a href="{{ $restrictedEnabled ? route('front-desk.live-status') : 'javascript:void(0)' }}" id="sidebar-fd-live" class="nav-link {{ request()->routeIs('front-desk.live-status') ? 'active' : '' }} {{ !$restrictedEnabled ? 'disabled-link' : '' }}">
                         <i class="bi bi-eye"></i> Live Queue Status
                     </a>
                     @endif
@@ -510,13 +699,14 @@
                     <a href="{{ route('admin.index') }}" class="nav-link {{ request()->routeIs('admin.index') ? 'active' : '' }}">
                         <i class="bi bi-speedometer2"></i> Admin Dashboard
                     </a>
-                    <a href="{{ route('admin.inquiries') }}" class="nav-link {{ request()->routeIs('admin.inquiries') ? 'active' : '' }}">
+                    
+                    <a href="{{ route('admin.inquiries') }}" id="sidebar-inquiries" class="nav-link {{ request()->routeIs('admin.inquiries') ? 'active' : '' }} {{ !$restrictedEnabled ? 'disabled-link' : '' }}">
                         <i class="bi bi-list-check"></i> All Inquiries
                     </a>
                     <a href="{{ route('admin.users') }}" class="nav-link {{ request()->routeIs('admin.users') ? 'active' : '' }}">
                         <i class="bi bi-people-fill"></i> Users
                     </a>
-                    <a href="{{ route('admin.categories') }}" class="nav-link {{ request()->routeIs('admin.categories') ? 'active' : '' }}">
+                    <a href="{{ route('admin.categories') }}" id="sidebar-categories" class="nav-link {{ request()->routeIs('admin.categories') ? 'active' : '' }} {{ !$restrictedEnabled ? 'disabled-link' : '' }}">
                         <i class="bi bi-tags"></i> Categories
                     </a>
                     @else
@@ -556,6 +746,59 @@
             @endauth
         </div>
     </div>
+
+    @auth
+    <!-- Logout Confirmation Modal -->
+    <div class="modal fade" id="logoutConfirmModal" tabindex="-1" aria-labelledby="logoutConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="logoutConfirmModalLabel">
+                        <i class="bi bi-box-arrow-right me-2"></i> Confirm Logout
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center py-4">
+                    <div class="mb-3">
+                        <i class="bi bi-exclamation-circle text-danger" style="font-size: 3.5rem;"></i>
+                    </div>
+                    <h5 class="fw-bold">Are you sure you want to logout?</h5>
+                    <p class="text-muted mb-0">You will be redirected to the login page.</p>
+                </div>
+                <div class="modal-footer justify-content-center border-0 pb-4">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger px-4" id="confirmLogoutBtn">
+                        <i class="bi bi-box-arrow-right me-1"></i> Yes, Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Loading Overlay -->
+    <div id="logoutOverlay">
+        <div class="logout-spinner"></div>
+        <div class="logout-text">Logging out...</div>
+        <div class="mt-3 opacity-50 small">Closing secure session</div>
+    </div>
+
+    <!-- Welcome Login Overlay -->
+    @if(session('login_welcome'))
+    <div id="welcomeOverlay" style="display: flex; opacity: 1;">
+        <div class="welcome-content">
+            <div class="welcome-icon">
+                <i class="bi bi-person-check-fill"></i>
+            </div>
+            <h1 class="welcome-title">WELCOME BACK</h1>
+            <p class="welcome-name">{{ auth()->user()->name ?? auth()->user()->username }}</p>
+            <div class="welcome-loader">
+                <div class="welcome-progress" id="welcomeProgress"></div>
+            </div>
+            <p class="mt-3 small opacity-50 text-uppercase tracking-wider">Preparing your dashboard</p>
+        </div>
+    </div>
+    @endif
+    @endauth
 
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('js/axios.min.js') }}"></script>
@@ -608,6 +851,66 @@
                 
                 // Update button accessibility
                 darkModeToggle.setAttribute('aria-label', 'Switch to dark mode');
+            }
+            
+            // Logout logic
+            const logoutBtn = document.getElementById('logout-btn');
+            const logoutConfirmModal = new bootstrap.Modal(document.getElementById('logoutConfirmModal'));
+            const confirmLogoutBtn = document.getElementById('confirmLogoutBtn');
+            const logoutOverlay = document.getElementById('logoutOverlay');
+            const logoutForm = document.getElementById('logout-form');
+            
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    logoutConfirmModal.show();
+                });
+            }
+            
+            if (confirmLogoutBtn) {
+                confirmLogoutBtn.addEventListener('click', function() {
+                    // Hide the confirmation modal
+                    logoutConfirmModal.hide();
+                    
+                    // Show the logout overlay with animation
+                    logoutOverlay.style.display = 'flex';
+                    logoutOverlay.style.opacity = '0';
+                    setTimeout(() => {
+                        logoutOverlay.style.opacity = '1';
+                    }, 10);
+                    
+                    // Delay submission slightly to allow user to see the animation
+                    setTimeout(() => {
+                        logoutForm.submit();
+                    }, 200);
+                });
+            }
+
+            // Welcome Animation Logic
+            const welcomeOverlay = document.getElementById('welcomeOverlay');
+            if (welcomeOverlay) {
+                const progress = document.getElementById('welcomeProgress');
+                const content = welcomeOverlay.querySelector('.welcome-content');
+                
+                // Content should already be display: flex and opacity: 1 from inline style
+                setTimeout(() => {
+                    if (content) content.style.transform = 'translateY(0)';
+                    if (progress) progress.style.width = '100%';
+                }, 100);
+
+                // Hide after 2.2 seconds (reduced slightly for snappier feel)
+                setTimeout(() => {
+                    welcomeOverlay.style.opacity = '0';
+                    
+                    // Reveal the dashboard slightly before the overlay is fully gone
+                    setTimeout(() => {
+                        document.body.classList.remove('welcome-loading');
+                    }, 200);
+
+                    setTimeout(() => {
+                        welcomeOverlay.style.display = 'none';
+                    }, 600);
+                }, 2200);
             }
         });
     </script>

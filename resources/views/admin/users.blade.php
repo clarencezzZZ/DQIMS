@@ -2,6 +2,83 @@
 
 @section('title', 'User Management')
 
+@section('styles')
+<style>
+    /* Professional Dark Mode Overrides */
+    [data-theme="dark"] .card {
+        background-color: var(--dark-surface) !important;
+        border-color: var(--dark-border) !important;
+    }
+
+    [data-theme="dark"] .card-body {
+        background-color: var(--dark-surface) !important;
+    }
+
+    [data-theme="dark"] .modal-content {
+        background-color: var(--dark-surface) !important;
+        border-color: var(--dark-border) !important;
+        color: var(--dark-on-surface) !important;
+    }
+
+    [data-theme="dark"] .modal-header {
+        border-bottom-color: var(--dark-border) !important;
+    }
+
+    [data-theme="dark"] .modal-footer {
+        border-top-color: var(--dark-border) !important;
+    }
+
+    [data-theme="dark"] .form-control, 
+    [data-theme="dark"] .form-select {
+        background-color: var(--dark-surface-secondary) !important;
+        border-color: var(--dark-border) !important;
+        color: var(--dark-on-surface) !important;
+    }
+
+    [data-theme="dark"] .table {
+        color: var(--dark-on-surface) !important;
+    }
+
+    [data-theme="dark"] .table thead.table-light {
+        background-color: var(--dark-surface-secondary) !important;
+    }
+
+    [data-theme="dark"] .table thead th {
+        background-color: var(--dark-surface-secondary) !important;
+        color: var(--dark-on-surface) !important;
+        border-bottom-color: var(--dark-border) !important;
+    }
+
+    [data-theme="dark"] .table td {
+        border-bottom-color: var(--dark-border) !important;
+    }
+
+    [data-theme="dark"] .text-muted {
+        color: #adb5bd !important;
+    }
+
+    [data-theme="dark"] .pagination .page-link {
+        background-color: var(--dark-surface-secondary);
+        border-color: var(--dark-border);
+        color: #adb5bd;
+    }
+
+    [data-theme="dark"] .pagination .page-item.active .page-link {
+        background-color: var(--denr-green);
+        border-color: var(--denr-green);
+        color: white;
+    }
+
+    [data-theme="dark"] .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%);
+    }
+
+    [data-theme="dark"] .form-text {
+        color: #adb5bd !important;
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="container-fluid">
     <div class="row mb-4">
@@ -85,6 +162,13 @@
                 </table>
             </div>
         </div>
+        @if($users->hasPages())
+            <div class="card-footer bg-white border-0 py-4">
+                <div class="d-flex flex-column align-items-center justify-content-center">
+                    {{ $users->links('vendor.pagination.custom') }}
+                </div>
+            </div>
+        @endif
     </div>
 </div>
 

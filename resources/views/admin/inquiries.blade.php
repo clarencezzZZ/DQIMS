@@ -14,6 +14,105 @@
             transform: scale(1.05);
         }
     }
+
+    /* Professional Dark Mode Overrides */
+    [data-theme="dark"] .card {
+        background-color: var(--dark-surface) !important;
+        border-color: var(--dark-border) !important;
+    }
+
+    [data-theme="dark"] .card-body {
+        background-color: var(--dark-surface) !important;
+    }
+
+    [data-theme="dark"] .text-muted {
+        color: #adb5bd !important;
+    }
+
+    [data-theme="dark"] .nav-tabs .nav-link {
+        color: #adb5bd;
+        border-color: var(--dark-border);
+    }
+
+    [data-theme="dark"] .nav-tabs .nav-link.active {
+        background-color: var(--dark-surface-secondary);
+        color: var(--denr-light);
+        border-bottom-color: var(--dark-surface-secondary);
+    }
+
+    [data-theme="dark"] .alert-info {
+        background-color: rgba(13, 202, 240, 0.1) !important;
+        border-color: rgba(13, 202, 240, 0.2) !important;
+        color: #0dcaf0 !important;
+    }
+
+    [data-theme="dark"] .alert-info .alert-link {
+        color: #0dcaf0;
+        text-decoration: underline;
+    }
+
+    [data-theme="dark"] .form-control, 
+    [data-theme="dark"] .form-select {
+        background-color: var(--dark-surface-secondary) !important;
+        border-color: var(--dark-border) !important;
+        color: var(--dark-on-surface) !important;
+    }
+
+    [data-theme="dark"] .table {
+        color: var(--dark-on-surface) !important;
+    }
+
+    [data-theme="dark"] .table thead th {
+        border-bottom-color: var(--dark-border) !important;
+    }
+
+    [data-theme="dark"] .section-stat-card {
+        background: var(--dark-surface-secondary) !important;
+        border: 1px solid var(--dark-border) !important;
+    }
+
+    .stat-waiting { background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); }
+    .stat-serving { background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); }
+    .stat-skipped { background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%); }
+    .stat-completed { background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%); }
+
+    [data-theme="dark"] .stat-waiting { background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%) !important; }
+    [data-theme="dark"] .stat-serving { background: linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(33, 150, 243, 0.05) 100%) !important; }
+    [data-theme="dark"] .stat-skipped { background: linear-gradient(135deg, rgba(244, 67, 54, 0.1) 0%, rgba(244, 67, 54, 0.05) 100%) !important; }
+    [data-theme="dark"] .stat-completed { background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(76, 175, 80, 0.05) 100%) !important; }
+
+    [data-theme="dark"] .queue-row {
+        background-color: var(--dark-surface) !important;
+        border-bottom: 1px solid var(--dark-border) !important;
+    }
+
+    [data-theme="dark"] .queue-row:hover {
+        background-color: var(--dark-surface-secondary) !important;
+    }
+
+    [data-theme="dark"] .badge.bg-white {
+        background-color: var(--dark-surface-secondary) !important;
+        color: var(--dark-on-surface) !important;
+        border-color: var(--dark-border) !important;
+    }
+
+    [data-theme="dark"] .section-header-circle {
+        border-color: var(--dark-border) !important;
+    }
+
+    [data-theme="dark"] .section-main-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0%, var(--dark-surface) 100%) !important;
+    }
+
+    [data-theme="dark"] .section-header {
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%) !important;
+    }
+
+    [data-theme="dark"] .debug-alert {
+        background-color: rgba(13, 202, 240, 0.05) !important;
+        border-color: var(--dark-border) !important;
+        color: #adb5bd !important;
+    }
 </style>
 
 <div class="container-fluid">
@@ -131,16 +230,16 @@
         @endphp
         
         @if($sectionInquiries->isNotEmpty() || !request()->hasAny(['status', 'search', 'section']) || request('section') == $section['name'])
-        <div class="card border-0 shadow-lg mb-5" 
-             style="border-left: 6px solid {{ $section['color'] }}; background: linear-gradient(135deg, {{ $section['color'] }}02 0%, white 100%);">
+        <div class="card border-0 shadow-lg mb-5 section-main-card" 
+             style="border-left: 6px solid {{ $section['color'] }};">
             
             <!-- Professional Section Header -->
-            <div class="card-header border-0 py-4" 
+            <div class="card-header border-0 py-4 section-header" 
                  style="background: linear-gradient(90deg, {{ $section['color'] }}15 0%, {{ $section['color'] }}05 100%);">
                 <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-4">
                     <div class="d-flex align-items-center">
                         <div class="me-4">
-                            <div class="rounded-circle d-flex align-items-center justify-content-center shadow" 
+                            <div class="rounded-circle d-flex align-items-center justify-content-center shadow section-header-circle" 
                                  style="width: 70px; height: 70px; background: linear-gradient(135deg, {{ $section['color'] }} 0%, {{ $section['color'] }}cc 100%); border: 3px solid white;">
                                 <i class="bi bi-folder2-open text-white" style="font-size: 2rem;"></i>
                             </div>
@@ -219,8 +318,8 @@
             <div class="px-4 pt-4">
                 <div class="row g-3 mb-4">
                     <div class="col-6 col-md-3">
-                        <div class="card border-0 shadow-sm h-100" 
-                             style="background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%); border-left: 4px solid #ffc107;">
+                        <div class="card border-0 shadow-sm h-100 section-stat-card stat-waiting" 
+                             style="border-left: 4px solid #ffc107;">
                             <div class="card-body text-center py-3">
                                 <div class="text-warning mb-2">
                                     <i class="bi bi-clock-history" style="font-size: 2rem;"></i>
@@ -232,8 +331,8 @@
                         </div>
                     </div>
                     <div class="col-6 col-md-3">
-                        <div class="card border-0 shadow-sm h-100" 
-                             style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-left: 4px solid #2196f3;">
+                        <div class="card border-0 shadow-sm h-100 section-stat-card stat-serving" 
+                             style="border-left: 4px solid #2196f3;">
                             <div class="card-body text-center py-3">
                                 <div class="text-info mb-2">
                                     <i class="bi bi-person-workspace" style="font-size: 2rem;"></i>
@@ -245,8 +344,8 @@
                         </div>
                     </div>
                     <div class="col-6 col-md-3">
-                        <div class="card border-0 shadow-sm h-100" 
-                             style="background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%); border-left: 4px solid #f44336;">
+                        <div class="card border-0 shadow-sm h-100 section-stat-card stat-skipped" 
+                             style="border-left: 4px solid #f44336;">
                             <div class="card-body text-center py-3">
                                 <div class="text-danger mb-2">
                                     <i class="bi bi-skip-forward-circle" style="font-size: 2rem;"></i>
@@ -258,8 +357,8 @@
                         </div>
                     </div>
                     <div class="col-6 col-md-3">
-                        <div class="card border-0 shadow-sm h-100" 
-                             style="background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%); border-left: 4px solid #4caf50;">
+                        <div class="card border-0 shadow-sm h-100 section-stat-card stat-completed" 
+                             style="border-left: 4px solid #4caf50;">
                             <div class="card-body text-center py-3">
                                 <div class="text-success mb-2">
                                     <i class="bi bi-check-circle" style="font-size: 2rem;"></i>
@@ -275,7 +374,7 @@
 
             <!-- Debug Info -->
             @if(isset($debugCounts))
-                <div class="alert alert-info py-2 mb-3 mx-4" style="font-size: 0.85rem;">
+                <div class="alert alert-info py-2 mb-3 mx-4 debug-alert" style="font-size: 0.85rem;">
                     <strong>DEBUG:</strong> 
                     Total Waiting: {{ $debugCounts['total_waiting'] }} | 
                     Sections with Next: {{ $debugCounts['sections_with_next'] }} |
@@ -317,8 +416,8 @@
                         </thead>
                         <tbody>
                             @forelse($sectionInquiries as $index => $inquiry)
-                                <tr class="border-start border-4" 
-                                    style="border-color: {{ $section['color'] }}30 !important; background-color: white; border-bottom: 1px solid #eee;">
+                                <tr class="border-start border-4 queue-row" 
+                                    style="border-color: {{ $section['color'] }}30 !important; border-bottom: 1px solid #eee;">
                                     <td class="text-center py-3">
                                         <div class="d-flex flex-column align-items-center">
                                             <span class="badge bg-dark fs-6 px-3 py-2 fw-bold">{{ $inquiry->short_queue_number }}</span>

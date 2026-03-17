@@ -2,6 +2,60 @@
 
 @section('title', 'Category Management')
 
+@section('styles')
+<style>
+    /* Professional Dark Mode Overrides */
+    [data-theme="dark"] .card {
+        background-color: var(--dark-surface) !important;
+        border-color: var(--dark-border) !important;
+    }
+
+    [data-theme="dark"] .card-body {
+        background-color: var(--dark-surface) !important;
+    }
+
+    [data-theme="dark"] .card-footer {
+        background-color: var(--dark-surface-secondary) !important;
+        border-top-color: var(--dark-border) !important;
+    }
+
+    [data-theme="dark"] .modal-content {
+        background-color: var(--dark-surface) !important;
+        border-color: var(--dark-border) !important;
+        color: var(--dark-on-surface) !important;
+    }
+
+    [data-theme="dark"] .modal-header {
+        border-bottom-color: var(--dark-border) !important;
+    }
+
+    [data-theme="dark"] .modal-footer {
+        border-top-color: var(--dark-border) !important;
+    }
+
+    [data-theme="dark"] .form-control, 
+    [data-theme="dark"] .form-select,
+    [data-theme="dark"] .form-control-color {
+        background-color: var(--dark-surface-secondary) !important;
+        border-color: var(--dark-border) !important;
+        color: var(--dark-on-surface) !important;
+    }
+
+    [data-theme="dark"] .text-muted {
+        color: #adb5bd !important;
+    }
+
+    [data-theme="dark"] hr {
+        border-color: var(--dark-border) !important;
+        opacity: 0.2;
+    }
+
+    [data-theme="dark"] .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%);
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="container-fluid">
     <!-- Page Header -->

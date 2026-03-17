@@ -38,8 +38,8 @@ Route::prefix('monitor')->name('monitor.')->group(function () {
     Route::get('/announcements', [MonitorController::class, 'announcements'])->name('announcements');
 });
 
-// Public front-desk queue status (for monitor display)
-Route::prefix('front-desk')->name('front-desk.')->group(function () {
+// Public front-desk queue status (for monitor display) - Also restricted for staff if enabled
+Route::prefix('front-desk')->name('front-desk.')->middleware(['restricted.access'])->group(function () {
     Route::get('/queue-status', [FrontDeskController::class, 'queueStatus'])->name('queue-status');
     Route::get('/live-status', [FrontDeskController::class, 'showQueueStatus'])->name('live-status');
 });
@@ -69,7 +69,7 @@ Route::middleware(['auth'])->group(function () {
     });
     
     // Front Desk Routes
-    Route::middleware(['role:front_desk,admin'])->prefix('front-desk')->name('front-desk.')->group(function () {
+    Route::middleware(['role:front_desk,admin', 'restricted.access'])->prefix('front-desk')->name('front-desk.')->group(function () {
         Route::get('/', [FrontDeskController::class, 'index'])->name('index');
         Route::get('/create', [FrontDeskController::class, 'create'])->name('create');
         Route::post('/store', [FrontDeskController::class, 'store'])->name('store');
@@ -117,6 +117,7 @@ Route::middleware(['auth'])->group(function () {
     // Admin Routes - Split for granular access control
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('index');
+        Route::post('/modules/toggle', [AdminController::class, 'toggleModule'])->name('modules.toggle');
         
         // Inquiry Management - Allow adminfront
         Route::get('/inquiries', [AdminController::class, 'inquiries'])->name('inquiries');

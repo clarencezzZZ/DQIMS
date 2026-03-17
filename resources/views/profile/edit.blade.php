@@ -88,7 +88,7 @@
                             @error('profile_picture')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <div class="form-text mt-1">Max size: 2MB. Formats: JPG, JPEG, PNG, GIF, JFIF, WEBP, BMP, SVG</div>
+                            <div class="form-text mt-1">Max size: 10MB. Supports all image formats (JPG, PNG, GIF, JFIF, WEBP, BMP, SVG, HEIC).</div>
                         </div>
                         
                         <div id="imagePreview" class="mb-3 d-none">

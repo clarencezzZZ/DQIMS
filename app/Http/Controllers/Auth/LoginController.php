@@ -44,6 +44,8 @@ class LoginController extends Controller
                 return back()->with('error', 'Your account has been deactivated.');
             }
 
+            $request->session()->flash('login_welcome', true);
+            
             if ($user->isFrontDesk()) {
                 return redirect()->route('front-desk.index');
             } elseif ($user->isSectionStaff()) {

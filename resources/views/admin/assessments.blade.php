@@ -2,6 +2,107 @@
 
 @section('title', 'Assessment Forms')
 
+@section('styles')
+<style>
+    .total-amount-wrapper {
+        display: inline-block;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .total-updated {
+        transform: scale(1.1);
+        color: var(--denr-green);
+        text-shadow: 0 0 10px rgba(46, 125, 50, 0.2);
+    }
+    .amount-input, .quantity-input {
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .amount-input:focus, .quantity-input:focus {
+        border-color: var(--denr-green);
+        box-shadow: 0 0 0 0.25rem rgba(46, 125, 50, 0.1);
+    }
+
+    /* Professional Dark Mode Overrides */
+    [data-theme="dark"] .card {
+        background-color: var(--dark-surface) !important;
+        border-color: var(--dark-border) !important;
+    }
+
+    [data-theme="dark"] .card-body {
+        background-color: var(--dark-surface) !important;
+    }
+
+    [data-theme="dark"] .modal-content {
+        background-color: var(--dark-surface) !important;
+        border-color: var(--dark-border) !important;
+        color: var(--dark-on-surface) !important;
+    }
+
+    [data-theme="dark"] .modal-header {
+        border-bottom-color: var(--dark-border) !important;
+    }
+
+    [data-theme="dark"] .modal-footer {
+        border-top-color: var(--dark-border) !important;
+    }
+
+    [data-theme="dark"] .form-control, 
+    [data-theme="dark"] .form-select,
+    [data-theme="dark"] .form-control.bg-light {
+        background-color: var(--dark-surface-secondary) !important;
+        border-color: var(--dark-border) !important;
+        color: var(--dark-on-surface) !important;
+    }
+
+    [data-theme="dark"] .table {
+        color: var(--dark-on-surface) !important;
+    }
+
+    [data-theme="dark"] .table thead.table-light {
+        background-color: var(--dark-surface-secondary) !important;
+    }
+
+    [data-theme="dark"] .table thead th {
+        background-color: var(--dark-surface-secondary) !important;
+        color: var(--dark-on-surface) !important;
+        border-bottom-color: var(--dark-border) !important;
+    }
+
+    [data-theme="dark"] .table td {
+        border-bottom-color: var(--dark-border) !important;
+    }
+
+    [data-theme="dark"] .text-muted {
+        color: #adb5bd !important;
+    }
+
+    /* Professional Pagination Dark Mode */
+    [data-theme="dark"] .card-footer {
+        background-color: var(--dark-surface-secondary) !important;
+        border-top: 1px solid var(--dark-border) !important;
+    }
+
+    [data-theme="dark"] .pagination {
+        background-color: var(--dark-surface-secondary) !important;
+        border-color: var(--dark-border) !important;
+    }
+
+    [data-theme="dark"] .pagination .page-link {
+        background-color: transparent !important;
+        color: #adb5bd !important;
+    }
+
+    [data-theme="dark"] .pagination .page-item.active .page-link {
+        background-color: var(--denr-green) !important;
+        border-color: var(--denr-green) !important;
+        color: white !important;
+    }
+
+    [data-theme="dark"] .pagination .page-item.disabled .page-link {
+        color: #495057 !important;
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="container-fluid">
     <!-- Page Header -->
@@ -104,7 +205,7 @@
                                 <!-- Dynamic rows will be added here -->
                             </div>
                             <div class="text-end mt-3">
-                                <h5 class="mb-0">Total: ₱<span id="totalAmount">0.00</span></h5>
+                                <h5 class="mb-0">Total: ₱<span id="totalAmount" class="total-amount-wrapper">0.00</span></h5>
                                 <input type="hidden" name="fees" id="feesInput" value="0">
                             </div>
                         </div>
@@ -252,8 +353,10 @@
             </div>
         </div>
         @if($assessments->hasPages())
-            <div class="card-footer">
-                {{ $assessments->links() }}
+            <div class="card-footer border-0 py-4">
+                <div class="d-flex flex-column align-items-center justify-content-center">
+                    {{ $assessments->links('vendor.pagination.custom') }}
+                </div>
             </div>
         @endif
     </div>
@@ -261,7 +364,33 @@
 @endsection
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    // Show success alert if session has success message
+    @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: "{{ session('success') }}",
+            timer: 3000,
+            timerProgressBar: true,
+            showConfirmButton: false,
+            background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#1e1e1e' : '#fff',
+            color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#e0e0e0' : '#545454'
+        });
+    @endif
+
+    // Show error alert if session has error message
+    @if(session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: "{{ session('error') }}",
+            background: document.documentElement.getAttribute('data-theme') === 'dark' ? '#1e1e1e' : '#fff',
+            color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#e0e0e0' : '#545454'
+        });
+    @endif
+
     // Generate temporary assessment number for UX purposes
     // The server will generate the actual unique number (yearly reset format: YYYY-MM-NNNN)
     function generateAssessmentNumber() {
@@ -304,10 +433,10 @@
                 <input type="text" name="names[]" class="form-control" placeholder="Enter item name" required>
             </div>
             <div class="col-md-2">
-                <input type="number" name="quantities[]" class="form-control quantity-input" placeholder="Qty" value="1" min="1" onchange="calculateTotal()">
+                <input type="number" name="quantities[]" class="form-control quantity-input" placeholder="Qty" value="1" min="1" oninput="calculateTotal()">
             </div>
             <div class="col-md-4">
-                <input type="number" name="amounts[]" class="form-control amount-input" placeholder="Amount" step="0.01" min="0" onchange="calculateTotal()">
+                <input type="number" name="amounts[]" class="form-control amount-input" placeholder="Amount" step="0.01" min="0" oninput="calculateTotal()">
             </div>
             <div class="col-md-1">
                 <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeNameRow('${rowId}')">
@@ -328,20 +457,57 @@
         }
     }
 
-    // Calculate total amount
+    // Calculate total amount with animation
+    let currentTotal = 0;
     function calculateTotal() {
         let total = 0;
         const amounts = document.querySelectorAll('.amount-input');
         const quantities = document.querySelectorAll('.quantity-input');
         
         amounts.forEach((amount, index) => {
-            const qty = quantities[index] ? parseInt(quantities[index].value) || 1 : 1;
+            const qty = quantities[index] ? parseFloat(quantities[index].value) || 0 : 0;
             const amt = parseFloat(amount.value) || 0;
             total += (qty * amt);
         });
         
-        document.getElementById('totalAmount').textContent = total.toFixed(2);
-        document.getElementById('feesInput').value = total.toFixed(2);
+        const totalElement = document.getElementById('totalAmount');
+        const feesInput = document.getElementById('feesInput');
+        
+        // Add visual feedback class
+        totalElement.classList.add('total-updated');
+        setTimeout(() => totalElement.classList.remove('total-updated'), 300);
+
+        // Animate count-up/down
+        animateValue('totalAmount', currentTotal, total, 400);
+        currentTotal = total;
+        feesInput.value = total.toFixed(2);
+    }
+
+    // Professional count animation
+    function animateValue(id, start, end, duration) {
+        if (start === end) return;
+        const obj = document.getElementById(id);
+        const range = end - start;
+        let current = start;
+        const increment = end > start ? Math.max(range / (duration / 16), 0.01) : Math.min(range / (duration / 16), -0.01);
+        const startTime = new Date().getTime();
+        const endTime = startTime + duration;
+
+        function step() {
+            const now = new Date().getTime();
+            const remaining = Math.max((endTime - now) / duration, 0);
+            const value = end - (remaining * range);
+            
+            obj.textContent = value.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            
+            if (now < endTime) {
+                requestAnimationFrame(step);
+            } else {
+                obj.textContent = end.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            }
+        }
+        
+        requestAnimationFrame(step);
     }
 
 

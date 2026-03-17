@@ -110,70 +110,38 @@
         <!-- Enhanced Report Summary Cards -->
         <div class="row mb-4">
             <div class="col-md-3">
-                <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); color: white;">
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-white-50 mb-1 text-uppercase small fw-bold">Total Inquiries</h6>
-                                <h2 class="mb-0 display-6">{{ $overall_stats['total'] }}</h2>
-                            </div>
-                            <div class="opacity-50">
-                                <i class="bi bi-people" style="font-size: 2.5rem;"></i>
-                            </div>
-                        </div>
-                    </div>
+                <div class="stat-block stat-block-primary">
+                    <h2 class="stat-value text-primary">{{ $overall_stats['total'] }}</h2>
+                    <span class="stat-label">Total Inquiries</span>
+                    <i class="bi bi-people"></i>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #198754 0%, #146c43 100%); color: white;">
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-white-50 mb-1 text-uppercase small fw-bold">Completed</h6>
-                                <h2 class="mb-0 display-6">{{ $overall_stats['completed'] }}</h2>
-                            </div>
-                            <div class="opacity-50">
-                                <i class="bi bi-check-circle" style="font-size: 2.5rem;"></i>
-                            </div>
-                        </div>
-                    </div>
+                <div class="stat-block stat-block-success">
+                    <h2 class="stat-value text-success">{{ $overall_stats['completed'] }}</h2>
+                    <span class="stat-label">Completed</span>
+                    <i class="bi bi-check-circle"></i>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%); color: white;">
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-white-50 mb-1 text-uppercase small fw-bold">Total Assessments</h6>
-                                <h2 class="mb-0 display-6">{{ $assessments_count ?? 0 }}</h2>
-                            </div>
-                            <div class="opacity-50">
-                                <i class="bi bi-file-earmark-text" style="font-size: 2.5rem;"></i>
-                            </div>
-                        </div>
-                    </div>
+                <div class="stat-block stat-block-info">
+                    <h2 class="stat-value text-info">{{ $assessments_count ?? 0 }}</h2>
+                    <span class="stat-label">Total Assessments</span>
+                    <i class="bi bi-file-earmark-text"></i>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #fd7e14 0%, #e8590c 100%); color: white;">
-                    <div class="card-body p-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="text-white-50 mb-1 text-uppercase small fw-bold">Total Revenue</h6>
-                                <h2 class="mb-0 display-6">₱{{ number_format($total_fees ?? 0, 2) }}</h2>
-                            </div>
-                            <div class="opacity-50">
-                                <i class="bi bi-currency-dollar" style="font-size: 2.5rem;"></i>
-                            </div>
-                        </div>
-                    </div>
+                <div class="stat-block stat-block-warning">
+                    <h2 class="stat-value text-warning">₱{{ number_format($total_fees ?? 0, 2) }}</h2>
+                    <span class="stat-label">Total Revenue</span>
+                    <i class="bi bi-currency-peso"></i>
                 </div>
             </div>
         </div>
 
         <!-- Category Statistics Table -->
         <div class="card shadow-sm mb-4">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header gradient-header-primary text-white">
                 <h5 class="mb-0"><i class="bi bi-table"></i> Category Statistics</h5>
             </div>
             <div class="card-body">
@@ -204,59 +172,64 @@
 
         <!-- Revenue Statistics Bar Graph -->
         <div class="card shadow-sm mb-4">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0"><i class="bi bi-currency-dollar"></i> Revenue Statistics</h5>
+            <div class="card-header gradient-header-green text-white">
+                <h5 class="mb-0"><i class="bi bi-currency-peso"></i> Revenue Statistics</h5>
             </div>
             <div class="card-body">
-                <canvas id="revenueChart" height="300"></canvas>
+                <div class="chart-container-wrapper">
+                    <canvas id="revenueChart" height="300"></canvas>
+                </div>
             </div>
         </div>
 
         <!-- Report Charts -->
         <!-- Bar Chart Section -->
         <div class="card shadow-sm mb-4">
-            <div class="card-header bg-success text-white">
+            <div class="card-header gradient-header-info text-white">
                 <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Report Statistics Overview</h5>
             </div>
             <div class="card-body">
-                <canvas id="dailyChart" height="300"></canvas>
+                <div class="chart-container-wrapper">
+                    <canvas id="dailyChart" height="300"></canvas>
+                </div>
             </div>
         </div>
 
         <!-- Section-wise Statistics -->
         <div class="card shadow-sm mb-4">
-            <div class="card-header bg-info text-white">
+            <div class="card-header gradient-header-primary text-white">
                 <h5 class="mb-0"><i class="bi bi-diagram-3"></i> Section Statistics</h5>
             </div>
             <div class="card-body">
-                <canvas id="sectionChart" height="300"></canvas>
+                <div class="chart-container-wrapper">
+                    <canvas id="sectionChart" height="300"></canvas>
+                </div>
             </div>
         </div>
     @else
         <!-- Default Stats (Today's stats) -->
         <div class="row mb-4">
             @php
-                $todayStats = [
-                    'Total Inquiries' => \App\Models\Inquiry::today()->count(),
-                    'Completed' => \App\Models\Inquiry::today()->where('status', 'completed')->count(),
-                    'Total Assessments' => \App\Models\Assessment::whereDate('created_at', today())->count(),
-                    'Total Revenue' => \App\Models\Assessment::whereDate('created_at', today())->sum('fees'),
+                $todayStatsItems = [
+                    ['label' => 'Total Inquiries', 'value' => \App\Models\Inquiry::today()->count(), 'icon' => 'bi-people', 'color' => 'text-primary', 'variant' => 'primary'],
+                    ['label' => 'Completed', 'value' => \App\Models\Inquiry::today()->where('status', 'completed')->count(), 'icon' => 'bi-check-circle', 'color' => 'text-success', 'variant' => 'success'],
+                    ['label' => 'Total Assessments', 'value' => \App\Models\Assessment::whereDate('created_at', today())->count(), 'icon' => 'bi-file-earmark-text', 'color' => 'text-info', 'variant' => 'info'],
+                    ['label' => 'Total Revenue', 'value' => \App\Models\Assessment::whereDate('created_at', today())->sum('fees'), 'icon' => 'bi-currency-peso', 'color' => 'text-warning', 'is_currency' => true, 'variant' => 'warning'],
                 ];
             @endphp
             
-            @foreach($todayStats as $label => $value)
+            @foreach($todayStatsItems as $item)
                 <div class="col-md-3">
-                    <div class="card bg-light shadow-sm">
-                        <div class="card-body text-center">
-                            <h6 class="text-muted mb-2">{{ $label }} (Today)</h6>
-                            <h3 class="mb-0 {{ $label == 'Total Revenue' ? 'text-success' : 'text-primary' }}">
-                                @if($label == 'Total Revenue')
-                                    ₱{{ number_format($value, 2) }}
-                                @else
-                                    {{ $value }}
-                                @endif
-                            </h3>
-                        </div>
+                    <div class="stat-block stat-block-{{ $item['variant'] }}">
+                        <h2 class="stat-value {{ $item['color'] }}">
+                            @if(isset($item['is_currency']) && $item['is_currency'])
+                                ₱{{ number_format($item['value'], 2) }}
+                            @else
+                                {{ $item['value'] }}
+                            @endif
+                        </h2>
+                        <span class="stat-label">{{ $item['label'] }} (Today)</span>
+                        <i class="bi {{ $item['icon'] }}"></i>
                     </div>
                 </div>
             @endforeach
@@ -264,21 +237,25 @@
 
         <!-- Bar Chart Section -->
         <div class="card shadow-sm mb-4">
-            <div class="card-header bg-success text-white">
+            <div class="card-header gradient-header-info text-white">
                 <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Daily Statistics Overview</h5>
             </div>
             <div class="card-body">
-                <canvas id="dailyChart" height="300"></canvas>
+                <div class="chart-container-wrapper">
+                    <canvas id="dailyChart" height="300"></canvas>
+                </div>
             </div>
         </div>
 
         <!-- Section-wise Statistics -->
         <div class="card shadow-sm mb-4">
-            <div class="card-header bg-info text-white">
+            <div class="card-header gradient-header-primary text-white">
                 <h5 class="mb-0"><i class="bi bi-diagram-3"></i> Section Statistics</h5>
             </div>
             <div class="card-body">
-                <canvas id="sectionChart" height="300"></canvas>
+                <div class="chart-container-wrapper">
+                    <canvas id="sectionChart" height="300"></canvas>
+                </div>
             </div>
         </div>
     @endif
@@ -292,17 +269,17 @@
             @if(isset($overall_stats))
                 <div class="row">
                     <div class="col-md-4 mb-3">
-                        <form action="{{ route('reports.export-pdf') }}" method="GET" target="_blank" onsubmit="console.log('Exporting PDF...', new FormData(this));">
+                        <form action="{{ route('reports.export-pdf') }}" method="GET" target="_blank">
                             <input type="hidden" name="report_type" value="{{ request('report_type', 'daily') }}">
                             <input type="hidden" name="date_from" value="{{ is_string($date_range['start']) ? $date_range['start'] : \Carbon\Carbon::parse($date_range['start'])->format('Y-m-d') }}">
                             <input type="hidden" name="date_to" value="{{ is_string($date_range['end']) ? $date_range['end'] : \Carbon\Carbon::parse($date_range['end'])->format('Y-m-d') }}">
                             <input type="hidden" name="category" value="{{ request('category') }}">
                             <input type="hidden" name="section" value="{{ request('section') }}">
                             <input type="hidden" name="status" value="completed">
-                            <button type="submit" class="btn btn-outline-danger w-100" style="cursor: pointer;">
-                                <i class="bi bi-file-pdf" style="font-size: 2rem;"></i>
-                                <h5 class="mt-2">Export as PDF</h5>
-                                <small class="text-muted">Download report as PDF</small>
+                            <button type="submit" class="btn btn-outline-danger w-100 export-btn export-btn-pdf" style="cursor: pointer;">
+                                <i class="bi bi-file-earmark-pdf text-danger" style="font-size: 2.5rem;"></i>
+                                <h5 class="mt-3 fw-bold">Export as PDF</h5>
+                                <p class="text-muted small mb-0">Professional PDF Report</p>
                             </button>
                         </form>
                     </div>
@@ -315,10 +292,10 @@
                             <input type="hidden" name="category" value="{{ request('category') }}">
                             <input type="hidden" name="section" value="{{ request('section') }}">
                             <input type="hidden" name="status" value="completed">
-                            <button type="submit" class="btn btn-outline-success w-100" style="cursor: pointer;">
-                                <i class="bi bi-file-excel" style="font-size: 2rem;"></i>
-                                <h5 class="mt-2">Export as Excel</h5>
-                                <small class="text-muted">Download data as Excel spreadsheet</small>
+                            <button type="submit" class="btn btn-outline-success w-100 export-btn export-btn-excel" style="cursor: pointer;">
+                                <i class="bi bi-file-earmark-spreadsheet text-success" style="font-size: 2.5rem;"></i>
+                                <h5 class="mt-3 fw-bold">Export as Excel</h5>
+                                <p class="text-muted small mb-0">Enhanced Data Spreadsheet</p>
                             </button>
                         </form>
                     </div>
@@ -330,10 +307,10 @@
                             <input type="hidden" name="category" value="{{ request('category') }}">
                             <input type="hidden" name="section" value="{{ request('section') }}">
                             <input type="hidden" name="status" value="completed">
-                            <button type="submit" class="btn btn-outline-primary w-100" style="cursor: pointer;">
-                                <i class="bi bi-printer" style="font-size: 2rem;"></i>
-                                <h5 class="mt-2">Print Report</h5>
-                                <small class="text-muted">Open print-friendly version</small>
+                            <button type="submit" class="btn btn-outline-primary w-100 export-btn export-btn-print" style="cursor: pointer;">
+                                <i class="bi bi-printer text-primary" style="font-size: 2.5rem;"></i>
+                                <h5 class="mt-3 fw-bold">Print Report</h5>
+                                <p class="text-muted small mb-0">Print-Friendly Layout</p>
                             </button>
                         </form>
                     </div>
@@ -365,6 +342,16 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+// Helper to get theme-aware colors
+function getThemeColors() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    return {
+        text: isDark ? '#adb5bd' : '#666',
+        grid: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+        border: isDark ? '#2d3238' : 'rgba(0,0,0,0.1)'
+    };
+}
+
 // Toggle date fields based on report type selection
 function toggleDateFields() {
     const reportTypeSelect = document.querySelector('select[name="report_type"]');
@@ -462,80 +449,156 @@ class BarElevator {
         }
         
         // Prepare data based on whether report results are available
-        let labels, data;
+        let labels, countData, revenueData;
         @if(isset($overall_stats))
-            // Use report data - adjust to show Total Inquiries, Completed, Total Assessments, Total Revenue
             labels = ['Total Inquiries', 'Completed', 'Total Assessments', 'Total Revenue'];
-            data = [
+            countData = [
                 {{ $overall_stats['total'] ?? 0 }},
                 {{ $overall_stats['completed'] ?? 0 }},
                 {{ $assessments_count ?? 0 }},
-                {{ $total_fees ?? 0 }}
+                null // Revenue goes to second dataset
             ];
+            revenueData = [null, null, null, {{ $total_fees ?? 0 }}];
         @else
-            // Use default today's data
             labels = ['Total Inquiries', 'Completed', 'Total Assessments', 'Total Revenue'];
-            data = [
+            countData = [
                 {{ \App\Models\Inquiry::today()->count() }},
                 {{ \App\Models\Inquiry::today()->where('status', 'completed')->count() }},
                 {{ \App\Models\Assessment::whereDate('created_at', today())->count() }},
-                {{ \App\Models\Assessment::whereDate('created_at', today())->sum('fees') ?: 0 }}
+                null
             ];
+            revenueData = [null, null, null, {{ \App\Models\Assessment::whereDate('created_at', today())->sum('fees') ?: 0 }}];
         @endif
-        
-        const dailyData = {
-            labels: labels,
-            datasets: [{
-                label: @if(isset($overall_stats)) 'Report Statistics' @else 'Today\'s Statistics' @endif,
-                data: data,
-                backgroundColor: [
-                    'rgba(54, 162, 235, 0.6)',    // Total Inquiries
-                    'rgba(40, 167, 69, 0.6)',     // Completed
-                    'rgba(23, 162, 184, 0.6)',    // Total Assessments
-                    'rgba(255, 193, 7, 0.6)'      // Total Revenue
-                ],
-                borderColor: [
-                    'rgba(54, 162, 235, 1)',      // Total Inquiries
-                    'rgba(40, 167, 69, 1)',       // Completed
-                    'rgba(23, 162, 184, 1)',      // Total Assessments
-                    'rgba(255, 193, 7, 1)'        // Total Revenue
-                ],
-                borderWidth: 1
-            }]
-        };
         
         try {
             this.charts.daily = new Chart(ctx, {
                 type: 'bar',
-                data: dailyData,
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Volume (Counts)',
+                            data: countData,
+                            backgroundColor: [
+                                'rgba(54, 162, 235, 0.7)',    // Total Inquiries
+                                'rgba(40, 167, 69, 0.7)',     // Completed
+                                'rgba(23, 162, 184, 0.7)',    // Total Assessments
+                                'rgba(0, 0, 0, 0)'            // Hidden
+                            ],
+                            borderColor: [
+                                'rgba(54, 162, 235, 1)',
+                                'rgba(40, 167, 69, 1)',
+                                'rgba(23, 162, 184, 1)',
+                                'rgba(0, 0, 0, 0)'
+                            ],
+                            borderWidth: 2,
+                            borderRadius: 8,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Revenue (₱)',
+                            data: revenueData,
+                            backgroundColor: 'rgba(255, 193, 7, 0.7)',
+                            borderColor: 'rgba(255, 193, 7, 1)',
+                            borderWidth: 2,
+                            borderRadius: 8,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
                     plugins: {
                         legend: {
                             display: true,
                             position: 'top',
+                            labels: {
+                                color: getThemeColors().text,
+                                usePointStyle: true,
+                                padding: 20,
+                                font: { size: 12, weight: '600' }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: document.documentElement.getAttribute('data-theme') === 'dark' ? '#1a1d21' : 'rgba(255, 255, 255, 0.9)',
+                            titleColor: document.documentElement.getAttribute('data-theme') === 'dark' ? '#fff' : '#333',
+                            bodyColor: document.documentElement.getAttribute('data-theme') === 'dark' ? '#adb5bd' : '#666',
+                            borderColor: getThemeColors().border,
+                            borderWidth: 1,
+                            padding: 12,
+                            boxPadding: 6,
+                            usePointStyle: true,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) label += ': ';
+                                    if (context.parsed.y !== null) {
+                                        if (context.datasetIndex === 1 || context.label === 'Total Revenue') {
+                                            label += '₱' + context.parsed.y.toLocaleString(undefined, {minimumFractionDigits: 2});
+                                        } else {
+                                            label += context.parsed.y.toLocaleString();
+                                        }
+                                    }
+                                    return label;
+                                }
+                            }
                         }
                     },
                     scales: {
                         y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
                             beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Volume Count',
+                                color: getThemeColors().text,
+                                font: { weight: 'bold' }
+                            },
                             grid: {
-                                color: 'rgba(0, 0, 0, 0.1)'
+                                color: getThemeColors().grid,
+                                drawBorder: false
                             },
                             ticks: {
-                                callback: function(value, index) {
-                                    // Format as currency if it's the revenue value (last in the data array)
-                                    if (labels[index] === 'Total Revenue') {
-                                        return '₱' + value.toLocaleString();
-                                    }
-                                    return value.toLocaleString();
+                                color: getThemeColors().text,
+                                font: { size: 11 }
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Revenue (₱)',
+                                color: '#ffc107',
+                                font: { weight: 'bold' }
+                            },
+                            grid: {
+                                drawOnChartArea: false, // only want the grid lines for one axis
+                            },
+                            ticks: {
+                                color: '#ffc107',
+                                font: { size: 11 },
+                                callback: function(value) {
+                                    return '₱' + value.toLocaleString();
                                 }
                             }
                         },
                         x: {
                             grid: {
                                 display: false
+                            },
+                            ticks: {
+                                color: getThemeColors().text,
+                                font: { size: 11, weight: '500' }
                             }
                         }
                     },
@@ -543,7 +606,6 @@ class BarElevator {
                         duration: 1000,
                         easing: 'easeOutQuart'
                     },
-                    // Custom plugin for bar elevation
                     plugins: [{
                         id: 'barElevator',
                         afterDraw: (chart) => {
@@ -558,7 +620,6 @@ class BarElevator {
             
             if (this.debug) console.log('BarElevator: Daily chart created');
             
-            // Trigger initial elevation
             setTimeout(() => {
                 this.elevateChartBars(this.charts.daily);
             }, 300);
@@ -609,14 +670,14 @@ class BarElevator {
                 label: 'Inquiries per Section',
                 data: sectionData.length > 0 ? sectionData : [0],
                 backgroundColor: [
-                    'rgba(231, 76, 60, 0.6)',
-                    'rgba(52, 152, 219, 0.6)',
-                    'rgba(46, 204, 113, 0.6)',
-                    'rgba(155, 89, 182, 0.6)',
-                    'rgba(241, 196, 15, 0.6)',
-                    'rgba(142, 68, 173, 0.6)',
-                    'rgba(230, 126, 34, 0.6)',
-                    'rgba(26, 188, 156, 0.6)'
+                    'rgba(231, 76, 60, 0.7)',
+                    'rgba(52, 152, 219, 0.7)',
+                    'rgba(46, 204, 113, 0.7)',
+                    'rgba(155, 89, 182, 0.7)',
+                    'rgba(241, 196, 15, 0.7)',
+                    'rgba(142, 68, 173, 0.7)',
+                    'rgba(230, 126, 34, 0.7)',
+                    'rgba(26, 188, 156, 0.7)'
                 ],
                 borderColor: [
                     'rgba(231, 76, 60, 1)',
@@ -641,23 +702,55 @@ class BarElevator {
                     maintainAspectRatio: false,
                     plugins: {
                         legend: {
-                            display: true,
-                            position: 'top',
+                            display: false // Hide for sections as labels are on X axis
+                        },
+                        tooltip: {
+                            backgroundColor: document.documentElement.getAttribute('data-theme') === 'dark' ? '#1a1d21' : 'rgba(255, 255, 255, 0.9)',
+                            titleColor: document.documentElement.getAttribute('data-theme') === 'dark' ? '#fff' : '#333',
+                            bodyColor: document.documentElement.getAttribute('data-theme') === 'dark' ? '#adb5bd' : '#666',
+                            borderColor: getThemeColors().border,
+                            borderWidth: 1,
+                            padding: 12,
+                            boxPadding: 6,
+                            usePointStyle: true,
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Total inquiries: ' + context.parsed.y;
+                                }
+                            }
                         }
                     },
                     scales: {
                         y: {
                             beginAtZero: true,
                             grid: {
-                                color: 'rgba(0, 0, 0, 0.1)'
+                                color: getThemeColors().grid,
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: getThemeColors().text,
+                                precision: 0
+                            },
+                            title: {
+                                display: true,
+                                text: 'Number of Inquiries',
+                                color: getThemeColors().text,
+                                font: { weight: 'bold' }
                             }
                         },
                         x: {
                             grid: {
                                 display: false
+                            },
+                            ticks: {
+                                color: getThemeColors().text,
+                                font: { size: 10, weight: '500' },
+                                maxRotation: 45,
+                                minRotation: 45
                             }
                         }
                     },
+                    borderRadius: 8,
                     animation: {
                         duration: 1000,
                         easing: 'easeOutQuart'
@@ -725,9 +818,11 @@ class BarElevator {
             datasets: [{
                 label: 'Daily Revenue (₱)',
                 data: data.length > 0 ? data : [0],
-                backgroundColor: 'rgba(40, 167, 69, 0.6)',
+                backgroundColor: 'rgba(40, 167, 69, 0.7)',
                 borderColor: 'rgba(40, 167, 69, 1)',
-                borderWidth: 1
+                borderWidth: 2,
+                borderRadius: 8,
+                hoverBackgroundColor: 'rgba(40, 167, 69, 0.9)',
             }]
         };
         
@@ -742,23 +837,55 @@ class BarElevator {
                         legend: {
                             display: true,
                             position: 'top',
+                            labels: {
+                                color: getThemeColors().text,
+                                usePointStyle: true,
+                                font: { weight: 'bold' }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: document.documentElement.getAttribute('data-theme') === 'dark' ? '#1a1d21' : 'rgba(255, 255, 255, 0.9)',
+                            titleColor: document.documentElement.getAttribute('data-theme') === 'dark' ? '#fff' : '#333',
+                            bodyColor: document.documentElement.getAttribute('data-theme') === 'dark' ? '#adb5bd' : '#666',
+                            borderColor: getThemeColors().border,
+                            borderWidth: 1,
+                            padding: 12,
+                            boxPadding: 6,
+                            usePointStyle: true,
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Revenue: ₱' + context.parsed.y.toLocaleString(undefined, {minimumFractionDigits: 2});
+                                }
+                            }
                         }
                     },
                     scales: {
                         y: {
                             beginAtZero: true,
                             grid: {
-                                color: 'rgba(0, 0, 0, 0.1)'
+                                color: getThemeColors().grid,
+                                drawBorder: false
                             },
                             ticks: {
+                                color: getThemeColors().text,
                                 callback: function(value) {
                                     return '₱' + value.toLocaleString();
                                 }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Revenue (Philippine Peso)',
+                                color: getThemeColors().text,
+                                font: { weight: 'bold' }
                             }
                         },
                         x: {
                             grid: {
                                 display: false
+                            },
+                            ticks: {
+                                color: getThemeColors().text,
+                                font: { weight: '500' }
                             }
                         }
                     },
@@ -868,6 +995,12 @@ class BarElevator {
         
         Object.values(this.charts).forEach(chart => {
             if (chart) {
+                // Update theme colors before rendering
+                const colors = getThemeColors();
+                chart.options.scales.y.ticks.color = colors.text;
+                chart.options.scales.y.grid.color = colors.grid;
+                chart.options.scales.x.ticks.color = colors.text;
+                
                 chart.elevateBars = true;
                 chart.update();
             }
@@ -878,6 +1011,18 @@ class BarElevator {
     elevateAll() {
         this.triggerAllElevations();
     }
+
+    setupThemeObserver() {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'data-theme') {
+                    if (this.debug) console.log('BarElevator: Theme change detected, updating charts');
+                    this.triggerAllElevations();
+                }
+            });
+        });
+        observer.observe(document.documentElement, { attributes: true });
+    }
 }
 
 // Initialize when DOM is loaded
@@ -886,6 +1031,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
     // Initialize the bar elevator system
     window.barElevator = new BarElevator();
+    window.barElevator.setupThemeObserver();
         
     // Make it globally accessible for manual triggering
     window.triggerBarElevation = () => {
@@ -924,56 +1070,167 @@ window.addEventListener('pageshow', function() {
         font-weight: 600;
         letter-spacing: 0.5px;
         border-bottom: none;
+        padding: 1rem 1.25rem;
+    }
+
+    .export-btn {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-width: 2px;
+        border-radius: 15px;
+        padding: 1.5rem 1rem;
+        background: white;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    [data-theme="dark"] .export-btn {
+        background: var(--dark-surface) !important;
+        border-color: var(--dark-border) !important;
     }
     
-    /* Individual Bar Grow Animation */
-    .bar-grow {
-        animation: barGrow 0.8s ease-out forwards;
+    .export-btn:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     }
     
-    @keyframes barGrow {
-        0% {
-            height: 0;
-            opacity: 0.5;
-        }
-        100% {
-            height: 100%;
-            opacity: 1;
-        }
+    .export-btn i {
+        transition: transform 0.3s ease;
     }
     
-    /* Bar Elevation Animation */
-    .bar-elevate {
-        animation: barElevate 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    .export-btn:hover i {
+        transform: scale(1.2);
     }
     
-    @keyframes barElevate {
-        0% {
-            transform: translateY(0);
-        }
-        50% {
-            transform: translateY(-15px);
-        }
-        100% {
-            transform: translateY(0);
-        }
+    .export-btn-pdf:hover { background-color: #fff5f5; border-color: #dc3545; color: #dc3545; }
+    .export-btn-excel:hover { background-color: #f6fff9; border-color: #198754; color: #198754; }
+    .export-btn-print:hover { background-color: #f0f7ff; border-color: #0d6efd; color: #0d6efd; }
+
+    [data-theme="dark"] .export-btn-pdf:hover { background-color: rgba(220, 53, 69, 0.1) !important; }
+    [data-theme="dark"] .export-btn-excel:hover { background-color: rgba(25, 135, 84, 0.1) !important; }
+    [data-theme="dark"] .export-btn-print:hover { background-color: rgba(13, 110, 253, 0.1) !important; }
+
+    /* Professional Stat Blocks */
+    .stat-block {
+        background: white;
+        border-radius: 12px;
+        padding: 24px 20px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid rgba(0,0,0,0.08);
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        border-left: 5px solid #dee2e6; /* Default accent */
+    }
+
+    .stat-block:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+    }
+
+    /* Color Variants */
+    .stat-block-primary { border-left-color: #0d6efd; background: linear-gradient(to right, rgba(13, 110, 253, 0.02), white); }
+    .stat-block-success { border-left-color: #198754; background: linear-gradient(to right, rgba(25, 135, 84, 0.02), white); }
+    .stat-block-info { border-left-color: #0dcaf0; background: linear-gradient(to right, rgba(13, 202, 240, 0.02), white); }
+    .stat-block-warning { border-left-color: #ffc107; background: linear-gradient(to right, rgba(255, 193, 7, 0.02), white); }
+
+    [data-theme="dark"] .stat-block-primary { background: linear-gradient(to right, rgba(13, 110, 253, 0.05), var(--dark-surface-secondary)) !important; }
+    [data-theme="dark"] .stat-block-success { background: linear-gradient(to right, rgba(25, 135, 84, 0.05), var(--dark-surface-secondary)) !important; }
+    [data-theme="dark"] .stat-block-info { background: linear-gradient(to right, rgba(13, 202, 240, 0.05), var(--dark-surface-secondary)) !important; }
+    [data-theme="dark"] .stat-block-warning { background: linear-gradient(to right, rgba(255, 193, 7, 0.05), var(--dark-surface-secondary)) !important; }
+
+    .stat-block i {
+        position: absolute;
+        right: 15px;
+        bottom: 15px;
+        font-size: 2.2rem;
+        opacity: 0.8;
+        transition: all 0.4s ease;
+        z-index: 1;
+    }
+
+    [data-theme="dark"] .stat-block i {
+        opacity: 0.9;
+        filter: brightness(1.2);
+    }
+
+    .stat-block:hover i {
+        opacity: 1;
+        transform: scale(1.2) rotate(-5deg);
+    }
+
+    /* Fixed Dark Mode Text Visibility */
+    [data-theme="dark"] .text-muted { color: #adb5bd !important; }
+    [data-theme="dark"] .form-label { color: var(--dark-on-surface) !important; }
+    [data-theme="dark"] .card { 
+        background-color: var(--dark-surface) !important; 
+        border: 1px solid var(--dark-border) !important; 
+    }
+    [data-theme="dark"] .card-body { 
+        background-color: var(--dark-surface) !important; 
+    }
+    [data-theme="dark"] .table { color: var(--dark-on-surface) !important; border-color: var(--dark-border) !important; }
+    [data-theme="dark"] .table-light { background-color: var(--dark-surface-secondary) !important; color: var(--dark-on-surface) !important; }
+    [data-theme="dark"] .form-control, [data-theme="dark"] .form-select { background-color: var(--dark-surface-secondary) !important; border-color: var(--dark-border) !important; color: var(--dark-on-surface) !important; }
+    
+    /* Ensure chart background is also dark */
+    [data-theme="dark"] .chart-container-wrapper {
+        background-color: var(--dark-surface-secondary) !important;
+        border-color: var(--dark-border) !important;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: 6px;
+        line-height: 1;
+        letter-spacing: -0.5px;
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        font-weight: 700;
+    }
+
+    .chart-container-wrapper {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    [data-theme="dark"] .chart-container-wrapper {
+        background: var(--dark-surface-secondary) !important;
+        border-color: var(--dark-border) !important;
+    }
+
+    .gradient-header-green {
+        background: linear-gradient(135deg, var(--denr-green) 0%, var(--denr-dark) 100%) !important;
+    }
+
+    .gradient-header-info {
+        background: linear-gradient(135deg, #17a2b8 0%, #0dcaf0 100%) !important;
+    }
+
+    .gradient-header-primary {
+        background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%) !important;
     }
     
     /* Chart container styling */
     canvas {
         width: 100% !important;
         height: 300px !important;
-    }
-    
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .card-header h5 {
-            font-size: 1.1rem;
-        }
-        
-        canvas {
-            height: 250px !important;
-        }
     }
 </style>
 @endsection

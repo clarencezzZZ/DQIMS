@@ -29,8 +29,9 @@ class ProfileController extends Controller
         // Check if this is a profile picture upload only
         if ($request->hasFile('profile_picture')) {
             // Profile picture upload - validate only the image
+            // Removed strict 'image' rule and used comprehensive 'mimes' list for maximum compatibility
             $validator = validator($request->all(), [
-                'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,jfif,webp,bmp,svg|max:2048',
+                'profile_picture' => 'nullable|file|mimes:jpeg,png,jpg,gif,jfif,webp,bmp,svg,ico,tiff,heic,heif,avif|max:10240', // Increased to 10MB
             ]);
         } else {
             // Full profile update - validate all fields
@@ -39,7 +40,7 @@ class ProfileController extends Controller
                 'username' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($user->id)],
                 'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
                 'password' => 'nullable|min:6|confirmed',
-                'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif,jfif,webp,bmp,svg|max:2048',
+                'profile_picture' => 'nullable|file|mimes:jpeg,png,jpg,gif,jfif,webp,bmp,svg,ico,tiff,heic,heif,avif|max:10240', // Increased to 10MB
             ]);
         }
 

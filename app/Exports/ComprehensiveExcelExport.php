@@ -42,26 +42,37 @@ class ComprehensiveExcelExport
         
         // Worksheet
         $xml .= '<Worksheet ss:Name="Report">' . "\n";
-        $xml .= '<Table>' . "\n";
+        $xml .= '<Table ss:DefaultColumnWidth="100">' . "\n";
+        
+        // Column Widths
+        $xml .= '    <Column ss:Width="30"/>' . "\n"; // #
+        $xml .= '    <Column ss:Width="120"/>' . "\n"; // Queue Number / Category Code
+        $xml .= '    <Column ss:Width="180"/>' . "\n"; // Client Name / Category Name
+        $xml .= '    <Column ss:Width="150"/>' . "\n"; // Section
+        $xml .= '    <Column ss:Width="80"/>' . "\n";  // Total / Waiting
+        $xml .= '    <Column ss:Width="80"/>' . "\n";  // Completed
+        $xml .= '    <Column ss:Width="80"/>' . "\n";  // Serving
+        $xml .= '    <Column ss:Width="80"/>' . "\n";  // Skipped
+        $xml .= '    <Column ss:Width="100"/>' . "\n"; // Date
         
         // === HEADER SECTION ===
-        $xml .= $this->addRow(['Republic of the Philippines'], 'header');
-        $xml .= $this->addRow(['DEPARTMENT OF ENVIRONMENT AND NATURAL RESOURCES'], 'subheader');
-        $xml .= $this->addRow(['Regional Office No. 4A (CALABARZON)'], 'subheader');
-        $xml .= $this->addRow(['Queueing & Inquiry Management System Report'], 'title');
-        $xml .= $this->addRow(['']); // Empty row
+        $xml .= $this->addRow(['Republic of the Philippines'], 'header', 7);
+        $xml .= $this->addRow(['DEPARTMENT OF ENVIRONMENT AND NATURAL RESOURCES'], 'subheader', 7);
+        $xml .= $this->addRow(['Regional Office No. 4A (CALABARZON)'], 'subheader', 7);
+        $xml .= $this->addRow(['Queueing & Inquiry Management System Report'], 'title', 7);
+        $xml .= $this->addRow([''], 'default'); // Empty row
         
         // Report Period
         $startDate = \Carbon\Carbon::parse($d['date_range']['start'])->format('F d, Y');
         $endDate = \Carbon\Carbon::parse($d['date_range']['end'])->format('F d, Y');
-        $xml .= $this->addRow(["Report Period: $startDate to $endDate"], 'bold');
+        $xml .= $this->addRow(["Report Period: $startDate to $endDate"], 'bold', 7);
         
         $generatedDate = \Carbon\Carbon::now()->format('F d, Y h:i A');
-        $xml .= $this->addRow(["Date Generated: $generatedDate"], 'bold');
-        $xml .= $this->addRow(['']); // Empty row
+        $xml .= $this->addRow(["Date Generated: $generatedDate"], 'bold', 7);
+        $xml .= $this->addRow([''], 'default'); // Empty row
         
-        // === OVERALL STATISTICS - HORIZONTAL LAYOUT ===
-        $xml .= $this->addRow(['OVERALL STATISTICS'], 'section');
+        // === OVERALL STATISTICS ===
+        $xml .= $this->addRow(['OVERALL STATISTICS'], 'section', 7);
         $xml .= $this->addRow(['TOTAL INQUIRIES', 'COMPLETED', 'TOTAL ASSESSMENTS', 'TOTAL REVENUE'], 'tableHeader');
         $xml .= $this->addRow([
             $d['overall_stats']['total'] ?? 0,
@@ -69,10 +80,10 @@ class ComprehensiveExcelExport
             $d['assessments_count'] ?? 0,
             '₱' . number_format($d['total_fees'] ?? 0, 2)
         ], 'data');
-        $xml .= $this->addRow(['']); // Empty row
+        $xml .= $this->addRow([''], 'default'); // Empty row
         
-        // === CATEGORY STATISTICS - WIDE HORIZONTAL TABLE ===
-        $xml .= $this->addRow(['CATEGORY STATISTICS'], 'section');
+        // === CATEGORY STATISTICS ===
+        $xml .= $this->addRow(['CATEGORY STATISTICS'], 'section', 7);
         $xml .= $this->addRow(['#', 'Category Code', 'Category Name', 'Section', 'Total', 'Completed', 'Waiting', 'Skipped'], 'tableHeader');
         
         $counter = 1;
@@ -90,10 +101,10 @@ class ComprehensiveExcelExport
                 ], 'data');
             }
         }
-        $xml .= $this->addRow(['']); // Empty row
+        $xml .= $this->addRow([''], 'default'); // Empty row
         
-        // === REVENUE STATISTICS - SIDE BY SIDE ===
-        $xml .= $this->addRow(['REVENUE STATISTICS'], 'section');
+        // === REVENUE STATISTICS ===
+        $xml .= $this->addRow(['REVENUE STATISTICS'], 'section', 1);
         $xml .= $this->addRow(['Date', 'Revenue Amount'], 'tableHeader');
         foreach (($d['revenue_by_date'] ?? []) as $date => $revenue) {
             $xml .= $this->addRow([
@@ -101,27 +112,18 @@ class ComprehensiveExcelExport
                 '₱' . number_format($revenue, 2)
             ], 'data');
         }
-        $xml .= $this->addRow(['']); // Empty row
-        
-        // === REPORT STATISTICS OVERVIEW - TWO COLUMNS ===
-        $xml .= $this->addRow(['REPORT STATISTICS OVERVIEW'], 'section');
-        $xml .= $this->addRow(['Metric', 'Value'], 'tableHeader');
-        $xml .= $this->addRow(['Total Inquiries', $d['overall_stats']['total'] ?? 0], 'data');
-        $xml .= $this->addRow(['Completed', $d['overall_stats']['completed'] ?? 0], 'data');
-        $xml .= $this->addRow(['Total Assessments', $d['assessments_count'] ?? 0], 'data');
-        $xml .= $this->addRow(['Total Revenue', '₱' . number_format($d['total_fees'] ?? 0, 2)], 'data');
-        $xml .= $this->addRow(['']); // Empty row
+        $xml .= $this->addRow([''], 'default'); // Empty row
         
         // === SECTION STATISTICS ===
-        $xml .= $this->addRow(['SECTION STATISTICS'], 'section');
+        $xml .= $this->addRow(['SECTION STATISTICS'], 'section', 1);
         $xml .= $this->addRow(['Section Name', 'Total Inquiries'], 'tableHeader');
         foreach (($d['section_stats'] ?? []) as $section => $count) {
             $xml .= $this->addRow([$section, $count], 'data');
         }
-        $xml .= $this->addRow(['']); // Empty row
+        $xml .= $this->addRow([''], 'default'); // Empty row
         
-        // === INQUIRY DETAILS - FULL HORIZONTAL TABLE ===
-        $xml .= $this->addRow(['INQUIRY DETAILS'], 'section');
+        // === INQUIRY DETAILS ===
+        $xml .= $this->addRow(['INQUIRY DETAILS'], 'section', 7);
         $xml .= $this->addRow(['#', 'Queue Number', 'Client Name', 'Category', 'Request Type', 'Priority', 'Status', 'Date Served'], 'tableHeader');
         
         $counter = 1;
@@ -145,13 +147,18 @@ class ComprehensiveExcelExport
         return $xml;
     }
     
-    protected function addRow($cells, $style = 'default')
+    protected function addRow($cells, $style = 'default', $mergeAcross = 0)
     {
         $row = '        <Row>' . "\n";
-        foreach ($cells as $cell) {
-            $row .= '            <Cell>' . "\n";
-            $row .= '                <Data ss:Type="String">' . htmlspecialchars($cell ?? '', ENT_XML1 | ENT_QUOTES) . '</Data>' . "\n";
+        foreach ($cells as $index => $cell) {
+            $mergeAttr = ($index === 0 && $mergeAcross > 0) ? ' ss:MergeAcross="' . $mergeAcross . '"' : '';
+            $row .= '            <Cell ss:StyleID="' . $style . '"' . $mergeAttr . '>' . "\n";
+            $dataType = is_numeric($cell) && $style === 'data' ? 'Number' : 'String';
+            $row .= '                <Data ss:Type="' . $dataType . '">' . htmlspecialchars($cell ?? '', ENT_XML1 | ENT_QUOTES) . '</Data>' . "\n";
             $row .= '            </Cell>' . "\n";
+            
+            // If we merged across, we only provide the first cell
+            if ($index === 0 && $mergeAcross > 0) break;
         }
         $row .= '        </Row>' . "\n";
         return $row;
@@ -162,74 +169,54 @@ class ComprehensiveExcelExport
         return '    <Styles>' . "\n" .
                '        <Style ss:ID="default">' . "\n" .
                '            <Alignment ss:Vertical="Center"/>' . "\n" .
-               '            <Font ss:Size="11"/>' . "\n" .
-               '            <Borders>' . "\n" .
-               '                <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/>' . "\n" .
-               '                <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1"/>' . "\n" .
-               '                <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/>' . "\n" .
-               '                <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/>' . "\n" .
-               '            </Borders>' . "\n" .
+               '            <Font ss:FontName="Calibri" ss:Size="11"/>' . "\n" .
                '        </Style>' . "\n" .
                '        <Style ss:ID="header">' . "\n" .
-               '            <Font ss:Bold="1" ss:Size="18" ss:Color="#000000"/>' . "\n" .
-               '            <Alignment ss:Horizontal="Center"/>' . "\n" .
-               '            <Borders>' . "\n" .
-               '                <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#000000"/>' . "\n" .
-               '            </Borders>' . "\n" .
+               '            <Font ss:FontName="Calibri" ss:Bold="1" ss:Size="14" ss:Color="#000000"/>' . "\n" .
+               '            <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>' . "\n" .
                '        </Style>' . "\n" .
                '        <Style ss:ID="subheader">' . "\n" .
-               '            <Font ss:Bold="1" ss:Size="14" ss:Color="#333333"/>' . "\n" .
-               '            <Alignment ss:Horizontal="Center"/>' . "\n" .
+               '            <Font ss:FontName="Calibri" ss:Bold="1" ss:Size="12" ss:Color="#333333"/>' . "\n" .
+               '            <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>' . "\n" .
                '        </Style>' . "\n" .
                '        <Style ss:ID="title">' . "\n" .
-               '            <Font ss:Bold="1" ss:Size="16" ss:Color="#0066CC"/>' . "\n" .
-               '            <Alignment ss:Horizontal="Center"/>' . "\n" .
-               '            <Borders>' . "\n" .
-               '                <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#000000"/>' . "\n" .
-               '            </Borders>' . "\n" .
+               '            <Font ss:FontName="Calibri" ss:Bold="1" ss:Size="16" ss:Color="#1F4E78"/>' . "\n" .
+               '            <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>' . "\n" .
                '        </Style>' . "\n" .
                '        <Style ss:ID="bold">' . "\n" .
-               '            <Font ss:Bold="1" ss:Size="12"/>' . "\n" .
+               '            <Font ss:FontName="Calibri" ss:Bold="1" ss:Size="11"/>' . "\n" .
+               '            <Alignment ss:Vertical="Center"/>' . "\n" .
                '        </Style>' . "\n" .
                '        <Style ss:ID="section">' . "\n" .
-               '            <Font ss:Bold="1" ss:Size="14" ss:Color="#FFFFFF"/>' . "\n" .
-               '            <Interior ss:Color="#4472C4" ss:Pattern="Solid"/>' . "\n" .
-               '            <Alignment ss:Horizontal="Left"/>' . "\n" .
+               '            <Font ss:FontName="Calibri" ss:Bold="1" ss:Size="12" ss:Color="#FFFFFF"/>' . "\n" .
+               '            <Interior ss:Color="#2E75B6" ss:Pattern="Solid"/>' . "\n" .
+               '            <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>' . "\n" .
                '            <Borders>' . "\n" .
-               '                <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#000000"/>' . "\n" .
-               '                <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1"/>' . "\n" .
-               '                <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/>' . "\n" .
-               '                <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/>' . "\n" .
+               '                <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>' . "\n" .
+               '                <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>' . "\n" .
+               '                <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>' . "\n" .
+               '                <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>' . "\n" .
                '            </Borders>' . "\n" .
                '        </Style>' . "\n" .
                '        <Style ss:ID="tableHeader">' . "\n" .
-               '            <Font ss:Bold="1" ss:Size="12" ss:Color="#FFFFFF"/>' . "\n" .
+               '            <Font ss:FontName="Calibri" ss:Bold="1" ss:Size="11" ss:Color="#FFFFFF"/>' . "\n" .
                '            <Interior ss:Color="#5B9BD5" ss:Pattern="Solid"/>' . "\n" .
-               '            <Alignment ss:Horizontal="Center"/>' . "\n" .
+               '            <Alignment ss:Horizontal="Center" ss:Vertical="Center" ss:WrapText="1"/>' . "\n" .
                '            <Borders>' . "\n" .
-               '                <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="2" ss:Color="#000000"/>' . "\n" .
-               '                <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1"/>' . "\n" .
-               '                <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/>' . "\n" .
-               '                <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/>' . "\n" .
+               '                <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>' . "\n" .
+               '                <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>' . "\n" .
+               '                <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>' . "\n" .
+               '                <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#000000"/>' . "\n" .
                '            </Borders>' . "\n" .
                '        </Style>' . "\n" .
                '        <Style ss:ID="data">' . "\n" .
-               '            <Alignment ss:Vertical="Center"/>' . "\n" .
-               '            <Font ss:Size="11"/>' . "\n" .
+               '            <Alignment ss:Vertical="Center" ss:Horizontal="Left" ss:WrapText="1"/>' . "\n" .
+               '            <Font ss:FontName="Calibri" ss:Size="11"/>' . "\n" .
                '            <Borders>' . "\n" .
-               '                <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/>' . "\n" .
-               '                <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1"/>' . "\n" .
-               '                <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/>' . "\n" .
-               '                <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/>' . "\n" .
-               '            </Borders>' . "\n" .
-               '        </Style>' . "\n" .
-               '        <Style ss:ID="number">' . "\n" .
-               '            <Alignment ss:Horizontal="Right"/>' . "\n" .
-               '            <Borders>' . "\n" .
-               '                <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/>' . "\n" .
-               '                <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1"/>' . "\n" .
-               '                <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/>' . "\n" .
-               '                <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/>' . "\n" .
+               '                <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/>' . "\n" .
+               '                <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/>' . "\n" .
+               '                <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/>' . "\n" .
+               '                <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#D9D9D9"/>' . "\n" .
                '            </Borders>' . "\n" .
                '        </Style>' . "\n" .
                '    </Styles>' . "\n";

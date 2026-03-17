@@ -6,6 +6,7 @@ use App\Models\Assessment;
 use App\Models\Category;
 use App\Models\EventLog;
 use App\Models\Inquiry;
+use App\Models\ModuleSetting;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -35,8 +36,46 @@ class AdminController extends Controller
         
         $todayStats = $this->getTodayStats();
         $weeklyData = $this->getWeeklyInquiryData();
+        $moduleSettings = ModuleSetting::all()->keyBy('module_key');
         
-        return view('admin.index', compact('categories', 'todayStats', 'weeklyData'));
+        return view('admin.index', compact('categories', 'todayStats', 'weeklyData', 'moduleSettings'));
+    }
+
+    /**
+     * Toggle module status (AJAX)
+     */
+    public function toggleModule(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'module_key' => 'required|string',
+            'is_enabled' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
+        }
+
+        try {
+            $module = ModuleSetting::where('module_key', $request->module_key)->first();
+            
+            if (!$module) {
+                return response()->json(['success' => false, 'message' => 'Module setting not found.'], 404);
+            }
+
+            // Robust boolean conversion
+            $enabled = filter_var($request->is_enabled, FILTER_VALIDATE_BOOLEAN);
+            
+            $module->is_enabled = $enabled;
+            $module->save();
+
+            return response()->json([
+                'success' => true, 
+                'message' => "Access " . ($enabled ? 'Enabled' : 'Restricted') . " successfully.",
+                'is_enabled' => $enabled
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -85,6 +124,12 @@ class AdminController extends Controller
      */
     public function inquiries(Request $request)
     {
+        // Check if module is enabled
+        $module = ModuleSetting::where('module_key', 'restricted_access')->first();
+        if ($module && !$module->is_enabled) {
+            return redirect()->route('admin.index')->with('error', 'The Restricted Modules (Inquiries & Categories) are currently disabled by the administrator.');
+        }
+
         $query = Inquiry::with(['category', 'servedBy']);
 
         // Apply filters
@@ -567,6 +612,12 @@ class AdminController extends Controller
      */
     public function categories()
     {
+        // Check if module is enabled
+        $module = ModuleSetting::where('module_key', 'restricted_access')->first();
+        if ($module && !$module->is_enabled) {
+            return redirect()->route('admin.index')->with('error', 'The Restricted Modules (Inquiries & Categories) are currently disabled by the administrator.');
+        }
+
         $categories = Category::withCount(['inquiries', 'assignedUsers'])->get();
         return view('admin.categories', compact('categories'));
     }

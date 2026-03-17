@@ -78,7 +78,7 @@
                         <!-- Fees -->
                         <div class="mb-4">
                             <label for="fees" class="form-label fw-bold">
-                                <i class="bi bi-currency-dollar text-success"></i> Assessment Fees (₱) <span class="text-danger">*</span>
+                                <span class="text-success fw-bold">₱</span> Assessment Fees (₱) <span class="text-danger">*</span>
                             </label>
                             <div class="input-group input-group-lg">
                                 <span class="input-group-text">₱</span>
