@@ -125,10 +125,14 @@ Route::middleware(['auth'])->group(function () {
         
         // Assessment Management - Allow adminfront
         Route::get('/assessments', [AdminController::class, 'assessments'])->name('assessments');
+        Route::post('/assessment-types', [AdminController::class, 'storeAssessmentType'])->name('assessment-types.store');
+        Route::put('/assessment-types/{type}', [AdminController::class, 'updateAssessmentType'])->name('assessment-types.update');
+        Route::delete('/assessment-types/{type}', [AdminController::class, 'destroyAssessmentType'])->name('assessment-types.destroy');
         Route::get('/assessments/create-direct', function() {
             return view('admin.assessments');
         })->name('assessments.create-direct');
         Route::get('/assessments/{assessment}', [AdminController::class, 'showAssessment'])->name('assessments.show');
+        Route::get('/assessments/{assessment}/download', [AdminController::class, 'downloadAssessment'])->name('assessments.download');
         Route::get('/assessments/{assessment}/edit', [AdminController::class, 'editAssessment'])->name('assessments.edit');
         Route::put('/assessments/{assessment}', [AdminController::class, 'updateAssessment'])->name('assessments.update');
         Route::get('/inquiries/{inquiry}/assessment/create', [AdminController::class, 'createAssessment'])->name('assessments.create');

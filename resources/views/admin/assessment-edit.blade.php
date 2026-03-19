@@ -56,27 +56,24 @@
                             <label for="description_type" class="form-label fw-bold">
                                 <i class="bi bi-folder text-warning"></i> Description/Request Type
                             </label>
-                            <select name="description_type" class="form-select @error('description_type') is-invalid @enderror" 
-                                    id="description_type" required>
-                                <option value="">-- Select Description --</option>
-                                <option value="Cadastral Cost" {{ old('description_type', $assessment->request_type) == 'Cadastral Cost' ? 'selected' : '' }}>Cadastral Cost</option>
-                                <option value="Certification: A&D Status" {{ old('description_type', $assessment->request_type) == 'Certification: A&D Status' ? 'selected' : '' }}>Certification: A&D Status</option>
-                                <option value="Certification: Cadastral Map" {{ old('description_type', $assessment->request_type) == 'Certification: Cadastral Map' ? 'selected' : '' }}>Certification: Cadastral Map</option>
-                                <option value="Certification Cancellation Of Approved Plan" {{ old('description_type', $assessment->request_type) == 'Certification Cancellation Of Approved Plan' ? 'selected' : '' }}>Certification Cancellation Of Approved Plan</option>
-                                <option value="Certification GPPC" {{ old('description_type', $assessment->request_type) == 'Certification GPPC' ? 'selected' : '' }}>Certification GPPC</option>
-                                <option value="Certification Lot Data Computation" {{ old('description_type', $assessment->request_type) == 'Certification Lot Data Computation' ? 'selected' : '' }}>Certification Lot Data Computation</option>
-                                <option value="Certification Lot Status" {{ old('description_type', $assessment->request_type) == 'Certification Lot Status' ? 'selected' : '' }}>Certification Lot Status</option>
-                                <option value="Certification Rejection Order" {{ old('description_type', $assessment->request_type) == 'Certification Rejection Order' ? 'selected' : '' }}>Certification Rejection Order</option>
-                                <option value="Certification Survey Plan" {{ old('description_type', $assessment->request_type) == 'Certification Survey Plan' ? 'selected' : '' }}>Certification Survey Plan</option>
-                                <option value="Certification: Technical Description" {{ old('description_type', $assessment->request_type) == 'Certification: Technical Description' ? 'selected' : '' }}>Certification: Technical Description</option>
-                                <option value="GE Credit" {{ old('description_type', $assessment->request_type) == 'GE Credit' ? 'selected' : '' }}>GE Credit</option>
-                                <option value="Verification Fee" {{ old('description_type', $assessment->request_type) == 'Verification Fee' ? 'selected' : '' }}>Verification Fee</option>
-                                <option value="Inspection Fee" {{ old('description_type', $assessment->request_type) == 'Inspection Fee' ? 'selected' : '' }}>Inspection Fee</option>
+                            <select id="description-select" name="description_type[]" multiple required>
+                                <option value="Cadastral Cost">Cadastral Cost</option>
+                                <option value="Certification: A&D Status">Certification: A&D Status</option>
+                                <option value="Certification: Cadastral Map">Certification: Cadastral Map</option>
+                                <option value="Certification Cancellation Of Approved Plan">Certification Cancellation Of Approved Plan</option>
+                                <option value="Certification GPPC">Certification GPPC</option>
+                                <option value="Certification Lot Data Computation">Certification Lot Data Computation</option>
+                                <option value="Certification Lot Status">Certification Lot Status</option>
+                                <option value="Certification Rejection Order">Certification Rejection Order</option>
+                                <option value="Certification Survey Plan">Certification Survey Plan</option>
+                                <option value="Certification: Technical Description">Certification: Technical Description</option>
+                                <option value="GE Credit">GE Credit</option>
+                                <option value="Verification Fee">Verification Fee</option>
+                                <option value="Inspection Fee">Inspection Fee</option>
                             </select>
                             @error('description_type')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <div class="form-text">Select the same description options as used in new assessment requests</div>
                         </div>
 
                         <!-- Fees -->
@@ -114,14 +111,13 @@
 
                         <!-- Names/Item -->
                         <div class="mb-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <label class="form-label fw-bold">Names/Item</label>
-                                <button type="button" class="btn btn-sm btn-outline-success" onclick="addNameRowEdit()">
-                                    <i class="bi bi-plus-lg"></i> Add Item
-                                </button>
-                            </div>
+                            <label class="form-label fw-bold mb-3">Names/Item (Grouped by Description)</label>
                             <div id="namesContainer">
-                                <!-- Dynamic rows will be added here -->
+                                <!-- Dynamic sections will be added here -->
+                                <div class="text-center py-4 text-muted border rounded bg-light empty-names-message">
+                                    <i class="bi bi-info-circle fs-4"></i>
+                                    <p class="mb-0">Please select one or more descriptions above to add items.</p>
+                                </div>
                             </div>
                             <div class="text-end mt-3">
                                 <h5 class="mb-0">Total: ₱<span id="totalAmount">{{ number_format($assessment->fees, 2) }}</span></h5>
@@ -164,50 +160,145 @@
     // Initialize names data from the assessment
     document.addEventListener('DOMContentLoaded', function() {
         const namesDetail = @json(json_decode($assessment->names_detail, true));
-        if (namesDetail && Array.isArray(namesDetail)) {
-            namesDetail.forEach(item => {
-                // Skip template placeholders
-                if (item.name && item.name !== '${name}' && item.name.trim() !== '') {
-                    addNameRowEdit(item.name, item.quantity || 1, item.amount || 0);
+        const currentDescriptions = @json(json_decode($assessment->request_type, true) ?: [$assessment->request_type]);
+        
+        // Initialize Tom Select
+        window.descriptionSelect = new TomSelect('#description-select', {
+            plugins: ['remove_button'],
+            create: true,
+            placeholder: 'Select one or more descriptions...',
+            onItemAdd: function(value) {
+                addDescriptionSection(value);
+            },
+            onItemRemove: function(value) {
+                removeDescriptionSection(value);
+            }
+        });
+
+        // Load existing descriptions and items
+        if (Array.isArray(currentDescriptions)) {
+            currentDescriptions.forEach(desc => {
+                if (desc) {
+                    window.descriptionSelect.addItem(desc);
+                    // Clear the automatically added row so we can add existing ones
+                    const sectionId = 'section_' + desc.replace(/[^a-zA-Z0-9]/g, '_');
+                    const itemsContainer = document.getElementById('items_' + sectionId);
+                    if (itemsContainer) itemsContainer.innerHTML = '';
                 }
             });
         }
-        // Add at least one row if no valid names exist
-        if (document.getElementById('namesContainer').children.length === 0) {
-            addNameRowEdit();
+
+        // Add existing items to their respective sections
+        if (namesDetail && Array.isArray(namesDetail)) {
+            namesDetail.forEach(item => {
+                if (item.name && item.name !== '${name}' && item.name.trim() !== '') {
+                    const desc = item.description || 'GENERAL';
+                    addNameRowEdit(desc, item.name, item.quantity || 1, item.amount || 0);
+                }
+            });
         }
+        
+        calculateTotalEdit();
     });
 
-    // Add new name row for edit form
-    function addNameRowEdit(name = '', quantity = 1, amount = 0) {
+    // Add description section
+    function addDescriptionSection(description) {
         const container = document.getElementById('namesContainer');
-        const rowId = 'nameRow_' + Date.now();
+        const emptyMessage = container.querySelector('.empty-names-message');
+        if (emptyMessage) emptyMessage.remove();
+
+        const sectionId = 'section_' + description.replace(/[^a-zA-Z0-9]/g, '_');
+        
+        if (document.getElementById(sectionId)) return;
+
+        const section = document.createElement('div');
+        section.className = 'description-section mb-4 p-3 border rounded shadow-sm position-relative';
+        section.id = sectionId;
+        section.style.backgroundColor = document.documentElement.getAttribute('data-theme') === 'dark' ? 'var(--dark-surface-secondary)' : '#ffffff';
+        section.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="mb-0 text-success fw-bold">
+                    <i class="bi bi-tag-fill me-2"></i>${description}
+                </h6>
+                <button type="button" class="btn btn-sm btn-success rounded-pill" onclick="addNameRowEdit('${description}')">
+                    <i class="bi bi-plus-lg"></i> Add Item
+                </button>
+            </div>
+            <div class="items-container" id="items_${sectionId}">
+                <!-- Item rows for this description -->
+            </div>
+        `;
+        
+        container.appendChild(section);
+        addNameRowEdit(description); // Add first row automatically
+    }
+
+    // Remove description section
+    function removeDescriptionSection(description) {
+        const sectionId = 'section_' + description.replace(/[^a-zA-Z0-9]/g, '_');
+        const section = document.getElementById(sectionId);
+        if (section) {
+            section.remove();
+            calculateTotalEdit();
+        }
+
+        const container = document.getElementById('namesContainer');
+        if (container.children.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-4 text-muted border rounded bg-light empty-names-message">
+                    <i class="bi bi-info-circle fs-4"></i>
+                    <p class="mb-0">Please select one or more descriptions above to add items.</p>
+                </div>
+            `;
+        }
+    }
+
+    // Add new name row for a specific description (Edit)
+    function addNameRowEdit(description, name = '', quantity = 1, amount = null) {
+        const sectionId = 'section_' + description.replace(/[^a-zA-Z0-9]/g, '_');
+        let container = document.querySelector(`#items_${sectionId}`);
+        
+        // Fallback for old items without a description
+        if (!container && description === 'GENERAL') {
+            addDescriptionSection('GENERAL');
+            container = document.querySelector(`#items_section_GENERAL`);
+        }
+        
+        if (!container) return;
+
+        const rowId = 'itemRow_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+        
+        // Default amount logic: 50 if description starts with 'Certification' and amount is null (meaning it's a new row)
+        let finalAmount = amount;
+        if (finalAmount === null) {
+            finalAmount = description.toLowerCase().startsWith('certification') ? 50 : 0;
+        }
         
         const row = document.createElement('div');
-        row.className = 'row g-2 mb-2 align-items-end';
+        row.className = 'row g-2 mb-2 align-items-end item-row';
         row.id = rowId;
         row.innerHTML = `
             <div class="col-md-5">
-                <input type="text" name="names[]" class="form-control" placeholder="Enter item name" value="${name.replace(/\$/g, '\$\$')}" required>
+                <input type="text" name="items[${description}][name][]" class="form-control form-control-sm" placeholder="Enter item name" value="${name.replace(/\$/g, '\$\$')}" required>
             </div>
             <div class="col-md-2">
-                <input type="number" name="quantities[]" class="form-control quantity-input" placeholder="Qty" value="${quantity}" min="1" onchange="calculateTotalEdit()">
+                <input type="number" name="items[${description}][qty][]" class="form-control form-control-sm quantity-input" placeholder="Qty" value="${quantity}" min="1" oninput="calculateTotalEdit()">
             </div>
             <div class="col-md-4">
-                <input type="number" name="amounts[]" class="form-control amount-input" placeholder="Amount" step="0.01" min="0" value="${amount}" onchange="calculateTotalEdit()">
+                <input type="number" name="items[${description}][amt][]" class="form-control form-control-sm amount-input" placeholder="Amount" step="0.01" min="0" value="${finalAmount}" oninput="calculateTotalEdit()">
             </div>
-            <div class="col-md-1">
-                <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeNameRowEdit('${rowId}')">
+            <div class="col-md-1 text-end">
+                <button type="button" class="btn btn-outline-danger btn-sm rounded-circle" onclick="removeNameRowEdit('${rowId}')">
                     <i class="bi bi-trash"></i>
                 </button>
             </div>
         `;
         
         container.appendChild(row);
-        calculateTotalEdit(); // Recalculate total after adding row
+        calculateTotalEdit();
     }
 
-    // Remove name row for edit form
+    // Remove name row (Edit)
     function removeNameRowEdit(rowId) {
         const row = document.getElementById(rowId);
         if (row) {
@@ -216,29 +307,20 @@
         }
     }
 
-    // Calculate total amount for edit form
+    // Calculate total amount (Edit)
     function calculateTotalEdit() {
         let total = 0;
         const amounts = document.querySelectorAll('.amount-input');
         const quantities = document.querySelectorAll('.quantity-input');
         
         amounts.forEach((amount, index) => {
-            const qty = quantities[index] ? parseInt(quantities[index].value) || 1 : 1;
+            const qty = quantities[index] ? parseFloat(quantities[index].value) || 0 : 0;
             const amt = parseFloat(amount.value) || 0;
             total += (qty * amt);
         });
         
-        document.getElementById('totalAmount').textContent = total.toFixed(2);
+        document.getElementById('totalAmount').textContent = total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
         document.getElementById('feesInput').value = total.toFixed(2);
     }
-
-
-
-    // Format fees input
-    document.getElementById('fees')?.addEventListener('blur', function() {
-        if (this.value) {
-            this.value = parseFloat(this.value).toFixed(2);
-        }
-    });
 </script>
 @endsection

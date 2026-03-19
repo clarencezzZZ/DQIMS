@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Assessment;
+use App\Models\AssessmentType;
 use App\Models\Category;
 use App\Models\EventLog;
 use App\Models\Inquiry;
@@ -391,6 +392,8 @@ class AdminController extends Controller
             'fees' => 'required|numeric|min:0',
             'remarks' => 'nullable|string',
             'officer_in_charge' => 'required',
+            'description_type' => 'required|array',
+            'description_type.*' => 'string|max:100',
         ]);
 
         if ($validator->fails()) {
@@ -433,6 +436,20 @@ class AdminController extends Controller
     }
 
     /**
+     * Download assessment as PDF
+     */
+    public function downloadAssessment(Assessment $assessment)
+    {
+        $assessment->load(['processedBy', 'officerInCharge', 'category']);
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.assessment-show', compact('assessment'));
+        
+        // Use the assessment number for the filename
+        $filename = 'Assessment-' . ($assessment->bill_number ?? $assessment->assessment_number) . '.pdf';
+        
+        return $pdf->download($filename);
+    }
+
+    /**
      * Show the form for editing the specified assessment.
      */
     public function editAssessment(Assessment $assessment)
@@ -454,6 +471,8 @@ class AdminController extends Controller
             'fees' => 'required|numeric|min:0',
             'remarks' => 'nullable|string',
             'officer_in_charge' => 'required',
+            'description_type' => 'required|array',
+            'description_type.*' => 'string|max:100',
         ]);
 
         if ($validator->fails()) {
@@ -473,9 +492,34 @@ class AdminController extends Controller
             $officerInCharge = (int) $officerInCharge;
         }
 
-        // Build names detail JSON if provided
+        // Build names detail JSON from grouped items
         $namesDetail = [];
-        if ($request->names) {
+        if ($request->items && is_array($request->items)) {
+            foreach ($request->items as $description => $details) {
+                if (isset($details['name']) && is_array($details['name'])) {
+                    foreach ($details['name'] as $index => $name) {
+                        if (!empty($name)) {
+                            $itemData = [
+                                'description' => $description,
+                                'name' => $name,
+                                'quantity' => $details['qty'][$index] ?? 1,
+                                'amount' => $details['amt'][$index] ?? 0,
+                            ];
+
+                            // Add inspection fee details if they exist
+                            if (isset($details['has_inspection'][$index]) && $details['has_inspection'][$index] == 1) {
+                                $itemData['has_inspection'] = true;
+                                $itemData['inspection_qty'] = $details['inspection_qty'][$index] ?? 1;
+                                $itemData['inspection_amt'] = $details['inspection_amt'][$index] ?? 0;
+                            }
+
+                            $namesDetail[] = $itemData;
+                        }
+                    }
+                }
+            }
+        } elseif ($request->names) {
+            // Fallback for old structure
             foreach ($request->names as $index => $name) {
                 if (!empty($name)) {
                     $namesDetail[] = [
@@ -498,6 +542,7 @@ class AdminController extends Controller
             'officer_in_charge' => $officerInCharge,
             'custom_officer_name' => $customOfficerName,
             'names_detail' => json_encode($namesDetail),
+            'request_type' => json_encode($request->description_type),
         ]);
 
         // Debug: Log the values after update
@@ -524,13 +569,92 @@ class AdminController extends Controller
         }
 
         if ($request->filled('category')) {
-            $query->where('request_type', $request->category);
+            $query->whereJsonContains('request_type', $request->category);
         }
 
         $assessments = $query->latest()->paginate(20);
         $categories = Category::where('is_active', true)->get();
+        $assessmentTypes = AssessmentType::where('is_active', true)->orderBy('name')->get();
 
-        return view('admin.assessments', compact('assessments', 'categories'));
+        return view('admin.assessments', compact('assessments', 'categories', 'assessmentTypes'));
+    }
+
+    /**
+     * Store new assessment type (AJAX/Admin only)
+     */
+    public function storeAssessmentType(Request $request)
+    {
+        if (Auth::user()->username !== 'admin') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255|unique:assessment_types',
+            'default_amount' => 'required|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
+        }
+
+        $type = AssessmentType::create([
+            'name' => $request->name,
+            'default_amount' => $request->default_amount,
+            'is_active' => true,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Assessment type added successfully.',
+            'type' => $type
+        ]);
+    }
+
+    /**
+     * Update assessment type (AJAX/Admin only)
+     */
+    public function updateAssessmentType(Request $request, AssessmentType $type)
+    {
+        if (Auth::user()->username !== 'admin') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255|unique:assessment_types,name,' . $type->id,
+            'default_amount' => 'required|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
+        }
+
+        $type->update([
+            'name' => $request->name,
+            'default_amount' => $request->default_amount,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Assessment type updated successfully.',
+            'type' => $type
+        ]);
+    }
+
+    /**
+     * Delete assessment type (AJAX/Admin only)
+     */
+    public function destroyAssessmentType(AssessmentType $type)
+    {
+        if (Auth::user()->username !== 'admin') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $type->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Assessment type deleted successfully.'
+        ]);
     }
 
     /**
@@ -738,7 +862,8 @@ class AdminController extends Controller
             'assessment_date' => 'required|date',
             'guest_name' => 'required|string|max:255',
             'address' => 'required|string|max:255',
-            'description_type' => 'required|string|max:100',
+            'description_type' => 'required|array',
+            'description_type.*' => 'string|max:100',
             'names' => 'nullable|array',
             'names.*' => 'nullable|string|max:255',
             'quantities' => 'nullable|array',
@@ -764,16 +889,30 @@ class AdminController extends Controller
             $officerInCharge = 'lota'; // Keep as string identifier for Mr. Stanley M. Lota
         }
 
-        // Build names detail JSON
+        // Build names detail JSON from grouped items
         $namesDetail = [];
-        if ($request->names) {
-            foreach ($request->names as $index => $name) {
-                if (!empty($name)) {
-                    $namesDetail[] = [
-                        'name' => $name,
-                        'quantity' => $request->quantities[$index] ?? 1,
-                        'amount' => $request->amounts[$index] ?? 0,
-                    ];
+        if ($request->items && is_array($request->items)) {
+            foreach ($request->items as $description => $details) {
+                if (isset($details['name']) && is_array($details['name'])) {
+                    foreach ($details['name'] as $index => $name) {
+                        if (!empty($name)) {
+                            $itemData = [
+                                'description' => $description,
+                                'name' => $name,
+                                'quantity' => $details['qty'][$index] ?? 1,
+                                'amount' => $details['amt'][$index] ?? 0,
+                            ];
+
+                            // Add inspection fee details if they exist
+                            if (isset($details['has_inspection'][$index]) && $details['has_inspection'][$index] == 1) {
+                                $itemData['has_inspection'] = true;
+                                $itemData['inspection_qty'] = $details['inspection_qty'][$index] ?? 1;
+                                $itemData['inspection_amt'] = $details['inspection_amt'][$index] ?? 0;
+                            }
+
+                            $namesDetail[] = $itemData;
+                        }
+                    }
                 }
             }
         }
@@ -788,7 +927,7 @@ class AdminController extends Controller
             'address' => $request->address,
             'category_id' => null, // Not required for direct assessment
             'reference' => null,
-            'request_type' => $request->description_type,
+            'request_type' => json_encode($request->description_type),
             'names_detail' => json_encode($namesDetail),
             'fees' => $request->fees,
             'remarks' => $request->remarks,

@@ -7,9 +7,10 @@
     <title>@yield('title', 'DENR Queueing & Inquiry Management System')</title>
     <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/bootstrap-icons.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.css" rel="stylesheet">
     <style>
         :root {
-            --denr-green: #2e7d32;
+            --denr-green: #2e7d32; 
             --denr-dark: #1b5e20;
             --denr-light: #4caf50;
             /* Dark mode colors - Professional Palette */
@@ -591,6 +592,27 @@
         [data-theme="dark"] .modal-footer {
             border-top: 1px solid var(--color-border);
         }
+        [data-theme="dark"] .ts-control,
+        [data-theme="dark"] .ts-dropdown {
+            background-color: var(--dark-surface-secondary) !important;
+            border-color: var(--dark-border) !important;
+            color: var(--dark-on-surface) !important;
+        }
+
+        [data-theme="dark"] .ts-control > input::placeholder {
+            color: #adb5bd !important;
+        }
+
+        [data-theme="dark"] .ts-item {
+            background-color: var(--denr-green) !important;
+            color: white !important;
+            border-radius: 4px;
+        }
+
+        [data-theme="dark"] .ts-dropdown .active {
+            background-color: var(--denr-dark) !important;
+            color: white !important;
+        }
     </style>
     @yield('styles')
 </head>
@@ -802,6 +824,7 @@
 
     <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('js/axios.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
     <script>
         // Set up CSRF token for AJAX requests
         axios.defaults.headers.common['X-CSRF-TOKEN'] = document.querySelector('meta[name="csrf-token"]').getAttribute('content');

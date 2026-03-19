@@ -4,6 +4,19 @@
 
 @section('content')
 <div class="container print-container">
+    <script>
+        // Professional approach to clear the document title before print
+        // so browser doesn't add it to the page header.
+        (function() {
+            var originalTitle = document.title;
+            window.onbeforeprint = function() {
+                document.title = "";
+            };
+            window.onafterprint = function() {
+                document.title = originalTitle;
+            };
+        })();
+    </script>
     <div class="row justify-content-center">
         <div class="col-lg-10">
             <!-- Page Header -->
@@ -18,6 +31,9 @@
                     </a>
                     <a href="{{ route('admin.assessments.edit', $assessment) }}" class="btn btn-outline-warning">
                         <i class="bi bi-pencil"></i> Edit
+                    </a>
+                    <a href="{{ route('admin.assessments.download', $assessment) }}" class="btn btn-outline-success">
+                        <i class="bi bi-download"></i> Download PDF
                     </a>
                     <button onclick="window.print()" class="btn btn-outline-primary">
                         <i class="bi bi-printer"></i> Print
@@ -44,7 +60,7 @@
                 }
             @endphp
 
-            @foreach($allDescriptions as $description)
+            @foreach($allDescriptions as $index => $description)
                 @php
                     $itemsForThisDescription = $groupedItems[$description] ?? [];
                     $totalForThisDescription = 0;
@@ -53,19 +69,19 @@
                     }
                 @endphp
 
-                <div class="card shadow printable-assessment-page mb-4">
+                <div class="card shadow printable-assessment-page">
                     <div class="card-body p-4">
                         <!-- Office Header -->
-                        <div class="text-center mb-3">
-                            <h5 class="fw-bold mb-1" style="font-size: 11pt;">Republic of the Philippines</h5>
-                            <h5 class="fw-bold mb-1" style="font-size: 11pt;">DEPARTMENT OF ENVIRONMENT AND NATURAL RESOURCES</h5>
-                            <h6 class="mb-1" style="font-size: 10pt;">OFFICE Regional Office No. 4A (CALABARZON)</h6>
-                            <h6 class="mb-1" style="font-size: 10pt;">Office Address: DENR IV-A (CALABARZON) COMPOUND</h6>
-                            <h6 class="mb-1" style="font-size: 10pt;">DICOT BUILDING, Mayapa Main Road<br>Along SLEX, Brgy. Mayapa, Calamba City, Laguna</h6>
+                        <div class="text-center mb-2">
+                            <h5 class="fw-bold mb-0" style="font-size: 11pt;">Republic of the Philippines</h5>
+                            <h5 class="fw-bold mb-0" style="font-size: 11pt;">DEPARTMENT OF ENVIRONMENT AND NATURAL RESOURCES</h5>
+                            <h6 class="mb-0" style="font-size: 10pt;">OFFICE Regional Office No. 4A (CALABARZON)</h6>
+                            <h6 class="mb-0" style="font-size: 10pt;">Office Address: DENR IV-A (CALABARZON) COMPOUND</h6>
+                            <h6 class="mb-0" style="font-size: 10pt;">DICOT BUILDING, Mayapa Main Road<br>Along SLEX, Brgy. Mayapa, Calamba City, Laguna</h6>
                         </div>
 
                         <!-- BILL NUMBER Section - Right -->
-                        <div class="mb-3 d-flex">
+                        <div class="mb-2 d-flex">
                             <div class="flex-fill"></div>
                             <div class="print-meta">
                                 <div class="meta-row">
@@ -84,14 +100,14 @@
                         </div>
 
                         <!-- ASSESSMENT FORM - Center -->
-                        <div class="text-center mb-3" style="margin-top: 10px; margin-bottom: 10px;">
-                            <h4 class="fw-bold" style="font-size: 12pt;">ASSESSMENT FORM</h4><br>
+                        <div class="text-center mb-2">
+                            <h4 class="fw-bold" style="font-size: 12pt;">ASSESSMENT FORM</h4>
                         </div>
 
                         <!-- Name/Payee and Address - Left aligned -->
-                        <div class="row mb-3">
+                        <div class="row mb-2">
                             <div class="col-12">
-                                <table class="table table-borderless table-sm">
+                                <table class="table table-borderless table-sm mb-0">
                                     <tr>
                                         <td width="15%" class="fw-bold"><span style="display: inline-block; min-width: 120px;">NAME/PAYEE:</span></td>
                                         <td style="text-align: center; text-transform: uppercase; text-align: left;">
@@ -113,37 +129,44 @@
                         </div>
 
                         <!-- Main Table -->
-                        <div class="mb-4">
+                        <div class="mb-2">
                             <table class="table" style="width:100%; border:2px solid #000; border-collapse:collapse;">
                                 <thead>
                                     <tr style="background-color:#e9ecef;">
-                                        <th width="15%" style="border:2px solid #000; font-size:12pt; padding:6px; text-align:center;">LEGAL BASIS<br>(DAO/SBC)</th>
-                                        <th width="45%" style="border:2px solid #000; font-size:12pt; padding:6px; text-align:center;">DESCRIPTION AND COMPUTATION of Fees<br>and/or Charges Assessed</th>
-                                        <th width="10%" style="border:2px solid #000; font-size:12pt; padding:6px; text-align:center;">Quantity</th>
-                                        <th width="15%" style="border:2px solid #000; font-size:12pt; padding:6px; text-align:center;">AMOUNT</th>
+                                        <th width="15%" style="border:2px solid #000; font-size:12pt; padding:4px; text-align:center;">LEGAL BASIS<br>(DAO/SBC)</th>
+                                        <th width="45%" style="border:2px solid #000; font-size:12pt; padding:4px; text-align:center;">DESCRIPTION AND COMPUTATION of Fees<br>and/or Charges Assessed</th>
+                                        <th width="10%" style="border:2px solid #000; font-size:12pt; padding:4px; text-align:center;">Quantity</th>
+                                        <th width="15%" style="border:2px solid #000; font-size:12pt; padding:4px; text-align:center;">AMOUNT</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td rowspan="{{ count($itemsForThisDescription) + 1 }}" style="border-right:2px solid #000; font-size:12pt; padding:40px; text-align:center; vertical-align:top; white-space: nowrap;">
+                                        <td rowspan="{{ count($itemsForThisDescription) + 1 }}" style="border-right:2px solid #000; font-size:12pt; padding:10px; text-align:center; vertical-align:top; white-space: nowrap;">
                                             {{ $assessment->legal_basis ?? '1993-20' }}
                                         </td>
-                                        <td style="border-right:2px solid #000; font-size:12pt; padding:6px; vertical-align:top; border-bottom: none !important; background-color: #f8f9fa;">
+                                        <td style="border-right:2px solid #000; font-size:12pt; padding:4px; vertical-align:top; border-bottom: none !important; background-color: #f8f9fa;">
                                             <strong class="text-uppercase text-success">{{ $description }}</strong>
+                                            @foreach($itemsForThisDescription as $item)
+                                                @if(isset($item['has_inspection']) && $item['has_inspection'])
+                                                    <div style="font-size: 10pt; font-style: italic; margin-top: 2px; color: #555; padding-left: 10px;">
+                                                        - Inspection Fee (Qty: {{ $item['inspection_qty'] ?? 1 }} x {{ number_format($item['inspection_amt'] ?? 0, 2) }})
+                                                    </div>
+                                                @endif
+                                            @endforeach
                                         </td>
-                                        <td style="border-right:2px solid #000; font-size:12pt; padding:6px; text-align:center; vertical-align:top; border-bottom: none !important; background-color: #f8f9fa;">&nbsp;</td>
-                                        <td style="font-size:12pt; padding:6px; text-align:right; vertical-align:top; border-bottom: none !important; background-color: #f8f9fa;">&nbsp;</td>
+                                        <td style="border-right:2px solid #000; font-size:12pt; padding:4px; text-align:center; vertical-align:top; border-bottom: none !important; background-color: #f8f9fa;">&nbsp;</td>
+                                        <td style="font-size:12pt; padding:4px; text-align:right; vertical-align:top; border-bottom: none !important; background-color: #f8f9fa;">&nbsp;</td>
                                     </tr>
 
                                     @foreach($itemsForThisDescription as $item)
                                         <tr>
-                                            <td style="border-right:2px solid #000; font-size:12pt; padding:6px; vertical-align:top; border-top: none !important; border-bottom: none !important; padding-left: 25px;">
-                                                {{ $item['name'] }}
+                                            <td style="border-right:2px solid #000; font-size:12pt; padding:4px; vertical-align:top; border-top: none !important; border-bottom: none !important; padding-left: 25px;">
+                                                <div>{{ $item['name'] }}</div>
                                             </td>
-                                            <td style="border-right:2px solid #000; font-size:12pt; padding:6px; text-align:center; vertical-align:top; border-top: none !important; border-bottom: none !important;">
+                                            <td style="border-right:2px solid #000; font-size:12pt; padding:4px; text-align:center; vertical-align:top; border-top: none !important; border-bottom: none !important;">
                                                 {{ $item['quantity'] ?? 1 }}
                                             </td>
-                                            <td style="font-size:12pt; padding:6px; text-align:right; vertical-align:top; border-top: none !important; border-bottom: none !important;">
+                                            <td style="font-size:12pt; padding:4px; text-align:right; vertical-align:top; border-top: none !important; border-bottom: none !important;">
                                                 @if(isset($item['amount']) && $item['amount'] > 0)
                                                     {{ number_format($item['amount'], 2) }}
                                                 @else
@@ -154,47 +177,47 @@
                                     @endforeach
 
                                     <tr style="background:#e9ecef;">
-                                        <td colspan="3" style="border-top:2px solid #000; border-right:2px solid #000; font-size:12pt; padding:6px; text-align:right; font-weight:bold;">TOTAL:</td>
-                                        <td style="border-top:2px solid #000; font-size:12pt; padding:6px; text-align:right; font-weight:bold;">₱{{ number_format($totalForThisDescription, 2) }}</td>
+                                        <td colspan="3" style="border-top:2px solid #000; border-right:2px solid #000; font-size:12pt; padding:4px; text-align:right; font-weight:bold;">TOTAL:</td>
+                                        <td style="border-top:2px solid #000; font-size:12pt; padding:4px; text-align:right; font-weight:bold;">₱{{ number_format($totalForThisDescription, 2) }}</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
 
                         <!-- Signature Section -->
-                        <table class="table table-borderless mt-4 pt-3" style="width:100%;">
+                        <table class="table table-borderless mt-2 pt-1 signature-section" style="width:100%;">
                             <tr>
                                 <td style="width:70%; vertical-align:top;">
-                                    <div style="min-height: 120px;">
-                                        <p class="fw-bold mb-4" style="font-size: 9pt;">PREPARED BY:</p>
-                                        <div style="margin-top: 70px;">
+                                    <div style="min-height: 60px;">
+                                        <p class="fw-bold mb-2" style="font-size: 9pt;">PREPARED BY:</p>
+                                        <div style="margin-top: 30px;">
                                             <p class="fw-bold mb-0" style="font-size: 9pt;">STANLEY M. LOTA</p>
                                             <p class="mb-0" style="font-size: 9pt;">SIGNATURE OVER PRINTED NAME</p>
-                                            <p class="mb-0" style="font-size: 9pt; margin-top: 10px;">ACCEPTANCE</p>
+                                            <p class="mb-0" style="font-size: 9pt; margin-top: 5px;">ACCEPTANCE</p>
                                             <p style="font-size: 9pt;">Position/Designation</p>
                                         </div>
                                     </div>
                                 </td>
                                 <td style="width:50%; vertical-align:top; text-align:left;">
-                                    <div style="min-height: 120px;">
-                                        <p class="fw-bold mb-4" style="font-size: 9pt;">REVIEWED BY:</p>
+                                    <div style="min-height: 60px;">
+                                        <p class="fw-bold mb-2" style="font-size: 9pt;">REVIEWED BY:</p>
                                         <p class="mb-0" style="font-size: 9pt;">FOR</p>
-                                        <p class="fw-bold mb-0" style="font-size: 9pt; margin-top: 35px;">ENGR. ERITHA R. LUMAOANG</p>
+                                        <p class="fw-bold mb-0" style="font-size: 9pt; margin-top: 15px;">ENGR. ERITHA R. LUMAOANG</p>
                                         <p style="font-size: 9pt;">SIGNATURE OVER PRINTED NAME</p>
-                                        <p class="mb-0" style="font-size: 9pt; margin-top: 10px;">ASST. DIVISION CHIEF</p>
+                                        <p class="mb-0" style="font-size: 9pt; margin-top: 5px;">ASST. DIVISION CHIEF</p>
                                         <p style="font-size: 9pt;">Position/Designation</p>
                                     </div>
                                 </td>
                             </tr>
                         </table>
 
-                        <!-- Footer - Bottom Left -->
-                        <div class="mt-4 pt-2 border-top text-start">
+                        <!-- Footer - Bottom -->
+                        <div class="mt-auto-print d-flex justify-content-between align-items-center">
                             <small style="font-size: 7pt;">R4A.FD.042.0001</small>
+                            <small style="font-size: 7pt;">{{ $index + 1 }} / {{ count($allDescriptions) }} Page</small>
                         </div>
                     </div>
-                </div>
-            @endforeach
+                </div>@endforeach
         </div>
     </div>
 </div>
@@ -205,18 +228,25 @@
     @media print {
         @page {
             size: A4;
-            margin: 10mm;
+            margin: 0 !important; /* This is the most reliable way to hide browser headers (Title) and footers (URL/Page numbers) */
         }
         
         body {
             background: white !important;
             margin: 0 !important;
             padding: 0 !important;
-            font-size: 10pt;
-            line-height: 1.2;
+            font-size: 11pt;
+            line-height: 1.4;
             width: 100%;
+            height: auto !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
+        }
+
+        html {
+            margin: 0 !important;
+            padding: 0 !important;
+            height: auto !important;
         }
         
         /* Hide EVERYTHING except the assessment print area */
@@ -232,6 +262,7 @@
             display: block !important;
             border: none !important;
             box-shadow: none !important;
+            height: auto !important;
         }
         
         .card { 
@@ -240,46 +271,71 @@
             margin: 0 !important;
             padding: 0 !important;
             width: 100% !important;
+            height: 275mm !important; /* Extremely safe height to prevent extra pages */
             page-break-after: always !important;
+            page-break-inside: avoid !important;
+            box-sizing: border-box !important;
+            background: white !important;
+            position: relative;
+            overflow: hidden !important;
+            display: flex !important;
+            flex-direction: column !important;
         }
 
-        .card:last-child {
+        .card:last-child, .card:last-of-type {
             page-break-after: avoid !important;
-        }
-        
-        .mb-4 {
             margin-bottom: 0 !important;
         }
-        
+
         .card-body {
-            padding: 0 !important;
             margin: 0 !important;
+            padding: 8mm 12mm !important; /* Slightly reduced padding */
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            box-sizing: border-box !important;
+        }
+        
+        /* Clear any potential margins that trigger extra pages */
+        .mb-4, .my-4, .m-4 {
+            margin: 0 !important;
+        }
+        
+        /* Footer - Bottom positioning */
+        .mt-auto-print {
+            position: absolute;
+            bottom: 10mm;
+            left: 15mm;
+            right: 15mm;
+            border-top: 1px solid #dee2e6;
+            padding-top: 5px;
         }
 
         .printable-assessment-page {
             page-break-inside: avoid !important;
         }
 
-        #assessment-print {
-            width: 100% !important;
-        }
-        
-        /* Table styling for print */
+        /* Table styling for print - make it larger */
         .table {
             width: 100% !important;
             border-collapse: collapse !important;
-            margin-bottom: 10px !important;
+            margin-bottom: 20px !important;
         }
         
         .table th, .table td {
-            padding: 4px 6px !important;
+            padding: 8px 10px !important; /* Increased padding for better visibility */
             border: 1px solid #000 !important;
-            font-size: 9pt !important;
+            font-size: 11pt !important; /* Larger table font */
         }
         
         .table-borderless td, .table-borderless th {
             border: none !important;
         }
+
+        /* Header sizes for print */
+        h5 { font-size: 13pt !important; }
+        h6 { font-size: 11pt !important; }
+        h4 { font-size: 14pt !important; }
         
         /* Preserve background colors in print */
         thead th, .table-light, [style*="background-color:#e9ecef"], [style*="background-color: #f8f9fa"] {
@@ -294,9 +350,14 @@
             print-color-adjust: exact !important;
         }
 
-        /* Adjust signature section spacing */
-        .mt-4 { margin-top: 1rem !important; }
-        .pt-3 { padding-top: 0.5rem !important; }
+        /* Signature area - ensure it stays at the bottom or has enough space */
+        .signature-section {
+            margin-top: auto !important; /* Push signatures to the bottom of the card */
+            padding-top: 30px !important;
+        }
+        
+        /* Footer/small text */
+        small { font-size: 9pt !important; }
         
         /* Ensure no extra pages */
         html, body {
