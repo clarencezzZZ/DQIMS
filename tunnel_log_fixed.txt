@@ -1,0 +1,100 @@
+﻿.\cloudflared.exe : 2026-03-23T03:15:56Z INF Thank you for trying Cloudflare 
+Tunnel. Doing so, without a Cloudflare account, is a quick way to experiment 
+and try it out. However, be aware that these account-less Tunnels have no 
+uptime guarantee, are subject to the Cloudflare Online Services Terms of Use 
+(https://www.cloudflare.com/website-terms/), and Cloudflare reserves the right 
+to investigate your use of Tunnels for violations of such terms. If you intend 
+to use Tunnels in production you should use a pre-created named tunnel by 
+following: 
+https://developers.cloudflare.com/cloudflare-one/connections/connect-apps
+At line:1 char:1
++ .\cloudflared.exe tunnel --url http://127.0.0.1:8000 *>&1 | Out-File  ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (2026-03-23T03:1...ns/connect-apps 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+2026-03-23T03:15:56Z INF Requesting new quick Tunnel on trycloudflare.com...
+2026-03-23T03:16:01Z INF +-----------------------------------------------------
+---------------------------------------+
+2026-03-23T03:16:01Z INF |  Your quick Tunnel has been created! Visit it at 
+(it may take some time to be reachable):  |
+2026-03-23T03:16:01Z INF |  
+https://software-stolen-seattle-troops.trycloudflare.com                       
+           |
+2026-03-23T03:16:01Z INF +-----------------------------------------------------
+---------------------------------------+
+2026-03-23T03:16:01Z INF Cannot determine default configuration path. No file 
+[config.yml config.yaml] in [~/.cloudflared ~/.cloudflare-warp 
+~/cloudflare-warp]
+2026-03-23T03:16:01Z INF Version 2026.2.0 (Checksum 
+b3279f2186a1c3c438ad5865e802bbbec26090c5d3fdb4ac1113f1143a94837a)
+2026-03-23T03:16:01Z INF GOOS: windows, GOVersion: go1.24.13, GoArch: amd64
+2026-03-23T03:16:01Z INF Settings: map[ha-connections:1 protocol:quic 
+url:http://127.0.0.1:8000]
+2026-03-23T03:16:01Z INF cloudflared will not automatically update on Windows 
+systems.
+2026-03-23T03:16:01Z INF Generated Connector ID: 
+ea8d5e91-977a-4edc-9b72-112c856ccd52
+2026-03-23T03:16:01Z INF Initial protocol quic
+2026-03-23T03:16:01Z INF ICMP proxy will use 173.4.0.45 as source for IPv4
+2026-03-23T03:16:01Z INF ICMP proxy will use fe80::bcf2:5aee:46e9:df04 in zone 
+Ethernet as source for IPv6
+2026-03-23T03:16:01Z INF cloudflared does not support loading the system root 
+certificate pool on Windows. Please use --origin-ca-pool <PATH> to specify the 
+path to the certificate pool
+2026-03-23T03:16:01Z INF ICMP proxy will use 173.4.0.45 as source for IPv4
+2026-03-23T03:16:01Z INF Tunnel connection curve preferences: [X25519MLKEM768 
+CurveP256] connIndex=0 event=0 ip=198.41.192.47
+2026-03-23T03:16:01Z INF ICMP proxy will use fe80::bcf2:5aee:46e9:df04 in zone 
+Ethernet as source for IPv6
+2026-03-23T03:16:01Z INF Starting metrics server on 127.0.0.1:20241/metrics
+2026-03-23T03:16:01Z INF Registered tunnel connection connIndex=0 
+connection=5f457f38-4e25-403b-94f8-99712fadff69 event=0 ip=198.41.192.47 
+location=mnl04 protocol=quic
+2026-03-23T03:19:23Z ERR  error="Incoming request ended abruptly: context 
+canceled" connIndex=0 event=1 ingressRule=0 originService=http://127.0.0.1:8000
+2026-03-23T03:19:23Z ERR Request failed error="Incoming request ended 
+abruptly: context canceled" connIndex=0 
+dest=https://software-stolen-seattle-troops.trycloudflare.com/login event=0 
+ip=198.41.192.47 type=http
+2026-03-23T03:26:48Z ERR  error="Incoming request ended abruptly: context 
+canceled" connIndex=0 event=1 ingressRule=0 originService=http://127.0.0.1:8000
+2026-03-23T03:26:48Z ERR Request failed error="Incoming request ended 
+abruptly: context canceled" connIndex=0 
+dest=https://software-stolen-seattle-troops.trycloudflare.com/login event=0 
+ip=198.41.192.47 type=http
+2026-03-23T03:27:25Z ERR  error="Incoming request ended abruptly: context 
+canceled" connIndex=0 event=1 ingressRule=0 originService=http://127.0.0.1:8000
+2026-03-23T03:27:25Z ERR Request failed error="Incoming request ended 
+abruptly: context canceled" connIndex=0 
+dest=https://software-stolen-seattle-troops.trycloudflare.com/admin/categories 
+event=0 ip=198.41.192.47 type=http
+2026-03-23T03:38:00Z ERR  error="Incoming request ended abruptly: context 
+canceled" connIndex=0 event=1 ingressRule=0 originService=http://127.0.0.1:8000
+2026-03-23T03:38:00Z ERR Request failed error="Incoming request ended 
+abruptly: context canceled" connIndex=0 dest=https://software-stolen-seattle-tr
+oops.trycloudflare.com/admin/assessments event=0 ip=198.41.192.47 type=http
+2026-03-23T03:38:13Z ERR  error="Incoming request ended abruptly: context 
+canceled" connIndex=0 event=1 ingressRule=0 originService=http://127.0.0.1:8000
+2026-03-23T03:38:13Z ERR Request failed error="Incoming request ended 
+abruptly: context canceled" connIndex=0 dest=https://software-stolen-seattle-tr
+oops.trycloudflare.com/admin/assessments event=0 ip=198.41.192.47 type=http
+2026-03-23T03:48:00Z ERR  error="Incoming request ended abruptly: context 
+canceled" connIndex=0 event=1 ingressRule=0 originService=http://127.0.0.1:8000
+2026-03-23T03:48:00Z ERR Request failed error="Incoming request ended 
+abruptly: context canceled" connIndex=0 
+dest=https://software-stolen-seattle-troops.trycloudflare.com/admin/inquiries 
+event=0 ip=198.41.192.47 type=http
+2026-03-23T05:07:23Z ERR  error="Incoming request ended abruptly: context 
+canceled" connIndex=0 event=1 ingressRule=0 originService=http://127.0.0.1:8000
+2026-03-23T05:07:23Z ERR Request failed error="Incoming request ended 
+abruptly: context canceled" connIndex=0 
+dest=https://software-stolen-seattle-troops.trycloudflare.com/admin/categories 
+event=0 ip=198.41.192.47 type=http
+2026-03-23T05:15:30Z ERR  error="Incoming request ended abruptly: context 
+canceled" connIndex=0 event=1 ingressRule=0 originService=http://127.0.0.1:8000
+2026-03-23T05:15:30Z ERR Request failed error="Incoming request ended 
+abruptly: context canceled" connIndex=0 dest=https://software-stolen-seattle-tr
+oops.trycloudflare.com/admin/assessments/last-number/2026/03 event=0 
+ip=198.41.192.47 type=http

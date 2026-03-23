@@ -1,0 +1,2 @@
+﻿ Starting Laravel development server: http://0.0.0.0:8000
+[Mon Mar 23 11:13:53 2026] PHP 8.0.30 Development Server (http://0.0.0.0:8000) started

@@ -134,6 +134,197 @@
         background: var(--dark-surface);
         border-top-color: var(--dark-border);
     }
+
+    /* Professional Table Enhancements */
+    .table-responsive {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .table thead th {
+        background-color: #f8f9fa;
+        color: #495057;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        padding: 1rem 0.75rem;
+        border-top: none;
+        border-bottom: 2px solid #dee2e6;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .table tbody td {
+        padding: 1rem 0.75rem;
+        vertical-align: middle;
+        color: #495057;
+        font-size: 0.875rem;
+        border-bottom: 1px solid #edf2f7;
+    }
+
+    [data-theme="dark"] .table thead th {
+        background-color: #2d2d2d;
+        color: #e0e0e0;
+        border-bottom-color: #404040;
+    }
+
+    [data-theme="dark"] .table tbody td {
+        color: #d1d1d1;
+        border-bottom-color: #333;
+    }
+
+    .table tbody tr:hover {
+        background-color: rgba(25, 135, 84, 0.03) !important;
+    }
+
+    .table .badge {
+        padding: 0.5em 0.8em;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        border-radius: 4px;
+    }
+
+    .table .btn-sm {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: all 0.2s;
+    }
+
+    .table .btn-outline-primary:hover {
+        background-color: #0d6efd;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(13, 110, 253, 0.15);
+    }
+
+    .table .btn-outline-warning:hover {
+        background-color: #ffc107;
+        color: #000;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(255, 193, 7, 0.15);
+    }
+
+    /* Fixed Widths for better alignment */
+    .col-assessment-number { width: 140px; }
+    .col-date { width: 110px; }
+    .col-total { width: 120px; }
+    .col-actions { width: 100px; text-align: center; }
+
+    /* Enhanced Dark Mode Styles */
+    [data-theme="dark"] .modal-content {
+        background-color: #1a1d21;
+        border: 1px solid #333;
+    }
+
+    [data-theme="dark"] .modal-header {
+        border-bottom: 1px solid #333;
+    }
+
+    [data-theme="dark"] .modal-footer {
+        border-top: 1px solid #333;
+    }
+
+    [data-theme="dark"] .form-control,
+    [data-theme="dark"] .form-select,
+    [data-theme="dark"] .ts-control {
+        background-color: #24282d !important;
+        border-color: #404040 !important;
+        color: #e0e0e0 !important;
+    }
+
+    [data-theme="dark"] .form-control:focus,
+    [data-theme="dark"] .ts-control:focus {
+        background-color: #2a2e33 !important;
+        border-color: #198754 !important;
+        box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.25);
+    }
+
+    [data-theme="dark"] .form-control:disabled,
+    [data-theme="dark"] .form-control[readonly] {
+        background-color: #1e2125 !important;
+        opacity: 0.8;
+    }
+
+    [data-theme="dark"] .empty-names-message {
+        background-color: #24282d !important;
+        border-color: #404040 !important;
+        color: #888 !important;
+    }
+
+    [data-theme="dark"] .description-section {
+        border-color: #404040 !important;
+    }
+
+    [data-theme="dark"] .verification-item,
+    [data-theme="dark"] .calculation-block,
+    [data-theme="dark"] .v-inspection-container {
+        background-color: #24282d !important;
+        border-color: #404040 !important;
+    }
+
+    [data-theme="dark"] .bg-light {
+        background-color: #24282d !important;
+    }
+
+    [data-theme="dark"] .ts-dropdown {
+        background-color: #24282d !important;
+        color: #e0e0e0 !important;
+        border-color: #404040 !important;
+    }
+
+    [data-theme="dark"] .ts-dropdown .active {
+        background-color: #198754 !important;
+        color: #fff !important;
+    }
+
+    [data-theme="dark"] #addTypeForm {
+        background-color: #24282d !important;
+        border-color: #404040 !important;
+    }
+
+    [data-theme="dark"] #typesTable thead th {
+        background-color: #1a1d21;
+        border-bottom-color: #404040;
+    }
+
+    [data-theme="dark"] #typesTable tbody td {
+        border-bottom-color: #333;
+    }
+
+    [data-theme="dark"] .btn-outline-success {
+        color: #198754;
+        border-color: #198754;
+    }
+
+    [data-theme="dark"] .btn-outline-success:hover {
+        background-color: #198754;
+        color: #fff;
+    }
+
+    [data-theme="dark"] .btn-outline-warning {
+        color: #ffc107;
+        border-color: #ffc107;
+    }
+
+    [data-theme="dark"] .btn-outline-danger {
+        color: #dc3545;
+        border-color: #dc3545;
+    }
+
+    [data-theme="dark"] .text-muted {
+        color: #888 !important;
+    }
+
+    [data-theme="dark"] hr {
+        border-color: #404040;
+        opacity: 0.5;
+    }
 </style>
 @endsection
 
@@ -300,16 +491,16 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Assessment Number</th>
-                            <th>Date</th>
+                            <th class="col-assessment-number">Assessment Number</th>
+                            <th class="col-date">Date</th>
                             <th>Full Name</th>
                             <th>Address</th>
                             <th>Category</th>
                             <th>Reference</th>
-                            <th>Total</th>
+                            <th class="col-total">Total</th>
                             <th>Processed By</th>
                             <th>Officer in Charge</th>
-                            <th>Action</th>
+                            <th class="col-actions">Action</th>
                         </tr>
                     </thead>
                     <tbody>

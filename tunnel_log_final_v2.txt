@@ -1,0 +1,100 @@
+﻿.\cloudflared.exe : 2026-03-23T03:07:16Z INF Thank you for trying Cloudflare 
+Tunnel. Doing so, without a Cloudflare account, is a quick way to experiment 
+and try it out. However, be aware that these account-less Tunnels have no 
+uptime guarantee, are subject to the Cloudflare Online Services Terms of Use 
+(https://www.cloudflare.com/website-terms/), and Cloudflare reserves the right 
+to investigate your use of Tunnels for violations of such terms. If you intend 
+to use Tunnels in production you should use a pre-created named tunnel by 
+following: 
+https://developers.cloudflare.com/cloudflare-one/connections/connect-apps
+At line:1 char:1
++ .\cloudflared.exe tunnel --url http://127.0.0.1:8000 *>&1 | Out-File  ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (2026-03-23T03:0...ns/connect-apps 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+2026-03-23T03:07:16Z INF Requesting new quick Tunnel on trycloudflare.com...
+2026-03-23T03:07:20Z INF +-----------------------------------------------------
+---------------------------------------+
+2026-03-23T03:07:20Z INF |  Your quick Tunnel has been created! Visit it at 
+(it may take some time to be reachable):  |
+2026-03-23T03:07:20Z INF |  
+https://state-kernel-wheels-fellow.trycloudflare.com                           
+           |
+2026-03-23T03:07:20Z INF +-----------------------------------------------------
+---------------------------------------+
+2026-03-23T03:07:20Z INF Cannot determine default configuration path. No file 
+[config.yml config.yaml] in [~/.cloudflared ~/.cloudflare-warp 
+~/cloudflare-warp]
+2026-03-23T03:07:20Z INF Version 2026.2.0 (Checksum 
+b3279f2186a1c3c438ad5865e802bbbec26090c5d3fdb4ac1113f1143a94837a)
+2026-03-23T03:07:20Z INF GOOS: windows, GOVersion: go1.24.13, GoArch: amd64
+2026-03-23T03:07:20Z INF Settings: map[ha-connections:1 protocol:quic 
+url:http://127.0.0.1:8000]
+2026-03-23T03:07:20Z INF cloudflared will not automatically update on Windows 
+systems.
+2026-03-23T03:07:20Z INF Generated Connector ID: 
+7e3a707d-be34-46c8-98fc-506cccfcc7d8
+2026-03-23T03:07:20Z INF Initial protocol quic
+2026-03-23T03:07:20Z INF ICMP proxy will use 173.4.0.45 as source for IPv4
+2026-03-23T03:07:20Z INF ICMP proxy will use fe80::bcf2:5aee:46e9:df04 in zone 
+Ethernet as source for IPv6
+2026-03-23T03:07:20Z INF cloudflared does not support loading the system root 
+certificate pool on Windows. Please use --origin-ca-pool <PATH> to specify the 
+path to the certificate pool
+2026-03-23T03:07:20Z INF ICMP proxy will use 173.4.0.45 as source for IPv4
+2026-03-23T03:07:20Z INF Tunnel connection curve preferences: [X25519MLKEM768 
+CurveP256] connIndex=0 event=0 ip=198.41.192.57
+2026-03-23T03:07:20Z INF ICMP proxy will use fe80::bcf2:5aee:46e9:df04 in zone 
+Ethernet as source for IPv6
+2026-03-23T03:07:20Z INF Starting metrics server on 127.0.0.1:20241/metrics
+2026-03-23T03:07:20Z INF Registered tunnel connection connIndex=0 
+connection=bccfc305-9557-43eb-be44-229a7e597bbc event=0 ip=198.41.192.57 
+location=mnl04 protocol=quic
+2026-03-23T03:07:42Z ERR  error="Unable to reach the origin service. The 
+service may be down or it may not be responding to traffic from cloudflared: 
+dial tcp 127.0.0.1:8000: connectex: No connection could be made because the 
+target machine actively refused it." connIndex=0 event=1 ingressRule=0 
+originService=http://127.0.0.1:8000
+2026-03-23T03:07:42Z ERR Request failed error="Unable to reach the origin 
+service. The service may be down or it may not be responding to traffic from 
+cloudflared: dial tcp 127.0.0.1:8000: connectex: No connection could be made 
+because the target machine actively refused it." connIndex=0 
+dest=https://state-kernel-wheels-fellow.trycloudflare.com/ event=0 
+ip=198.41.192.57 type=http
+2026-03-23T03:07:44Z ERR  error="Unable to reach the origin service. The 
+service may be down or it may not be responding to traffic from cloudflared: 
+dial tcp 127.0.0.1:8000: connectex: No connection could be made because the 
+target machine actively refused it." connIndex=0 event=1 ingressRule=0 
+originService=http://127.0.0.1:8000
+2026-03-23T03:07:44Z ERR Request failed error="Unable to reach the origin 
+service. The service may be down or it may not be responding to traffic from 
+cloudflared: dial tcp 127.0.0.1:8000: connectex: No connection could be made 
+because the target machine actively refused it." connIndex=0 
+dest=https://state-kernel-wheels-fellow.trycloudflare.com/@vite/client event=0 
+ip=198.41.192.57 type=http
+2026-03-23T03:07:55Z ERR  error="Unable to reach the origin service. The 
+service may be down or it may not be responding to traffic from cloudflared: 
+dial tcp 127.0.0.1:8000: connectex: No connection could be made because the 
+target machine actively refused it." connIndex=0 event=1 ingressRule=0 
+originService=http://127.0.0.1:8000
+2026-03-23T03:07:55Z ERR Request failed error="Unable to reach the origin 
+service. The service may be down or it may not be responding to traffic from 
+cloudflared: dial tcp 127.0.0.1:8000: connectex: No connection could be made 
+because the target machine actively refused it." connIndex=0 
+dest=https://state-kernel-wheels-fellow.trycloudflare.com/ event=0 
+ip=198.41.192.57 type=http
+2026-03-23T03:07:58Z ERR  error="Unable to reach the origin service. The 
+service may be down or it may not be responding to traffic from cloudflared: 
+dial tcp 127.0.0.1:8000: connectex: No connection could be made because the 
+target machine actively refused it." connIndex=0 event=1 ingressRule=0 
+originService=http://127.0.0.1:8000
+2026-03-23T03:07:58Z ERR Request failed error="Unable to reach the origin 
+service. The service may be down or it may not be responding to traffic from 
+cloudflared: dial tcp 127.0.0.1:8000: connectex: No connection could be made 
+because the target machine actively refused it." connIndex=0 
+dest=https://state-kernel-wheels-fellow.trycloudflare.com/favicon.ico event=0 
+ip=198.41.192.57 type=http
+2026-03-23T03:09:27Z INF Initiating graceful shutdown due to signal interrupt 
+...

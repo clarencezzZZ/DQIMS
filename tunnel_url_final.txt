@@ -1,0 +1,83 @@
+﻿./cloudflared.exe : 2026-03-18T23:58:19Z INF Thank you for trying Cloudflare 
+Tunnel. Doing so, without a Cloudflare account, is a quick way to experiment 
+and try it out. However, be aware that these account-less Tunnels have no 
+uptime guarantee, are subject to the Cloudflare Online Services Terms of Use 
+(https://www.cloudflare.com/website-terms/), and Cloudflare reserves the right 
+to investigate your use of Tunnels for violations of such terms. If you intend 
+to use Tunnels in production you should use a pre-created named tunnel by 
+following: 
+https://developers.cloudflare.com/cloudflare-one/connections/connect-apps
+At line:1 char:1
++ ./cloudflared.exe tunnel --url http://127.0.0.1:8000 *>&1 | Out-File  ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (2026-03-18T23:5...ns/connect-apps 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+2026-03-18T23:58:19Z INF Requesting new quick Tunnel on trycloudflare.com...
+2026-03-18T23:58:23Z INF +-----------------------------------------------------
+---------------------------------------+
+2026-03-18T23:58:23Z INF |  Your quick Tunnel has been created! Visit it at 
+(it may take some time to be reachable):  |
+2026-03-18T23:58:23Z INF |  
+https://resolution-marsh-brakes-forecasts.trycloudflare.com                    
+           |
+2026-03-18T23:58:23Z INF +-----------------------------------------------------
+---------------------------------------+
+2026-03-18T23:58:23Z INF Cannot determine default configuration path. No file 
+[config.yml config.yaml] in [~/.cloudflared ~/.cloudflare-warp 
+~/cloudflare-warp]
+2026-03-18T23:58:23Z INF Version 2026.2.0 (Checksum 
+b3279f2186a1c3c438ad5865e802bbbec26090c5d3fdb4ac1113f1143a94837a)
+2026-03-18T23:58:23Z INF GOOS: windows, GOVersion: go1.24.13, GoArch: amd64
+2026-03-18T23:58:23Z INF Settings: map[ha-connections:1 protocol:quic 
+url:http://127.0.0.1:8000]
+2026-03-18T23:58:23Z INF cloudflared will not automatically update on Windows 
+systems.
+2026-03-18T23:58:23Z INF Generated Connector ID: 
+b37f7494-aa49-4b5f-be22-a16e6a066bfe
+2026-03-18T23:58:23Z INF Initial protocol quic
+2026-03-18T23:58:23Z INF ICMP proxy will use 173.4.0.45 as source for IPv4
+2026-03-18T23:58:23Z INF ICMP proxy will use fe80::b486:e76b:2127:cf31 in zone 
+Ethernet as source for IPv6
+2026-03-18T23:58:23Z INF cloudflared does not support loading the system root 
+certificate pool on Windows. Please use --origin-ca-pool <PATH> to specify the 
+path to the certificate pool
+2026-03-18T23:58:23Z INF ICMP proxy will use 173.4.0.45 as source for IPv4
+2026-03-18T23:58:23Z INF Tunnel connection curve preferences: [X25519MLKEM768 
+CurveP256] connIndex=0 event=0 ip=198.41.200.13
+2026-03-18T23:58:23Z INF ICMP proxy will use fe80::b486:e76b:2127:cf31 in zone 
+Ethernet as source for IPv6
+2026-03-18T23:58:23Z INF Starting metrics server on 127.0.0.1:20243/metrics
+2026-03-18T23:58:23Z INF Registered tunnel connection connIndex=0 
+connection=de4672d4-9fbc-47d7-879a-66b429d4b291 event=0 ip=198.41.200.13 
+location=sin12 protocol=quic
+2026-03-19T00:27:31Z ERR  error="Incoming request ended abruptly: context 
+canceled" connIndex=0 event=1 ingressRule=0 originService=http://127.0.0.1:8000
+2026-03-19T00:27:31Z ERR Request failed error="Incoming request ended 
+abruptly: context canceled" connIndex=0 dest=https://resolution-marsh-brakes-fo
+recasts.trycloudflare.com/admin/assessments event=0 ip=198.41.200.13 type=http
+2026-03-19T01:00:04Z ERR  error="Unable to reach the origin service. The 
+service may be down or it may not be responding to traffic from cloudflared: 
+dial tcp 127.0.0.1:8000: connectex: No connection could be made because the 
+target machine actively refused it." connIndex=0 event=1 ingressRule=0 
+originService=http://127.0.0.1:8000
+2026-03-19T01:00:04Z ERR Request failed error="Unable to reach the origin 
+service. The service may be down or it may not be responding to traffic from 
+cloudflared: dial tcp 127.0.0.1:8000: connectex: No connection could be made 
+because the target machine actively refused it." connIndex=0 dest=https://resol
+ution-marsh-brakes-forecasts.trycloudflare.com/admin/assessments event=0 
+ip=198.41.200.13 type=http
+2026-03-19T01:00:04Z ERR  error="Unable to reach the origin service. The 
+service may be down or it may not be responding to traffic from cloudflared: 
+dial tcp 127.0.0.1:8000: connectex: No connection could be made because the 
+target machine actively refused it." connIndex=0 event=1 ingressRule=0 
+originService=http://127.0.0.1:8000
+2026-03-19T01:00:04Z ERR Request failed error="Unable to reach the origin 
+service. The service may be down or it may not be responding to traffic from 
+cloudflared: dial tcp 127.0.0.1:8000: connectex: No connection could be made 
+because the target machine actively refused it." connIndex=0 
+dest=https://resolution-marsh-brakes-forecasts.trycloudflare.com/favicon.ico 
+event=0 ip=198.41.200.13 type=http
+2026-03-19T01:00:47Z INF Initiating graceful shutdown due to signal interrupt 
+...
